@@ -154,7 +154,7 @@ local function EndTurn()
     -- Perform BUILDING EFFECTS
     for k, l in pairs(locations.get()) do
         if l.key == "node" then
-            spells.addMP(5)
+            spells.addMP(1)
         end
     end
     -- Check on win conditions!

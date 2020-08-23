@@ -10,9 +10,6 @@ local function enoughGold(amnt)
 end
 
 local function spendGold(amnt)
-    if not enoughGold(amnt) then
-        return false
-    end
     goldUsed = goldUsed + amnt
     return true
 end
