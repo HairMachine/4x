@@ -38,6 +38,8 @@ local commandPoints = commandPointMax
 local caveSpawnTimer = 0
 local caveSpawnTimerTarget = 1
 
+local darkPower = 0
+
 local targeter = {
     map = {},
     unit = 0,
@@ -50,6 +52,25 @@ local buttons = {
     end_phase = {x = 600, y = 100, width = 100, height = 50, text = "End Phase", action = "endTurn", visible = 1},
     build = {x = 600, y = 150, width = 100, height = 32, text = "Build", action = "buildTower", visible = 1}
 }
+
+local function TileAlignmentChange()
+    for y = 1, MAPSIZEY do
+        for x = 1, MAPSIZEX do
+            map[y][x].align = 2
+        end
+    end
+    for k, l in pairs(locations.get()) do
+        if l.team == 1 then
+            for xi = l.x - 1, l.x + 1 do
+                for yi = l.y - 1, l.y + 1 do
+                    if xi > 0 and xi <= MAPSIZEX and yi > 0 and yi <= MAPSIZEY then
+                        map[yi][xi].align = 1
+                    end
+                end
+            end
+        end
+    end
+end
 
 local function SpellTargeter(radius, wizards)
     targeter.map = {}
@@ -77,7 +98,7 @@ end
 local spellEffects = {
     none = function() end,
     phase_tower = function()
-        SpellTargeter(4, false)
+        SpellTargeter(2, false)
         targeter.callback = function(x, y)
             locations.get()[1].x = x
             locations.get()[1].y = y
@@ -113,8 +134,8 @@ local function caveSpawnTimerTargetSet()
     for k, l in pairs(locations.get()) do
         if l.key == "cave" then caveSpawned = caveSpawned + 1 end
     end
-    if caveSpawned < 8 then
-        caveSpawnTimerTarget = caveSpawned * 5
+    if caveSpawned < 12 then
+        caveSpawnTimerTarget = caveSpawned * 3
     else
         caveSpawnTimerTarget = 10000 -- essentially forever
     end
@@ -153,8 +174,11 @@ local function EndTurn()
     end
     -- Perform BUILDING EFFECTS
     for k, l in pairs(locations.get()) do
-        if l.key == "node" then
+        if l.key == "node" or l.key == "tower" then
             spells.addMP(1)
+        elseif l.key == "dark_fortress" then
+            darkPower = darkPower + 1
+            -- TODO: BAD things happen as dark power goes up!
         end
     end
     -- Check on win conditions!
@@ -192,12 +216,31 @@ local function EndTurn()
     -- MAKE MORE CAVES
     caveSpawnTimer = caveSpawnTimer + 1
     if caveSpawnTimer >= caveSpawnTimerTarget then
-        local xp = love.math.random(1, MAPSIZEX)
-        local yp = love.math.random(1, MAPSIZEY)
-        locations.add("cave", xp, yp, 2)
-        units.add("grunter", xp, yp, {type = "cave", x = xp, y = yp})
-        caveSpawnTimer = 0
-        caveSpawnTimerTargetSet()
+        -- Create a list of allowed tiles
+        local caveLocs = {}
+        for y = 1, MAPSIZEY do
+            for x = 1, MAPSIZEX do
+                if map[y][x].align == 2 then
+                    table.insert(caveLocs, {x = x, y = y})
+                end
+            end
+        end
+        if #caveLocs > 0 then
+            -- Chose a random one
+            local loc = caveLocs[love.math.random(1, #caveLocs)]
+            local roll = love.math.random(1, 6)
+            if roll <= 2 then
+                locations.add("cave", loc.x, loc.y, 2)
+                units.add("grunter", loc.x, loc.y, {type = "cave", x = loc.x, y = loc.y})
+            elseif roll <= 4 then
+                locations.add("dark_temple", loc.x, loc.y, 2)
+            else
+                locations.add("fortress", loc.x, loc.y, 2)
+                units.add("doom_guard", loc.x, loc.y, {type = "fortress", x = loc.x, y = loc.y})
+            end
+            caveSpawnTimer = 0
+            caveSpawnTimerTargetSet()
+        end
     end
     commandPoints = commandPointMax
     -- Research spells
@@ -227,6 +270,7 @@ local buttonActions = {
         ScreenSwitch("build")
     end,
     buildTower = function()
+        -- TODO: Cancelling currently fucks this up, it needs to work better
         if commandPoints < 2 then return end
         SpellTargeter(2, false)
         targeter.callback = function(x, y)
@@ -250,11 +294,11 @@ local function load()
         map[y] = {}
         for x = 1, MAPSIZEX  do
             if x == 1 or y == 1 or x == MAPSIZEX or y == MAPSIZEY then
-                map[y][x] = {tile = "water"}
+                map[y][x] = {tile = "water", align = 2}
             elseif (x == 2 or y == 2 or x ==  MAPSIZEX - 1 or y == MAPSIZEY - 1) and love.math.random(1, 10) >= 7 then
-                map[y][x] = {tile = "water"}
+                map[y][x] = {tile = "water", align = 2}
             else 
-                map[y][x] = {tile = "grass"}
+                map[y][x] = {tile = "grass", align = 2}
             end
         end
     end
@@ -294,10 +338,8 @@ local function load()
     map[MAPSIZEX - 2][MAPSIZEX - 1] = {tile = "grass"}
     map[MAPSIZEX - 1][MAPSIZEX - 2] = {tile = "grass"}
     locations.add("dark_tower", MAPSIZEX - 1, MAPSIZEY - 1, 2)
-    -- DOOM GUARDS!
-    units.add("doom_guard", MAPSIZEX - 2, MAPSIZEY - 1, {})
-    units.add("doom_guard", MAPSIZEX - 1, MAPSIZEY - 2, {})
-    units.add("doom_guard", MAPSIZEX - 2, MAPSIZEY - 2, {})
+
+    TileAlignmentChange()
 end
 
 local function show()
@@ -305,7 +347,8 @@ local function show()
 end
 
 local function update()
-    
+    -- This just totally sucks, fix it. It's here because of the way building currently works
+    TileAlignmentChange()
 end
 
 local function keypressed(key, scancode, isrepeat)
@@ -387,6 +430,16 @@ local function draw()
     for k, e in pairs(targeter.map) do
         love.graphics.draw(tiles.targeter, e.x * tsize, e.y * tsize, 0, 2)
     end
+
+    love.graphics.setColor(0, 0, 0, 0.3)
+    for y = 1, MAPSIZEY do
+        for x = 1, MAPSIZEX do
+            if map[y][x].align == 2 then
+                love.graphics.rectangle("fill", x * tsize, y * tsize, tsize, tsize)
+            end
+        end
+    end
+    love.graphics.setColor(1, 1, 1, 1)
 
     -- UI
     love.graphics.print("Currently casting: "..spells.getCasting().name, ACTIONSTARTX, 0)

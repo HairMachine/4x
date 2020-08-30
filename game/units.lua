@@ -7,7 +7,7 @@ local data = {
         {name = "Build", action = "build"}
     }},
     doom_guard = {name = "Doom Guard", tile = "monster", speed  = 0, attack = 2, team = 2, hp = 10, moved = 0, actions = {}},
-    elf = {name = "Elf", tile = "army", speed = 2, attack = 2, hp = 3, team = 1, moved = 0, actions = {}},
+    elf = {name = "Elf", tile = "army", speed = 1, attack = 8, hp = 2, team = 1, moved = 0, actions = {}},
     dwarf = {name = "Dwarf", tile = "army", speed = 1, attack = 1, hp = 10, team = 1, moved = 0, actions = {}},
     barbarian = {name = "Barbarian", tile = "army", speed = 1, attack = 3, hp = 5, team = 1, moved = 0, actions = {}},
     wizard = {name = "Wizard", tile = "army", speed = 1, attack = 1, hp = 1, team = 1, moved = 0, actions = {}},
@@ -37,6 +37,8 @@ local function spawnByLocType(parent)
         if l.key == parent.type and l.x == parent.x and l.y == parent.y then
             if parent.type == "cave" then
                 add("grunter", parent.x, parent.y, parent)
+            elseif parent.type == "fortress" then
+                add("doom_guard", parent.x, parent.y, parent)
             elseif parent.type == "barracks" then
                 add("soldier", parent.x, parent.y, parent)
             elseif parent.type == "tower" then
