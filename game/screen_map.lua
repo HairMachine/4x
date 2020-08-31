@@ -19,7 +19,8 @@ local tiles = {
     forest = love.graphics.newImage("assets/forest.png"),
     mountain = love.graphics.newImage("assets/mountain.png"),
     tundra = love.graphics.newImage("assets/tundra.png"),
-    ruins = love.graphics.newImage("assets/ruins.png")
+    ruins = love.graphics.newImage("assets/ruins.png"),
+    hero = love.graphics.newImage("assets/hero.png")
 }
 
 local ACTIONSTARTX = 600
@@ -50,7 +51,7 @@ local targeter = {
 local buttons = {
     cast_spell = {x = 600, y = 50, width = 100, height = 32, text = "Cast Spell", action = "startCast", visible = 1},
     end_phase = {x = 600, y = 100, width = 100, height = 50, text = "End Phase", action = "endTurn", visible = 1},
-    build = {x = 600, y = 150, width = 100, height = 32, text = "Build", action = "buildTower", visible = 1}
+    --build = {x = 600, y = 150, width = 100, height = 32, text = "Build", action = "buildTower", visible = 1}
 }
 
 local function TileAlignmentChange()
@@ -83,7 +84,7 @@ local function SpellTargeter(radius, wizards)
     -- around wizards!
     if wizards == true then
         for k, e in pairs(units.get()) do
-            if e.type == "wizard" then
+            if e.type == "wizard" or e.type == "hero" then
                 for x = e.x - radius, e.x + radius do
                     for y = e.y - radius, e.y + radius do
                         table.insert(targeter.map, {x = x, y = y})
@@ -93,6 +94,17 @@ local function SpellTargeter(radius, wizards)
         end
     end
     targeter.type = "spell"
+end
+
+local function Targeter(x, y, radius, excludeSelf)
+    targeter.map = {}
+    for xt = x - radius, x + radius do
+        for yt = y - radius, y + radius do
+            if not(excludeSelf == true and yt == y and xt == x) then
+                table.insert(targeter.map, {x = xt, y = yt})
+            end
+        end
+    end         
 end
 
 local spellEffects = {
@@ -124,8 +136,8 @@ local spellEffects = {
             targeter.map = {}
         end
     end,
-    summon_imp = function()
-        units.add("engineer", locations.get()[1].x, locations.get()[1].y, {"tower", locations.get()[1].x, locations.get()[1].y})
+    summon_hero = function()
+        units.add("hero", locations.get()[1].x, locations.get()[1].y, {})
     end
 }
 
@@ -194,24 +206,35 @@ local function EndTurn()
     units.remove()
     locations.remove()
     caveSpawnTimerTargetSet()
-    -- Monsters move!
+    -- Move, my minions!
     for k, e in pairs(units.get()) do
-        if e.team == 2 then
+        local target = {name = "None"}
+        if e.class == "Sieger" then
+            target = units.getClosestBuilding(e)
+        elseif e.class == "Skirmisher" then
+            target = units.getClosestUnit(e)
+        elseif e.class == "Defender" then
+            target = units.getClosestUnitWithinRange(e, 2)
+            if target.name == "None" and (target.x ~= e.parent.x or target.y ~= e.parent.y) then
+                target.name = "Home"
+                target.x = e.parent.x
+                target.y = e.parent.y
+            end
+        end
+        if target.name ~= "None" then
             for i = 1, e.speed do
-                local target = units.getClosestEnemy(e)
-                if target.name ~= "None" then
-                    -- TODO: Real path finding when I can be bothered
-                    local dirx = target.x - e.x
-                    local diry = target.y - e.y
-                    if dirx < 0 then dirx = -1 elseif dirx > 0 then dirx = 1 end
-                    if diry < 0 then diry = -1 elseif diry > 0 then diry = 1 end
-                    if units.atPos(e.x + dirx, e.y + diry).name == "None" then
-                        e.x = e.x + dirx
-                        e.y = e.y + diry
-                    end
+                -- TODO: Real path finding when I can be bothered
+                local dirx = target.x - e.x
+                local diry = target.y - e.y
+                if dirx < 0 then dirx = -1 elseif dirx > 0 then dirx = 1 end
+                if diry < 0 then diry = -1 elseif diry > 0 then diry = 1 end
+                if units.atPos(e.x + dirx, e.y + diry).name == "None" then
+                    e.x = e.x + dirx
+                    e.y = e.y + diry
                 end
             end
         end
+        
     end
     -- MAKE MORE CAVES
     caveSpawnTimer = caveSpawnTimer + 1
@@ -266,8 +289,14 @@ local buttonActions = {
         EndTurn()
     end,
     build = function(entity)
-        locations.setCurrentBuildingTile(entity.x, entity.y, map[entity.y][entity.x].tile)
-        ScreenSwitch("build")
+        -- TODO: Cancelling currently fucks this up, it needs to work better
+        Targeter(entity.x, entity.y, 1, true)
+        targeter.type = "spell"
+        targeter.callback = function(x, y)
+            locations.setCurrentBuildingTile(x, y, map[y][x].tile)
+            ScreenSwitch("build")
+            targeter.map = {}
+        end
     end,
     buildTower = function()
         -- TODO: Cancelling currently fucks this up, it needs to work better
@@ -308,6 +337,10 @@ local function load()
         map[love.math.random(2, MAPSIZEY - 1)][love.math.random(2, MAPSIZEX - 1)].tile = "tundra"
         map[love.math.random(2, MAPSIZEY - 1)][love.math.random(2, MAPSIZEX - 1)].tile = "forest"
     end
+    -- Area around the tower is cleared of any doohickies
+    map[2][2] = {tile = "grass"}
+    map[3][2] = {tile = "grass"}
+    map[2][3] = {tile = "grass"}
 
     -- Make crystal and gold, evenly spaced
     local til = "ore"
@@ -327,18 +360,18 @@ local function load()
     -- TODO Make rivers
 
     -- Wizard's tower and engineer always first
-    map[2][2] = {tile = "grass"}
-    map[3][2] = {tile = "grass"}
-    map[2][3] = {tile = "grass"}
     locations.add("tower", 2, 2, 1)
     --units.add("engineer", 2, 2, {type = "tower", x = 2, y = 2})
+    units.add("hero", 2, 2)
     
     -- The DARK TOWER!
     map[MAPSIZEX - 1][MAPSIZEX - 1] = {tile = "grass"}
     map[MAPSIZEX - 2][MAPSIZEX - 1] = {tile = "grass"}
     map[MAPSIZEX - 1][MAPSIZEX - 2] = {tile = "grass"}
     locations.add("dark_tower", MAPSIZEX - 1, MAPSIZEY - 1, 2)
-
+    units.add("doom_guard", MAPSIZEX - 1, MAPSIZEY - 2, {x = MAPSIZEX - 1, y = MAPSIZEY - 2, "null"})
+    units.add("doom_guard", MAPSIZEX - 2, MAPSIZEY - 2, {x = MAPSIZEX - 2, y = MAPSIZEY - 2, "null"})
+    units.add("doom_guard", MAPSIZEX - 2, MAPSIZEY - 1, {x = MAPSIZEX - 2, y = MAPSIZEY - 1, "null"})
     TileAlignmentChange()
 end
 
@@ -376,7 +409,7 @@ local function mousepressed(x, y, button, istouch, presses)
 
     -- Clicking on a unit!
     for k, e in pairs(units.get()) do
-        if e.team == 1 and e.moved == 0 and e.x == tilex and e.y == tiley and commandPoints > 0 then
+        if e.type == "hero" and e.moved == 0 and e.x == tilex and e.y == tiley and commandPoints > 0 then
             targeter.unit = k
             targeter.type = "move"
             targeter.map = {}
