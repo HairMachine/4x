@@ -234,7 +234,11 @@ local function EndTurn()
                 end
             end
         end
-        
+    end
+    -- Check for REBELS!
+    local rebelling = true
+    while resources.getAvailableGold() < 0 and rebelling do
+        rebelling = units.swapSidesRandom(2)
     end
     -- MAKE MORE CAVES
     caveSpawnTimer = caveSpawnTimer + 1

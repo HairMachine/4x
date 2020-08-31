@@ -73,9 +73,17 @@ local function remove()
     end
 end
 
+local function getByCoordinates(x, y)
+    for k, l in pairs(locations) do
+        if l.x == x and l.y == y then return l end
+    end
+    return nil
+end
+
 return {
     add = add,
     get = get,
+    getByCoordinates = getByCoordinates,
     getData = getData,
     setCurrentBuildingTile = setCurrentBuildingTile,
     getCurrentBuildingTile = getCurrentBuildingTile,
