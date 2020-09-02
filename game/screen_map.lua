@@ -3,6 +3,7 @@ local spells = require 'spells'
 local locations = require 'locations'
 local units = require 'units'
 local resources = require 'resources'
+local targeter = require 'targeter'
 
 local tiles = {
     grass = love.graphics.newImage("assets/grass.png"),
@@ -33,20 +34,10 @@ local MAPSIZEX = 17
 local MAPSIZEY = 17
 local tsize = 32
 
-local commandPointMax = 2
-local commandPoints = commandPointMax
-
 local caveSpawnTimer = 0
 local caveSpawnTimerTarget = 1
 
 local darkPower = 0
-
-local targeter = {
-    map = {},
-    unit = 0,
-    type = "",
-    callback = function() end
-}
 
 local buttons = {
     cast_spell = {x = 600, y = 50, width = 100, height = 32, text = "Cast Spell", action = "startCast", visible = 1},
@@ -73,44 +64,10 @@ local function TileAlignmentChange()
     end
 end
 
-local function SpellTargeter(radius, wizards)
-    targeter.map = {}
-    -- around wizard's tower
-    for x = locations.get()[1].x - radius, locations.get()[1].x + radius do
-        for y = locations.get()[1].y - radius, locations.get()[1].y + radius do
-            table.insert(targeter.map, {x = x, y = y})
-        end
-    end
-    -- around wizards!
-    if wizards == true then
-        for k, e in pairs(units.get()) do
-            if e.type == "wizard" or e.type == "hero" then
-                for x = e.x - radius, e.x + radius do
-                    for y = e.y - radius, e.y + radius do
-                        table.insert(targeter.map, {x = x, y = y})
-                    end
-                end
-            end
-        end
-    end
-    targeter.type = "spell"
-end
-
-local function Targeter(x, y, radius, excludeSelf)
-    targeter.map = {}
-    for xt = x - radius, x + radius do
-        for yt = y - radius, y + radius do
-            if not(excludeSelf == true and yt == y and xt == x) then
-                table.insert(targeter.map, {x = xt, y = yt})
-            end
-        end
-    end         
-end
-
-local spellEffects = {
+local spellActions = {
     none = function() end,
     phase_tower = function()
-        SpellTargeter(2, false)
+        targeter.setSpellMap(2, false)
         targeter.callback = function(x, y)
             locations.get()[1].x = x
             locations.get()[1].y = y
@@ -121,11 +78,11 @@ local spellEffects = {
                     e.parent.y = y
                 end
             end
-            targeter.map = {}
+            targeter.clear()
         end
     end,
     lightning_bolt = function()
-        SpellTargeter(3, true)
+        targeter.setSpellMap(3, true)
         targeter.callback = function(x, y)
             for k, u in pairs(units.get()) do
                 if x == u.x and y == u.y then
@@ -133,11 +90,12 @@ local spellEffects = {
                 end
             end
             units.remove()
-            targeter.map = {}
+            targeter.clear()
         end
     end,
     summon_hero = function()
         units.add("hero", locations.get()[1].x, locations.get()[1].y, {})
+        resources.spendCommandPoints(1)
     end
 }
 
@@ -153,9 +111,19 @@ local function caveSpawnTimerTargetSet()
     end
 end
 
+local function SelectNextHero()
+    for k, e in pairs(units.get()) do
+        if e.type == "hero" and e.moved == 0 then
+            targeter.setUnit(k)
+            targeter.setType("move")
+            targeter.setMap(e.x, e.y, e.speed, false)
+            return
+        end
+    end
+end
+
 local function EndTurn()
-    targeter.map = {}
-    targeter.unit = 0
+    targeter.clear()
     for k, e in pairs(units.get()) do
         e.moved = 0
     end
@@ -214,7 +182,7 @@ local function EndTurn()
         elseif e.class == "Skirmisher" then
             target = units.getClosestUnit(e)
         elseif e.class == "Defender" then
-            target = units.getClosestUnitWithinRange(e, 2)
+            target = units.getClosestUnitWithinRange(e, 3)
             if target.name == "None" and (target.x ~= e.parent.x or target.y ~= e.parent.y) then
                 target.name = "Home"
                 target.x = e.parent.x
@@ -269,7 +237,6 @@ local function EndTurn()
             caveSpawnTimerTargetSet()
         end
     end
-    commandPoints = commandPointMax
     -- Research spells
     local researchBonus = 0
     for k, e in pairs(units.get()) do
@@ -282,9 +249,11 @@ local function EndTurn()
         ScreenSwitch("research")
     end
     if spells.cast() then
-        spellEffects[spells.getCasting().key]()
+        spellActions[spells.getCasting().key]()
         spells.stopCasting()
     end
+    -- Start turn
+    SelectNextHero()
 end
 
 local buttonActions = {
@@ -294,23 +263,20 @@ local buttonActions = {
     end,
     build = function(entity)
         -- TODO: Cancelling currently fucks this up, it needs to work better
-        Targeter(entity.x, entity.y, 1, true)
-        targeter.type = "spell"
+        targeter.setMap(entity.x, entity.y, 1, true)
+        targeter.setType("spell")
         targeter.callback = function(x, y)
             locations.setCurrentBuildingTile(x, y, map[y][x].tile)
             ScreenSwitch("build")
-            targeter.map = {}
+            targeter.clear()
         end
     end,
     buildTower = function()
-        -- TODO: Cancelling currently fucks this up, it needs to work better
-        if commandPoints < 2 then return end
-        SpellTargeter(2, false)
+        targeter.setSpellMap(2, false)
         targeter.callback = function(x, y)
             locations.setCurrentBuildingTile(x, y, map[y][x].tile)
             ScreenSwitch("build")
-            commandPoints = commandPoints - 2
-            targeter.map = {}
+            targeter.clear()
         end
     end,
     startCast = function()
@@ -376,7 +342,12 @@ local function load()
     units.add("doom_guard", MAPSIZEX - 1, MAPSIZEY - 2, {x = MAPSIZEX - 1, y = MAPSIZEY - 2, "null"})
     units.add("doom_guard", MAPSIZEX - 2, MAPSIZEY - 2, {x = MAPSIZEX - 2, y = MAPSIZEY - 2, "null"})
     units.add("doom_guard", MAPSIZEX - 2, MAPSIZEY - 1, {x = MAPSIZEX - 2, y = MAPSIZEY - 1, "null"})
+    
+    -- Set tile alignments
     TileAlignmentChange()
+    
+    -- Start!
+    SelectNextHero()
 end
 
 local function show()
@@ -400,50 +371,45 @@ local function mousepressed(x, y, button, istouch, presses)
     buttonActions[ui.click(buttons, x, y)]()
 
     -- Clicking on a unit action!
-    if targeter.unit > 0 and units.get()[targeter.unit].moved == 0 then
-        for k, e in pairs(units.get()[targeter.unit].actions) do
-            if x > ACTIONSTARTX and x < ACTIONSTARTX + ACTIONSIZEX and y > ACTIONSTARTY and y < ACTIONSTARTY + ACTIONSIZEY and commandPoints > 0 then
-                units.get()[targeter.unit].moved = 1
-                targeter.map = {}
-                buttonActions[e.action](units.get()[targeter.unit])
-                commandPoints = commandPoints - 1
+    if targeter.getUnit() > 0 and units.get()[targeter.getUnit()].moved == 0 then
+        for k, e in pairs(units.get()[targeter.getUnit()].actions) do
+            if x > ACTIONSTARTX and x < ACTIONSTARTX + ACTIONSIZEX and y > ACTIONSTARTY and y < ACTIONSTARTY + ACTIONSIZEY then
+                units.get()[targeter.getUnit()].moved = 1
+                buttonActions[e.action](units.get()[targeter.getUnit()])
+                SelectNextHero()
             end
         end
     end
 
     -- Clicking on a unit!
     for k, e in pairs(units.get()) do
-        if e.type == "hero" and e.moved == 0 and e.x == tilex and e.y == tiley and commandPoints > 0 then
-            targeter.unit = k
-            targeter.type = "move"
-            targeter.map = {}
-            for y = e.y - e.speed, e.y + e.speed do
-                for x = e.x - e.speed, e.x + e.speed do
-                    table.insert(targeter.map, {x = x, y = y})
-                end
-            end
+        if e.type == "hero" and e.moved == 0 and e.x == tilex and e.y == tiley then
+            targeter.setUnit(k)
+            targeter.setType("move")
+            targeter.setMap(e.x, e.y, e.speed, false)
             return
         end
     end
 
     -- Clicking on a targeter
-    for k, e in pairs(targeter.map) do
-        if e.x == tilex and e.y == tiley then
-            if targeter.type == "move" then
-                -- check if a unit is on this tile
-                for ku, u in pairs(units.get()) do
-                    if u.x == e.x and u.y == e.y then 
-                        return
+    for k, e in pairs(targeter.getMap()) do
+        if e.x > 0 and e.x <= MAPSIZEX and e.y > 0 and e.y <= MAPSIZEY then
+            if e.x == tilex and e.y == tiley then
+                if targeter.getType() == "move" then
+                    -- check if a unit is on this tile
+                    for ku, u in pairs(units.get()) do
+                        if u.x == e.x and u.y == e.y then 
+                            return
+                        end
                     end
+                    units.get()[targeter.getUnit()].x = tilex
+                    units.get()[targeter.getUnit()].y = tiley
+                    units.get()[targeter.getUnit()].moved = 1
+                    targeter.clear()
+                    SelectNextHero()
+                elseif targeter.getType() == "spell" then
+                    targeter.callback(tilex, tiley)
                 end
-                units.get()[targeter.unit].x = tilex
-                units.get()[targeter.unit].y = tiley
-                units.get()[targeter.unit].moved = 1
-                targeter.map = {}
-                targeter.unit = 0
-                commandPoints = commandPoints - 1
-            elseif targeter.type == "spell" then
-                targeter.callback(tilex, tiley)
             end
         end
     end
@@ -464,8 +430,10 @@ local function draw()
         love.graphics.draw(tiles[e.tile], e.x * tsize, e.y * tsize, 0 , 2)
     end
 
-    for k, e in pairs(targeter.map) do
-        love.graphics.draw(tiles.targeter, e.x * tsize, e.y * tsize, 0, 2)
+    for k, e in pairs(targeter.getMap()) do
+        if e.x > 0 and e.x <= MAPSIZEX and e.y > 0 and e.y <= MAPSIZEY then
+            love.graphics.draw(tiles.targeter, e.x * tsize, e.y * tsize, 0, 2)
+        end
     end
 
     love.graphics.setColor(0, 0, 0, 0.3)
@@ -484,14 +452,14 @@ local function draw()
     ui.draw(buttons)
 
     -- Unit options
-    if targeter.unit > 0 and units.get()[targeter.unit].moved == 0 then
-        for k, e in pairs(units.get()[targeter.unit].actions) do
+    if targeter.getUnit() > 0 and units.get()[targeter.getUnit()].moved == 0 then
+        for k, e in pairs(units.get()[targeter.getUnit()].actions) do
             love.graphics.rectangle("line", ACTIONSTARTX, ACTIONSTARTY + (k-1) * ACTIONSIZEY, ACTIONSIZEX, ACTIONSIZEY)
             love.graphics.print(e.name, ACTIONSTARTX, ACTIONSTARTY + (k-1) * ACTIONSIZEY)
         end
     end
 
-    love.graphics.print("Command Points: "..commandPoints, ACTIONSTARTX, 500)
+    love.graphics.print("Command Points: "..resources.getCommandPoints(), ACTIONSTARTX, 500)
     love.graphics.print("Available Budget: "..resources.getAvailableGold(), ACTIONSTARTX, 532)
     love.graphics.print("Magic Points: "..spells.getMP(), ACTIONSTARTX, 564)
 end

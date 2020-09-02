@@ -1,14 +1,23 @@
 local ui = require 'ui_manager'
 local spells = require 'spells'
+local resources = require 'resources'
+
+local errorBox = false
+local errorText = ""
 
 local buttons = {
-    end_phase = {x = 600, y = 100, width = 100, height = 50, text = "Cancel", action = "endTurn", visible = 1}
+    end_phase = {x = 600, y = 100, width = 100, height = 50, text = "Cancel", action = "endTurn", visible = 1},
+    error_ok = {x = 350, y = 280, width = 100, height = 40, text = "OK", action = "errorOk", visible = 0}
 }
 
 local buttonActions = {
     none = function() end,
     endTurn = function()
         ScreenSwitch("map")
+    end,
+    errorOk = function()
+        errorBox = false
+        buttons['error_ok'].visible = 0
     end
 }
 
@@ -31,6 +40,13 @@ end
 local function mousepressed(x, y, button, istouch, presses)
     for k, s in pairs(spells.known) do
         if y > (k - 1) * 32 and y < k * 32 then
+            -- Special case for summon hero spell as it requires command points to cast as well as MP; maybe this is generalisable to different resource costs
+            if s == "summon_hero" and resources.getCommandPoints() < 1 then
+                errorBox = true
+                errorText = "You need at least one command point available to cast this spell again!"
+                buttons['error_ok'].visible = 1
+                return
+            end
             if spells.getCasting().key == s then
                 spells.startCasting("none")
             else
@@ -51,6 +67,11 @@ local function draw()
         end
     end
     ui.draw(buttons)
+
+    if errorBox == true then
+        love.graphics.rectangle("line", 300, 200, 200, 100)
+        love.graphics.print(errorText, 310, 210)
+    end
 end
 
 return {
