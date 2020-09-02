@@ -196,9 +196,13 @@ local function EndTurn()
                 local diry = target.y - e.y
                 if dirx < 0 then dirx = -1 elseif dirx > 0 then dirx = 1 end
                 if diry < 0 then diry = -1 elseif diry > 0 then diry = 1 end
-                if units.atPos(e.x + dirx, e.y + diry).name == "None" then
-                    e.x = e.x + dirx
-                    e.y = e.y + diry
+                local newx = e.x + dirx
+                local newy = e.y + diry
+                if newx > 0 and newx <= MAPSIZEX and newy > 0 and newy <= MAPSIZEY then
+                    if units.tileIsAllowed(e, map[newy][newx].tile) and units.atPos(newx, newy).name == "None" then
+                        e.x = e.x + dirx
+                        e.y = e.y + diry
+                    end
                 end
             end
         end

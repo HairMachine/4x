@@ -1,21 +1,59 @@
 local locations = require 'locations'
 
 local data = {
-    grunter = {name = "Grunters", tile = "monster", speed = 1, attack = 1, hp = 2, team = 2, moved = 0, class = "Sieger", actions = {}},
-    soldier = {name = "Plainsman Soldiers", tile = "army", speed = 1, attack = 1, hp = 5, team = 1, moved = 0, class = "Skirmisher", actions = {}},
-    sapper = {name = "Plainsman Sappers", tile = "army", speed = 1, attack = 1, hp = 5, team = 1, moved = 0, class = "Sieger", actions = {}},
-    guard = {name = "Plainsman Guards", tile = "army", speed = 1, attack = 1, hp = 5, team = 1, moved = 0, class = "Defender", actions = {}},
-    doom_guard = {name = "Doom Guards", tile = "monster", speed  = 1, attack = 2, team = 2, hp = 10, moved = 0, class = "Defender", actions = {}},
-    elf = {name = "Elven Warriors", tile = "army", speed = 1, attack = 8, hp = 2, team = 1, moved = 0, class = "Defender", actions = {}},
-    elf_skirmisher = {name = "Elven Skirmisher", tile = "army", speed = 1, attack = 8, hp = 2, team = 1, moved = 0, class = "Skirmisher", actions = {}},
-    dwarf = {name = "Dwarven Stalwarts", tile = "army", speed = 1, attack = 1, hp = 10, team = 1, moved = 0, class = "Defender", actions = {}},
-    dwarf_sapper = {name = "Dwarven Sappers", tile = "army", speed = 1, attack = 1, hp = 10, team = 1, moved = 0, class = "Sieger", actions = {}},
-    barbarian = {name = "Barbarian Raiders", tile = "army", speed = 1, attack = 3, hp = 5, team = 1, moved = 0, class = "Skirmisher", actions = {}},
-    barbarian_sacker = {name = "Barbarian Sackers", tile = "army", speed = 1, attack = 3, hp = 5, team = 1, moved = 0, class = "Sieger", actions = {}},
-    sage = {name = "Sage", tile = "army", speed = 1, attack = 1, hp = 1, team = 1, moved = 0, class = "Special", actions = {}},
-    hero = {name = "Hero", tile = "hero", speed = 1, attack = 5, hp = 10, team = 1, moved = 0, class = "Hero", actions = {
-        {name = "Build", action = "build"}
-    }}
+    grunter = {
+        name = "Grunters", tile = "monster", speed = 1, attack = 1, hp = 2, team = 2, moved = 0, class = "Sieger", actions = {}, 
+        allowedTiles = {"grass", "ore", "crystal"}
+    },
+    soldier = {
+        name = "Plainsman Soldiers", tile = "army", speed = 1, attack = 1, hp = 5, team = 1, moved = 0, class = "Skirmisher", actions = {},
+        allowedTiles = {"grass", "ore", "crystal"}
+    },
+    sapper = {
+        name = "Plainsman Sappers", tile = "army", speed = 1, attack = 1, hp = 5, team = 1, moved = 0, class = "Sieger", actions = {},
+        allowedTiles = {"grass", "ore", "crystal"}
+    },
+    guard = {
+        name = "Plainsman Guards", tile = "army", speed = 1, attack = 1, hp = 5, team = 1, moved = 0, class = "Defender", actions = {},
+        allowedTiles = {"grass", "ore", "crystal"}
+    },
+    doom_guard = {
+        name = "Doom Guards", tile = "monster", speed  = 1, attack = 2, team = 2, hp = 10, moved = 0, class = "Defender", actions = {},
+        allowedTiles = {"grass", "ore", "crystal"}
+    },
+    elf = {
+        name = "Elven Warriors", tile = "army", speed = 1, attack = 8, hp = 2, team = 1, moved = 0, class = "Defender", actions = {},
+        allowedTiles = {"grass", "ore", "crystal", "forest"}
+    },
+    elf_skirmisher = {
+        name = "Elven Skirmisher", tile = "army", speed = 1, attack = 8, hp = 2, team = 1, moved = 0, class = "Skirmisher", actions = {},
+        allowedTiles = {"grass", "ore", "crystal", "forest"}
+    },
+    dwarf = {
+        name = "Dwarven Stalwarts", tile = "army", speed = 1, attack = 1, hp = 10, team = 1, moved = 0, class = "Defender", actions = {},
+        allowedTiles = {"grass", "ore", "crystal", "mountain"}
+    },
+    dwarf_sapper = {
+        name = "Dwarven Sappers", tile = "army", speed = 1, attack = 1, hp = 10, team = 1, moved = 0, class = "Sieger", actions = {},
+        allowedTiles = {"grass", "ore", "crystal", "mountain"}
+    },
+    barbarian = {
+        name = "Barbarian Raiders", tile = "army", speed = 1, attack = 3, hp = 5, team = 1, moved = 0, class = "Skirmisher", actions = {},
+        allowedTiles = {"grass", "ore", "crystal", "tundra"}
+    },
+    barbarian_sacker = {
+        name = "Barbarian Sackers", tile = "army", speed = 1, attack = 3, hp = 5, team = 1, moved = 0, class = "Sieger", actions = {},
+        allowedTiles = {"grass", "ore", "crystal", "tundra"}
+    },
+    sage = {
+        name = "Sage", tile = "army", speed = 1, attack = 1, hp = 1, team = 1, moved = 0, class = "Special", actions = {},
+        allowedTiles = {"grass", "ore", "crystal", "tundra"}
+    },
+    hero = {
+        name = "Hero", tile = "hero", speed = 1, attack = 5, hp = 10, team = 1, moved = 0, class = "Hero", actions = {
+            {name = "Build", action = "build"}
+        }, allowedTiles = {"grass", "ore", "crystal"}
+    }
 }
 
 local units = {}
@@ -168,6 +206,13 @@ local function swapSidesRandom(otherTeam)
     return true
 end
 
+local function tileIsAllowed(unit, tile)
+    for k, e in pairs(unit.allowedTiles) do
+        if e == tile then return true end
+    end
+    return false
+end
+
 return {
     get = get,
     add = add,
@@ -177,5 +222,6 @@ return {
     getClosestUnit = getClosestUnit,
     getClosestUnitWithinRange = getClosestUnitWithinRange,
     spawnByLocType = spawnByLocType,
-    swapSidesRandom = swapSidesRandom
+    swapSidesRandom = swapSidesRandom,
+    tileIsAllowed = tileIsAllowed
 }
