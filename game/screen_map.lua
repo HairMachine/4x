@@ -269,6 +269,7 @@ local buttonActions = {
             locations.setCurrentBuildingTile(x, y, map[y][x].tile)
             ScreenSwitch("build")
             targeter.clear()
+            SelectNextHero()
         end
     end,
     buildTower = function()
@@ -376,7 +377,6 @@ local function mousepressed(x, y, button, istouch, presses)
             if x > ACTIONSTARTX and x < ACTIONSTARTX + ACTIONSIZEX and y > ACTIONSTARTY and y < ACTIONSTARTY + ACTIONSIZEY then
                 units.get()[targeter.getUnit()].moved = 1
                 buttonActions[e.action](units.get()[targeter.getUnit()])
-                SelectNextHero()
             end
         end
     end
