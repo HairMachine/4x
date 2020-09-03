@@ -1,9 +1,9 @@
-local ui = require 'ui_manager'
-local spells = require 'spells'
-local locations = require 'locations'
-local units = require 'units'
-local resources = require 'resources'
-local targeter = require 'targeter'
+local ui = require 'modules/ui_manager'
+local spells = require 'modules/spells'
+local locations = require 'modules/locations'
+local units = require 'modules/units'
+local resources = require 'modules/resources'
+local targeter = require 'modules/targeter'
 
 local tiles = {
     grass = love.graphics.newImage("assets/grass.png"),

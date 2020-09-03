@@ -1,4 +1,4 @@
-local resources = require 'resources'
+local resources = require 'modules/resources'
 
 local locations = {}
 

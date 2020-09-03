@@ -1,5 +1,5 @@
-local units = require 'units'
-local locations = require 'locations'
+local units = require 'modules/units'
+local locations = require 'modules/locations'
 
 local map = {}
 local unit = 0

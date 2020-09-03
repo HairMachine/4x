@@ -1,7 +1,7 @@
-local locations = require 'locations'
-local ui = require 'ui_manager'
-local units = require 'units'
-local resources = require 'resources'
+local locations = require 'modules/locations'
+local ui = require 'modules/ui_manager'
+local units = require 'modules/units'
+local resources = require 'modules/resources'
 
 local buttonActions = {
     none = function() end,

@@ -1,5 +1,5 @@
-local ui = require 'ui_manager'
-local spells = require 'spells'
+local ui = require 'modules/ui_manager'
+local spells = require 'modules/spells'
 
 local buttons = {
     end_phase = {x = 600, y = 100, width = 100, height = 50, text = "OK", action = "endTurn", visible = 0}

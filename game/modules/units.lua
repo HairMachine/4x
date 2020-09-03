@@ -1,4 +1,4 @@
-local locations = require 'locations'
+local locations = require 'modules/locations'
 
 local data = {
     grunter = {

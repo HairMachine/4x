@@ -1,6 +1,6 @@
-local ui = require 'ui_manager'
-local spells = require 'spells'
-local resources = require 'resources'
+local ui = require 'modules/ui_manager'
+local spells = require 'modules/spells'
+local resources = require 'modules/resources'
 
 local errorBox = false
 local errorText = ""

@@ -1,10 +1,10 @@
 local screens = {
-    research = require 'screen_research',
-    cast = require 'screen_cast',
-    build = require 'screen_build',
-    map = require 'screen_map',
-    win = require 'screen_win',
-    lose = require 'screen_lose'
+    research = require 'screens/screen_research',
+    cast = require 'screens/screen_cast',
+    build = require 'screens/screen_build',
+    map = require 'screens/screen_map',
+    win = require 'screens/screen_win',
+    lose = require 'screens/screen_lose'
 }
 
 local screen = "null"
