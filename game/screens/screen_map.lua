@@ -49,23 +49,19 @@ local function TileAlignmentChange()
     end
 end
 
+local function SelectNextHero()
+    for k, e in pairs(units.get()) do
+        if e.type == "hero" and e.moved == 0 then
+            targeter.setUnit(k)
+            targeter.setType("move")
+            targeter.setMap(e.x, e.y, e.speed, false)
+            return
+        end
+    end
+end
+
 local spellActions = {
     none = function() end,
-    phase_tower = function()
-        targeter.setSpellMap(2, false)
-        targeter.callback = function(x, y)
-            locations.get()[1].x = x
-            locations.get()[1].y = y
-            -- Update the engineer's location ref
-            for k, e in pairs(units.get()) do
-                if e.type == "engineer" then
-                    e.parent.x = x
-                    e.parent.y = y
-                end
-            end
-            targeter.clear()
-        end
-    end,
     lightning_bolt = function()
         targeter.setSpellMap(3, true)
         targeter.callback = function(x, y)
@@ -93,17 +89,6 @@ local function caveSpawnTimerTargetSet()
         caveSpawnTimerTarget = caveSpawned * 3
     else
         caveSpawnTimerTarget = 10000 -- essentially forever
-    end
-end
-
-local function SelectNextHero()
-    for k, e in pairs(units.get()) do
-        if e.type == "hero" and e.moved == 0 then
-            targeter.setUnit(k)
-            targeter.setType("move")
-            targeter.setMap(e.x, e.y, e.speed, false)
-            return
-        end
     end
 end
 
@@ -236,12 +221,13 @@ local function EndTurn()
     if spells.getLearning() == "none" and #spells.researchable > 0 then
         ScreenSwitch("research")
     end
+    -- Start turn
+    SelectNextHero()
+
     if spells.cast() then
         spellActions[spells.getCasting().key]()
         spells.stopCasting()
     end
-    -- Start turn
-    SelectNextHero()
 end
 
 local buttonActions = {
