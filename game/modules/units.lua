@@ -1,4 +1,7 @@
 local locations = require 'modules/locations'
+local animation = require 'modules/animation'
+local commands = require 'modules/commands'
+local resources = require 'modules/resources'
 
 local data = {
     grunter = {
@@ -62,6 +65,33 @@ local function get()
     return units
 end
 
+local function setIdleAnimation(unit)
+    if unit.animation then
+        animation.clear(unit.animation)
+    end
+    unit.animation = animation.add(true, {
+        {tile = unit.tile, x = unit.x * 32, y =  unit.y * 32, tics = 15},
+        {tile = unit.tile, x = unit.x * 32, y =  unit.y * 32 - 5, tics = 15}
+    })
+end
+
+local function setMoveAnimation(unit, oldx, newx, oldy, newy)
+    if unit.animation then
+        animation.clear(unit.animation)
+    end
+    local animationData = {}
+    local xdiff = 0
+    local ydiff = 0
+    local xanim = (newx - oldx) * 2
+    local yanim = (newy - oldy) * 2
+    for i = 1, 16 do
+        xdiff = xdiff + xanim
+        ydiff = ydiff + yanim
+        table.insert(animationData, {tile = unit.tile, x = oldx * 32 + xdiff, y =  oldy * 32 + ydiff, tics = 2})
+    end
+    unit.animation = animation.add(false, animationData)
+end
+
 local function add(type, x, y, parent)
     local newunit = {}
     for k, p in pairs(data[type]) do
@@ -72,6 +102,9 @@ local function add(type, x, y, parent)
     newunit.y = y
     newunit.parent = parent
     table.insert(units, newunit)
+
+    -- Create animation data
+    setIdleAnimation(newunit)
 end
 
 local function spawnByLocType(parent)
@@ -113,9 +146,33 @@ local function remove()
             if units[i].parent ~= nil then
                 spawnByLocType(units[i].parent)
             end
+            -- Special case: give back a command point if a hero died
+            if units[i].type == "hero" then
+                resources.spendCommandPoints(-1)
+            end
+            animation.clear(units[i].animation)
             table.remove(units, i)
         end
     end
+end
+
+local function move(unit, x, y)
+    local oldx = unit.x
+    local oldy = unit.y
+    unit.moved = 1
+    unit.x = x
+    unit.y = y
+    commands.new(function(params)
+        if params.started == false then
+            setMoveAnimation(params.unit, oldx, params.x, oldy, params.y)
+            params.started = true
+        end
+        if animation.get(params.unit.animation) == nil then
+            setIdleAnimation(unit)
+            return true
+        end
+        return false
+    end, {unit = unit, started = false, x = x, y = y})
 end
 
 local function atPos(x, y)
@@ -223,5 +280,7 @@ return {
     getClosestUnitWithinRange = getClosestUnitWithinRange,
     spawnByLocType = spawnByLocType,
     swapSidesRandom = swapSidesRandom,
-    tileIsAllowed = tileIsAllowed
+    tileIsAllowed = tileIsAllowed,
+    setIdleAnimation = setIdleAnimation,
+    move = move
 }

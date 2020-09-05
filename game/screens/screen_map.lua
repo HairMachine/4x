@@ -1,28 +1,13 @@
+local tiles = require 'modules/tiledata'
 local ui = require 'modules/ui_manager'
 local spells = require 'modules/spells'
 local locations = require 'modules/locations'
 local units = require 'modules/units'
 local resources = require 'modules/resources'
+local animation = require 'modules/animation'
 local targeter = require 'modules/targeter'
+local commands = require 'modules/commands'
 
-local tiles = {
-    grass = love.graphics.newImage("assets/grass.png"),
-    cave = love.graphics.newImage("assets/cave.png"),
-    city = love.graphics.newImage("assets/city.png"),
-    monster = love.graphics.newImage("assets/monster.png"),
-    settler = love.graphics.newImage("assets/settler.png"),
-    targeter = love.graphics.newImage("assets/targeter.png"),
-    army = love.graphics.newImage("assets/army.png"),
-    tower = love.graphics.newImage("assets/tower.png"),
-    ore = love.graphics.newImage("assets/ore.png"),
-    crystal = love.graphics.newImage("assets/crystal.png"),
-    water = love.graphics.newImage("assets/water.png"),
-    forest = love.graphics.newImage("assets/forest.png"),
-    mountain = love.graphics.newImage("assets/mountain.png"),
-    tundra = love.graphics.newImage("assets/tundra.png"),
-    ruins = love.graphics.newImage("assets/ruins.png"),
-    hero = love.graphics.newImage("assets/hero.png")
-}
 
 local ACTIONSTARTX = 600
 local ACTIONSTARTY = 200
@@ -174,7 +159,7 @@ local function EndTurn()
     units.remove()
     locations.remove()
     caveSpawnTimerTargetSet()
-    -- Move, my minions!
+    -- Move minions
     for k, e in pairs(units.get()) do
         local target = {name = "None"}
         if e.class == "Sieger" then
@@ -200,8 +185,7 @@ local function EndTurn()
                 local newy = e.y + diry
                 if newx > 0 and newx <= MAPSIZEX and newy > 0 and newy <= MAPSIZEY then
                     if units.tileIsAllowed(e, map[newy][newx].tile) and units.atPos(newx, newy).name == "None" then
-                        e.x = e.x + dirx
-                        e.y = e.y + diry
+                        units.move(e,  e.x + dirx, e.y + diry)
                     end
                 end
             end
@@ -290,10 +274,6 @@ local buttonActions = {
 }
 
 local function load()
-    for k, v in pairs(tiles) do
-        v:setFilter("nearest", "nearest")
-    end
-
     for y = 1, MAPSIZEY do
         map[y] = {}
         for x = 1, MAPSIZEX  do
@@ -362,6 +342,8 @@ end
 local function update()
     -- This just totally sucks, fix it. It's here because of the way building currently works
     TileAlignmentChange()
+    animation.play()
+    commands.run()
 end
 
 local function keypressed(key, scancode, isrepeat)
@@ -369,6 +351,10 @@ local function keypressed(key, scancode, isrepeat)
 end
 
 local function mousepressed(x, y, button, istouch, presses)
+    if commands.running() > 0 then
+        return
+    end
+
     local tilex = math.floor(x / tsize)
     local tiley = math.floor(y / tsize)
 
@@ -406,9 +392,8 @@ local function mousepressed(x, y, button, istouch, presses)
                             return
                         end
                     end
-                    units.get()[targeter.getUnit()].x = tilex
-                    units.get()[targeter.getUnit()].y = tiley
-                    units.get()[targeter.getUnit()].moved = 1
+                    local unitToMove = units.get()[targeter.getUnit()]
+                    units.move(unitToMove, tilex, tiley)
                     targeter.clear()
                     SelectNextHero()
                 elseif targeter.getType() == "spell" then
@@ -430,9 +415,7 @@ local function draw()
         love.graphics.draw(tiles[e.tile], e.x * tsize, e.y * tsize, 0 , 2)
     end
 
-    for k, e in pairs(units.get()) do
-        love.graphics.draw(tiles[e.tile], e.x * tsize, e.y * tsize, 0 , 2)
-    end
+    animation.draw()
 
     for k, e in pairs(targeter.getMap()) do
         if e.x > 0 and e.x <= MAPSIZEX and e.y > 0 and e.y <= MAPSIZEY then
