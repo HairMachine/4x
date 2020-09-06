@@ -82,12 +82,34 @@ local function setMoveAnimation(unit, oldx, newx, oldy, newy)
     local animationData = {}
     local xdiff = 0
     local ydiff = 0
-    local xanim = (newx - oldx) * 2
-    local yanim = (newy - oldy) * 2
-    for i = 1, 16 do
+    local xanim = (newx - oldx) * 4
+    local yanim = (newy - oldy) * 4
+    for i = 1, 8 do
         xdiff = xdiff + xanim
         ydiff = ydiff + yanim
         table.insert(animationData, {tile = unit.tile, x = oldx * 32 + xdiff, y =  oldy * 32 + ydiff, tics = 2})
+    end
+    unit.animation = animation.add(false, animationData)
+end
+
+local function setAttackAnimation(unit, newx, newy)
+    if unit.animation then
+        animation.clear(unit.animation)
+    end
+    local animationData = {}
+    local xdiff = 0
+    local ydiff = 0
+    local xanim = (newx - unit.x) * 8
+    local yanim = (newy - unit.y) * 8
+    for i = 1, 2 do
+       xdiff = xdiff + xanim
+       ydiff = ydiff + yanim 
+       table.insert(animationData, {tile = unit.tile, x = unit.x * 32 + xdiff, y =  unit.y * 32 + ydiff, tics = 2})
+    end
+    for j = 1, 2 do
+        xdiff = xdiff - xanim
+        ydiff = ydiff - yanim
+        table.insert(animationData, {tile = unit.tile, x = unit.x * 32 + xdiff, y =  unit.y * 32 + ydiff, tics = 2})
     end
     unit.animation = animation.add(false, animationData)
 end
@@ -173,6 +195,55 @@ local function move(unit, x, y)
         end
         return false
     end, {unit = unit, started = false, x = x, y = y})
+end
+
+local function fight()
+    for k, atk in pairs(units) do
+        local siegelist = {}
+        for k2, def in pairs(locations.get()) do
+            if def.team ~= atk.team and def.x >= atk.x - 1 and def.x <= atk.x + 1 and def.y >= atk.y - 1 and def.y <= atk.y + 1 then
+                table.insert(siegelist, def)
+            end
+        end
+        if #siegelist > 0 then
+            local sieged = siegelist[love.math.random(1, #siegelist)]
+            sieged.hp = sieged.hp - atk.attack
+            commands.new(function(params) 
+                if params.started == false then
+                    setAttackAnimation(params.unit, params.x, params.y)
+                    params.started = true
+                end
+                if animation.get(params.unit.animation) == nil then
+                    setIdleAnimation(params.unit)
+                    return true
+                end
+                return false
+            end, {unit = atk, started = false, x = sieged.x, y = sieged.y})
+        else
+            local atklist = {}
+            for k2, def in pairs(units) do
+                if def.team ~= atk.team and def.x >= atk.x - 1 and def.x <= atk.x + 1 and def.y >= atk.y - 1 and def.y <= atk.y + 1 then
+                    table.insert(atklist, def)
+                end
+            end
+            if #atklist > 0 then
+                local attacked = atklist[love.math.random(1, #atklist)]
+                attacked.hp = attacked.hp - atk.attack
+                commands.new(function(params) 
+                    if params.started == false then
+                        setAttackAnimation(params.unit, params.x, params.y)
+                        params.started = true
+                    end
+                    if animation.get(params.unit.animation) == nil then
+                        setIdleAnimation(params.unit)
+                        return true
+                    end
+                    return false
+                end, {unit = atk, started = false, x = attacked.x, y = attacked.y})
+                -- TODO: Apply any special attacking effects that this unit might have
+            end
+        end
+    end
 end
 
 local function atPos(x, y)
@@ -282,5 +353,6 @@ return {
     swapSidesRandom = swapSidesRandom,
     tileIsAllowed = tileIsAllowed,
     setIdleAnimation = setIdleAnimation,
-    move = move
+    move = move,
+    fight = fight
 }

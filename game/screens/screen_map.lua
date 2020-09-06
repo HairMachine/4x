@@ -97,53 +97,6 @@ local function EndTurn()
     for k, e in pairs(units.get()) do
         e.moved = 0
     end
-    -- Perform BATTLES!
-    for k, atk in pairs(units.get()) do
-        local siegelist = {}
-        for k2, def in pairs(locations.get()) do
-            if def.team ~= atk.team and def.x >= atk.x - 1 and def.x <= atk.x + 1 and def.y >= atk.y - 1 and def.y <= atk.y + 1 then
-                table.insert(siegelist, def)
-            end
-        end
-        if #siegelist > 0 then
-            local sieged = siegelist[love.math.random(1, #siegelist)]
-            sieged.hp = sieged.hp - atk.attack
-        else
-            local atklist = {}
-            for k2, def in pairs(units.get()) do
-                if def.team ~= atk.team and def.x >= atk.x - 1 and def.x <= atk.x + 1 and def.y >= atk.y - 1 and def.y <= atk.y + 1 then
-                    table.insert(atklist, def)
-                end
-            end
-            if #atklist > 0 then
-                local attacked = atklist[love.math.random(1, #atklist)]
-                attacked.hp = attacked.hp - atk.attack
-                -- TODO: Apply any special attacking effects that this unit might have
-            end
-        end
-    end
-    -- Perform BUILDING EFFECTS
-    for k, l in pairs(locations.get()) do
-        if l.key == "node" or l.key == "tower" then
-            spells.addMP(1)
-        elseif l.key == "dark_fortress" then
-            darkPower = darkPower + 1
-            -- TODO: BAD things happen as dark power goes up!
-        end
-    end
-    -- Check on win conditions!
-    if locations.get()[2].hp <= 0 then
-        ScreenSwitch("win")
-        return
-    end
-    if locations.get()[1].hp <= 0 then
-        ScreenSwitch("lose")
-        return
-    end
-    -- Remove dead things
-    units.remove()
-    locations.remove()
-    caveSpawnTimerTargetSet()
     -- Move minions
     for k, e in pairs(units.get()) do
         local target = {name = "None"}
@@ -169,65 +122,107 @@ local function EndTurn()
                 local newx = e.x + dirx
                 local newy = e.y + diry
                 if newx > 0 and newx <= MAPSIZEX and newy > 0 and newy <= MAPSIZEY then
-                    if units.tileIsAllowed(e, map[newy][newx].tile) and units.atPos(newx, newy).name == "None" then
+                    if units.tileIsAllowed(e, map[newy][newx].tile) and units.atPos(newx, newy).name == "None" and locations.atPos(newx, newy).name == "None" then
                         units.move(e,  e.x + dirx, e.y + diry)
                     end
                 end
             end
         end
     end
-    -- Check for REBELS!
-    local rebelling = true
-    while resources.getAvailableGold() < 0 and rebelling do
-        rebelling = units.swapSidesRandom(2)
+    -- Perform BATTLES!
+    units.fight()
+    -- Perform BUILDING EFFECTS
+    for k, l in pairs(locations.get()) do
+        if l.key == "node" or l.key == "tower" then
+            spells.addMP(1)
+        elseif l.key == "dark_fortress" then
+            darkPower = darkPower + 1
+            -- TODO: BAD things happen as dark power goes up!
+        end
     end
+    -- Check on win conditions!
+    if locations.get()[2].hp <= 0 then
+        ScreenSwitch("win")
+        return
+    end
+    if locations.get()[1].hp <= 0 then
+        ScreenSwitch("lose")
+        return
+    end
+    caveSpawnTimerTargetSet()
+    -- Check for REBELS!
+    commands.new(function(params) 
+        local rebelling = true
+        while resources.getAvailableGold() < 0 and rebelling do
+            rebelling = units.swapSidesRandom(2)
+        end
+        return true
+    end, {})
     -- MAKE MORE CAVES
-    caveSpawnTimer = caveSpawnTimer + 1
-    if caveSpawnTimer >= caveSpawnTimerTarget then
-        -- Create a list of allowed tiles
-        local caveLocs = {}
-        for y = 1, MAPSIZEY do
-            for x = 1, MAPSIZEX do
-                if map[y][x].align == 2 then
-                    table.insert(caveLocs, {x = x, y = y})
+    commands.new(function(params) 
+        caveSpawnTimer = caveSpawnTimer + 1
+        if caveSpawnTimer >= caveSpawnTimerTarget then
+            -- Create a list of allowed tiles
+            local caveLocs = {}
+            for y = 1, MAPSIZEY do
+                for x = 1, MAPSIZEX do
+                    if map[y][x].align == 2 then
+                        table.insert(caveLocs, {x = x, y = y})
+                    end
                 end
             end
-        end
-        if #caveLocs > 0 then
-            -- Chose a random one
-            local loc = caveLocs[love.math.random(1, #caveLocs)]
-            local roll = love.math.random(1, 6)
-            if roll <= 2 then
-                locations.add("cave", loc.x, loc.y, 2)
-                units.add("grunter", loc.x, loc.y, {type = "cave", x = loc.x, y = loc.y})
-            elseif roll <= 4 then
-                locations.add("dark_temple", loc.x, loc.y, 2)
-            else
-                locations.add("fortress", loc.x, loc.y, 2)
-                units.add("doom_guard", loc.x, loc.y, {type = "fortress", x = loc.x, y = loc.y})
+            if #caveLocs > 0 then
+                -- Chose a random one
+                local loc = caveLocs[love.math.random(1, #caveLocs)]
+                local roll = love.math.random(1, 6)
+                if roll <= 2 then
+                    locations.add("cave", loc.x, loc.y, 2)
+                    units.add("grunter", loc.x, loc.y, {type = "cave", x = loc.x, y = loc.y})
+                elseif roll <= 4 then
+                    locations.add("dark_temple", loc.x, loc.y, 2)
+                else
+                    locations.add("fortress", loc.x, loc.y, 2)
+                    units.add("doom_guard", loc.x, loc.y, {type = "fortress", x = loc.x, y = loc.y})
+                end
+                caveSpawnTimer = 0
+                caveSpawnTimerTargetSet()
             end
-            caveSpawnTimer = 0
-            caveSpawnTimerTargetSet()
         end
-    end
+        return true
+    end, {})
+    -- Remove dead
+    commands.new(function(params) 
+        locations.remove()
+        units.remove()
+        return true
+    end, {})
     -- Research spells
-    local researchBonus = 0
-    for k, e in pairs(units.get()) do
-        if e.type == "sage" then
-            researchBonus = researchBonus + 1
+    commands.new(function(params)
+        local researchBonus = 0
+        for k, e in pairs(units.get()) do
+            if e.type == "sage" then
+                researchBonus = researchBonus + 1
+            end
         end
-    end
-    spells.research(researchBonus)
-    if spells.getLearning() == "none" and #spells.researchable > 0 then
-        ScreenSwitch("research")
-    end
+        spells.research(researchBonus)
+        if spells.getLearning() == "none" and #spells.researchable > 0 then
+            ScreenSwitch("research")
+        end
+        return true
+    end, {})
     -- Start turn
-    SelectNextHero()
-
-    if spells.cast() then
-        spellActions[spells.getCasting().key]()
-        spells.stopCasting()
-    end
+    commands.new(function(params) 
+        SelectNextHero()
+        return true
+    end, {})
+    -- Cast spells
+    commands.new(function(params) 
+        if spells.cast() then
+            spellActions[spells.getCasting().key]()
+            spells.stopCasting()
+        end
+        return true
+    end, {})
 end
 
 local buttonActions = {

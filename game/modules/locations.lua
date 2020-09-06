@@ -80,6 +80,15 @@ local function getByCoordinates(x, y)
     return nil
 end
 
+local function atPos(x, y)
+    for k, l in pairs(locations) do
+        if l.x == x and l.y == y then
+            return l
+        end
+    end
+    return {name = "None"}
+end
+
 return {
     add = add,
     get = get,
@@ -88,5 +97,6 @@ return {
     setCurrentBuildingTile = setCurrentBuildingTile,
     getCurrentBuildingTile = getCurrentBuildingTile,
     getAllowedBuildings = getAllowedBuildings,
-    remove = remove
+    remove = remove,
+    atPos = atPos
 }
