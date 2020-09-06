@@ -44,6 +44,17 @@ local function setSpellMap(radius, wizards)
     type = "spell"
 end
 
+local function setBuildMap(x, y, radius)
+    map = {}
+    for xt = x - radius, x + radius do
+        for yt = y - radius, y + radius do
+            if locations.atPos(xt, yt).name == "None" and not(yt == y and xt == x) then
+                table.insert(map, {x = xt, y = yt})
+            end
+        end
+    end 
+end
+
 local function clear()
     map = {}
     unit = 0
@@ -69,6 +80,7 @@ return {
     getMap = getMap,
     setMap = setMap,
     setSpellMap = setSpellMap,
+    setBuildMap = setBuildMap,
     clear = clear,
     callback = callback,
     getType = getType,

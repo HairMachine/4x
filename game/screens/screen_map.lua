@@ -166,7 +166,7 @@ local function EndTurn()
             local caveLocs = {}
             for y = 1, MAPSIZEY do
                 for x = 1, MAPSIZEX do
-                    if map[y][x].align == 2 then
+                    if map[y][x].align == 2 and locations.atPos(x, y).name == "None" then
                         table.insert(caveLocs, {x = x, y = y})
                     end
                 end
@@ -232,7 +232,7 @@ local buttonActions = {
     end,
     build = function(entity)
         -- TODO: Cancelling currently fucks this up, it needs to work better
-        targeter.setMap(entity.x, entity.y, 1, true)
+        targeter.setBuildMap(entity.x, entity.y, 1)
         targeter.setType("spell")
         targeter.callback = function(x, y)
             locations.setCurrentBuildingTile(x, y, map[y][x].tile)
