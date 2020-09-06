@@ -121,10 +121,29 @@ local function EndTurn()
                 if diry < 0 then diry = -1 elseif diry > 0 then diry = 1 end
                 local newx = e.x + dirx
                 local newy = e.y + diry
-                if newx > 0 and newx <= MAPSIZEX and newy > 0 and newy <= MAPSIZEY then
-                    if units.tileIsAllowed(e, map[newy][newx].tile) and units.atPos(newx, newy).name == "None" and locations.atPos(newx, newy).name == "None" then
-                        units.move(e,  e.x + dirx, e.y + diry)
+                local trycount = 0
+                while trycount < 2 do
+                    if newx > 0 and newx <= MAPSIZEX and newy > 0 and newy <= MAPSIZEY then
+                        if units.tileIsAllowed(e, map[newy][newx].tile) and units.atPos(newx, newy).name == "None" and locations.atPos(newx, newy).name == "None" then
+                            units.move(e,  newx, newy)
+                            trycount = 9001
+                        else
+                            if diry ~= 0 then
+                                if trycount == 0 then
+                                    newx = newx + 1
+                                elseif trycount == 1 then
+                                    newx = newx - 2
+                                end
+                            elseif dirx ~= 0 then
+                                if trycount == 0 then
+                                    newy = newy + 1
+                                elseif trycount == 1 then
+                                    newy = newy - 2
+                                end
+                            end
+                        end
                     end
+                    trycount = trycount + 1
                 end
             end
         end
