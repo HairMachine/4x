@@ -112,37 +112,42 @@ local function EndTurn()
                 target.y = e.parent.y
             end
         end
-        if target.name ~= "None" then
+        if target.name ~= "None" and target.x ~= e.x and target.y ~= e.y then
             for i = 1, e.speed do
-                local dirx = target.x - e.x
-                local diry = target.y - e.y
-                if dirx < 0 then dirx = -1 elseif dirx > 0 then dirx = 1 end
-                if diry < 0 then diry = -1 elseif diry > 0 then diry = 1 end
-                local newx = e.x + dirx
-                local newy = e.y + diry
-                local trycount = 0
-                while trycount < 2 do
-                    if newx > 0 and newx <= MAPSIZEX and newy > 0 and newy <= MAPSIZEY then
-                        if units.tileIsAllowed(e, map[newy][newx].tile) and units.atPos(newx, newy).name == "None" and locations.atPos(newx, newy).name == "None" then
-                            units.move(e,  newx, newy)
-                            trycount = 9001
-                        else
-                            if diry ~= 0 then
-                                if trycount == 0 then
-                                    newx = newx + 1
-                                elseif trycount == 1 then
-                                    newx = newx - 2
-                                end
-                            elseif dirx ~= 0 then
-                                if trycount == 0 then
-                                    newy = newy + 1
-                                elseif trycount == 1 then
-                                    newy = newy - 2
-                                end
-                            end
-                        end
+                -- Take distance of all tiles adjacent to the moving unit, store in table
+                local candidateTiles = {}
+                for x = e.x - 1, e.x + 1 do
+                    for y = e.y - 1, e.y + 1 do
+                        table.insert(candidateTiles, {
+                            x = x, 
+                            y = y, 
+                            dist = units.getDistBetween(x, y, target.x, target.y)
+                        })
                     end
-                    trycount = trycount + 1
+                end
+                -- Sort by distance
+                table.sort(candidateTiles, function(left, right)
+                    return left.dist < right.dist
+                end)
+                -- Discard the last three
+                for i = 1, 3 do
+                    table.remove(candidateTiles, #candidateTiles)
+                end
+                -- Discard any that are blocked
+                for j = #candidateTiles, 1, -1 do
+                    local newx = candidateTiles[j].x
+                    local newy = candidateTiles[j].y
+                    if not (newx > 0 and newx <= MAPSIZEX and newy > 0 and newy <= MAPSIZEY) then
+                        table.remove(candidateTiles, j)
+                    elseif not units.tileIsAllowed(e, map[newy][newx].tile) then
+                        table.remove(candidateTiles, j)
+                    elseif units.atPos(newx, newy).name ~= "None" or locations.atPos(newx, newy).name ~= "None" then
+                        table.remove(candidateTiles, j)
+                    end
+                end
+                -- Choose the first as the target tile
+                if candidateTiles[1] then
+                    units.move(e, candidateTiles[1].x, candidateTiles[1].y)
                 end
             end
         end

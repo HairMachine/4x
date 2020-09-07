@@ -361,5 +361,6 @@ return {
     tileIsAllowed = tileIsAllowed,
     setIdleAnimation = setIdleAnimation,
     move = move,
-    fight = fight
+    fight = fight,
+    getDistBetween = getDistBetween
 }
