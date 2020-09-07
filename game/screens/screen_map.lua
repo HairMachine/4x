@@ -114,7 +114,6 @@ local function EndTurn()
         end
         if target.name ~= "None" then
             for i = 1, e.speed do
-                -- TODO: Real path finding when I can be bothered
                 local dirx = target.x - e.x
                 local diry = target.y - e.y
                 if dirx < 0 then dirx = -1 elseif dirx > 0 then dirx = 1 end

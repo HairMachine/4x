@@ -255,12 +255,19 @@ local function atPos(x, y)
     return {name = "None"}
 end
 
+local function getDistBetween(fx, fy, tx, ty)
+    local distx = math.abs(fx - tx)
+    local disty = math.abs(fy - ty)
+    if distx >= disty then tdist = distx else tdist = disty end
+    return tdist
+end
+
 local function getClosestBuilding(unit)
     local mindist = 9001
     local found = {name = "None"}
     for k, u in pairs(locations.get()) do
         if u.team ~= unit.team then
-            local tdist = math.abs(unit.x - u.x) + math.abs(unit.y - u.y)
+            local tdist = getDistBetween(unit.x, unit.y, u.x, u.y)
             if tdist < mindist then
                 mindist = tdist
                 found = u
@@ -282,7 +289,7 @@ local function getClosestUnitWithinRange(unit, range)
                 ty = unit.parent.y
             end
             if math.abs(u.x - tx) <= range and math.abs(u.y - ty) <= range then
-                local tdist = math.abs(unit.x - u.x) + math.abs(unit.y - u.y)
+                local tdist = getDistBetween(unit.x, unit.y, u.x, u.y)
                 if tdist < mindist then
                     mindist = tdist
                     found = u
@@ -298,7 +305,7 @@ local function getClosestUnit(unit)
     local found = {name = "None"}
     for k, u in pairs(units) do
         if u.team ~= unit.team then
-            local tdist = math.abs(unit.x - u.x) + math.abs(unit.y - u.y)
+            local tdist = getDistBetween(unit.x, unit.y, u.x, u.y)
             if tdist < mindist then
                 mindist = tdist
                 found = u
