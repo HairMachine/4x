@@ -1,5 +1,6 @@
 local tiles = require 'modules/tiledata'
 local ui = require 'modules/ui_manager'
+local worldmap = require 'modules/worldmap'
 local spells = require 'modules/spells'
 local locations = require 'modules/locations'
 local units = require 'modules/units'
@@ -7,6 +8,7 @@ local resources = require 'modules/resources'
 local animation = require 'modules/animation'
 local targeter = require 'modules/targeter'
 local commands = require 'modules/commands'
+local dark_power = require 'modules/dark_power'
 
 
 local ACTIONSTARTX = 600
@@ -14,13 +16,7 @@ local ACTIONSTARTY = 200
 local ACTIONSIZEX = 64
 local ACTIONSIZEY = 32
 
-local map = {}
-local MAPSIZEX = 17
-local MAPSIZEY = 17
 local tsize = 32
-
-local caveSpawnTimer = 0
-local caveSpawnTimerTarget = 1
 
 local darkPower = 0
 
@@ -31,17 +27,17 @@ local buttons = {
 }
 
 local function TileAlignmentChange()
-    for y = 1, MAPSIZEY do
-        for x = 1, MAPSIZEX do
-            map[y][x].align = 2
+    for y = 1, worldmap.MAPSIZEY do
+        for x = 1, worldmap.MAPSIZEX do
+            worldmap.map[y][x].align = 2
         end
     end
     for k, l in pairs(locations.get()) do
         if l.team == 1 then
             for xi = l.x - 1, l.x + 1 do
                 for yi = l.y - 1, l.y + 1 do
-                    if xi > 0 and xi <= MAPSIZEX and yi > 0 and yi <= MAPSIZEY then
-                        map[yi][xi].align = 1
+                    if xi > 0 and xi <= worldmap.MAPSIZEX and yi > 0 and yi <= worldmap.MAPSIZEY then
+                        worldmap.map[yi][xi].align = 1
                     end
                 end
             end
@@ -79,18 +75,6 @@ local spellActions = {
         resources.spendCommandPoints(1)
     end
 }
-
-local function caveSpawnTimerTargetSet()
-    local caveSpawned = 0
-    for k, l in pairs(locations.get()) do
-        if l.key == "cave" then caveSpawned = caveSpawned + 1 end
-    end
-    if caveSpawned < 12 then
-        caveSpawnTimerTarget = caveSpawned * 3
-    else
-        caveSpawnTimerTarget = 10000 -- essentially forever
-    end
-end
 
 local function EndTurn()
     targeter.clear()
@@ -137,9 +121,9 @@ local function EndTurn()
                 for j = #candidateTiles, 1, -1 do
                     local newx = candidateTiles[j].x
                     local newy = candidateTiles[j].y
-                    if not (newx > 0 and newx <= MAPSIZEX and newy > 0 and newy <= MAPSIZEY) then
+                    if not (newx > 0 and newx <= worldmap.MAPSIZEX and newy > 0 and newy <= worldmap.MAPSIZEY) then
                         table.remove(candidateTiles, j)
-                    elseif not units.tileIsAllowed(e, map[newy][newx].tile) then
+                    elseif not units.tileIsAllowed(e, worldmap.map[newy][newx].tile) then
                         table.remove(candidateTiles, j)
                     elseif units.atPos(newx, newy).name ~= "None" or locations.atPos(newx, newy).name ~= "None" then
                         table.remove(candidateTiles, j)
@@ -172,7 +156,6 @@ local function EndTurn()
         ScreenSwitch("lose")
         return
     end
-    caveSpawnTimerTargetSet()
     -- Check for REBELS!
     commands.new(function(params) 
         local rebelling = true
@@ -183,34 +166,7 @@ local function EndTurn()
     end, {})
     -- MAKE MORE CAVES
     commands.new(function(params) 
-        caveSpawnTimer = caveSpawnTimer + 1
-        if caveSpawnTimer >= caveSpawnTimerTarget then
-            -- Create a list of allowed tiles
-            local caveLocs = {}
-            for y = 1, MAPSIZEY do
-                for x = 1, MAPSIZEX do
-                    if map[y][x].align == 2 and locations.atPos(x, y).name == "None" then
-                        table.insert(caveLocs, {x = x, y = y})
-                    end
-                end
-            end
-            if #caveLocs > 0 then
-                -- Chose a random one
-                local loc = caveLocs[love.math.random(1, #caveLocs)]
-                local roll = love.math.random(1, 6)
-                if roll <= 2 then
-                    locations.add("cave", loc.x, loc.y, 2)
-                    units.add("grunter", loc.x, loc.y, {type = "cave", x = loc.x, y = loc.y})
-                elseif roll <= 4 then
-                    locations.add("dark_temple", loc.x, loc.y, 2)
-                else
-                    locations.add("fortress", loc.x, loc.y, 2)
-                    units.add("doom_guard", loc.x, loc.y, {type = "fortress", x = loc.x, y = loc.y})
-                end
-                caveSpawnTimer = 0
-                caveSpawnTimerTargetSet()
-            end
-        end
+        dark_power.advancePlot()
         return true
     end, {})
     -- Remove dead
@@ -258,7 +214,7 @@ local buttonActions = {
         targeter.setBuildMap(entity.x, entity.y, 1)
         targeter.setType("spell")
         targeter.callback = function(x, y)
-            locations.setCurrentBuildingTile(x, y, map[y][x].tile)
+            locations.setCurrentBuildingTile(x, y, worldmap.map[y][x].tile)
             ScreenSwitch("build")
             targeter.clear()
             SelectNextHero()
@@ -267,7 +223,7 @@ local buttonActions = {
     buildTower = function()
         targeter.setSpellMap(2, false)
         targeter.callback = function(x, y)
-            locations.setCurrentBuildingTile(x, y, map[y][x].tile)
+            locations.setCurrentBuildingTile(x, y, worldmap.map[y][x].tile)
             ScreenSwitch("build")
             targeter.clear()
         end
@@ -278,28 +234,28 @@ local buttonActions = {
 }
 
 local function load()
-    for y = 1, MAPSIZEY do
-        map[y] = {}
-        for x = 1, MAPSIZEX  do
-            if x == 1 or y == 1 or x == MAPSIZEX or y == MAPSIZEY then
-                map[y][x] = {tile = "water", align = 2}
-            elseif (x == 2 or y == 2 or x ==  MAPSIZEX - 1 or y == MAPSIZEY - 1) and love.math.random(1, 10) >= 7 then
-                map[y][x] = {tile = "water", align = 2}
+    for y = 1, worldmap.MAPSIZEY do
+        worldmap.map[y] = {}
+        for x = 1, worldmap.MAPSIZEX  do
+            if x == 1 or y == 1 or x == worldmap.MAPSIZEX or y == worldmap.MAPSIZEY then
+                worldmap.map[y][x] = {tile = "water", align = 2}
+            elseif (x == 2 or y == 2 or x ==  worldmap.MAPSIZEX - 1 or y == worldmap.MAPSIZEY - 1) and love.math.random(1, 10) >= 7 then
+                worldmap.map[y][x] = {tile = "water", align = 2}
             else 
-                map[y][x] = {tile = "grass", align = 2}
+                worldmap.map[y][x] = {tile = "grass", align = 2}
             end
         end
     end
     for c = 1, 10 do
-        map[love.math.random(2, MAPSIZEY - 1)][love.math.random(2, MAPSIZEX - 1)].tile = "mountain"
-        map[love.math.random(2, MAPSIZEY - 1)][love.math.random(2, MAPSIZEX - 1)].tile = "ruins"
-        map[love.math.random(2, MAPSIZEY - 1)][love.math.random(2, MAPSIZEX - 1)].tile = "tundra"
-        map[love.math.random(2, MAPSIZEY - 1)][love.math.random(2, MAPSIZEX - 1)].tile = "forest"
+        worldmap.map[love.math.random(2, worldmap.MAPSIZEY - 1)][love.math.random(2, worldmap.MAPSIZEX - 1)].tile = "mountain"
+        worldmap.map[love.math.random(2, worldmap.MAPSIZEY - 1)][love.math.random(2, worldmap.MAPSIZEX - 1)].tile = "ruins"
+        worldmap.map[love.math.random(2, worldmap.MAPSIZEY - 1)][love.math.random(2, worldmap.MAPSIZEX - 1)].tile = "tundra"
+        worldmap.map[love.math.random(2, worldmap.MAPSIZEY - 1)][love.math.random(2, worldmap.MAPSIZEX - 1)].tile = "forest"
     end
     -- Area around the tower is cleared of any doohickies
-    map[2][2] = {tile = "grass"}
-    map[3][2] = {tile = "grass"}
-    map[2][3] = {tile = "grass"}
+    worldmap.map[2][2] = {tile = "grass"}
+    worldmap.map[3][2] = {tile = "grass"}
+    worldmap.map[2][3] = {tile = "grass"}
 
     -- Make crystal and gold, evenly spaced
     local til = "ore"
@@ -311,7 +267,7 @@ local function load()
             if xoffs == 0 and yoffs == 0 and x == 0 and y == 0 then
                 xoffs = xoffs + 1
             end
-            map[y * 3 + yoffs + 2][x * 3 + xoffs + 2].tile = til
+            worldmap.map[y * 3 + yoffs + 2][x * 3 + xoffs + 2].tile = til
             if til == "ore" then til = "crystal" else til = "ore" end
         end
     end
@@ -324,13 +280,13 @@ local function load()
     units.add("hero", 2, 2)
     
     -- The DARK TOWER!
-    map[MAPSIZEX - 1][MAPSIZEX - 1] = {tile = "grass"}
-    map[MAPSIZEX - 2][MAPSIZEX - 1] = {tile = "grass"}
-    map[MAPSIZEX - 1][MAPSIZEX - 2] = {tile = "grass"}
-    locations.add("dark_tower", MAPSIZEX - 1, MAPSIZEY - 1, 2)
-    units.add("doom_guard", MAPSIZEX - 1, MAPSIZEY - 2, {x = MAPSIZEX - 1, y = MAPSIZEY - 2, "null"})
-    units.add("doom_guard", MAPSIZEX - 2, MAPSIZEY - 2, {x = MAPSIZEX - 2, y = MAPSIZEY - 2, "null"})
-    units.add("doom_guard", MAPSIZEX - 2, MAPSIZEY - 1, {x = MAPSIZEX - 2, y = MAPSIZEY - 1, "null"})
+    worldmap.map[worldmap.MAPSIZEX - 1][worldmap.MAPSIZEX - 1] = {tile = "grass"}
+    worldmap.map[worldmap.MAPSIZEX - 2][worldmap.MAPSIZEX - 1] = {tile = "grass"}
+    worldmap.map[worldmap.MAPSIZEX - 1][worldmap.MAPSIZEX - 2] = {tile = "grass"}
+    locations.add("dark_tower", worldmap.MAPSIZEX - 1, worldmap.MAPSIZEY - 1, 2)
+    units.add("doom_guard", worldmap.MAPSIZEX - 1, worldmap.MAPSIZEY - 2, {x = worldmap.MAPSIZEX - 1, y = worldmap.MAPSIZEY - 2, "null"})
+    units.add("doom_guard", worldmap.MAPSIZEX - 2, worldmap.MAPSIZEY - 2, {x = worldmap.MAPSIZEX - 2, y = worldmap.MAPSIZEY - 2, "null"})
+    units.add("doom_guard", worldmap.MAPSIZEX - 2, worldmap.MAPSIZEY - 1, {x = worldmap.MAPSIZEX - 2, y = worldmap.MAPSIZEY - 1, "null"})
     
     -- Set tile alignments
     TileAlignmentChange()
@@ -387,7 +343,7 @@ local function mousepressed(x, y, button, istouch, presses)
 
     -- Clicking on a targeter
     for k, e in pairs(targeter.getMap()) do
-        if e.x > 0 and e.x <= MAPSIZEX and e.y > 0 and e.y <= MAPSIZEY then
+        if e.x > 0 and e.x <= worldmap.MAPSIZEX and e.y > 0 and e.y <= worldmap.MAPSIZEY then
             if e.x == tilex and e.y == tiley then
                 if targeter.getType() == "move" then
                     -- check if a unit is on this tile
@@ -409,9 +365,9 @@ local function mousepressed(x, y, button, istouch, presses)
 end
 
 local function draw()
-    for y = 1, MAPSIZEY do
-        for x = 1, MAPSIZEX do
-            love.graphics.draw(tiles[map[y][x].tile], x * tsize, y * tsize, 0, 2)
+    for y = 1, worldmap.MAPSIZEY do
+        for x = 1, worldmap.MAPSIZEX do
+            love.graphics.draw(tiles[worldmap.map[y][x].tile], x * tsize, y * tsize, 0, 2)
         end
     end
 
@@ -422,15 +378,15 @@ local function draw()
     animation.draw()
 
     for k, e in pairs(targeter.getMap()) do
-        if e.x > 0 and e.x <= MAPSIZEX and e.y > 0 and e.y <= MAPSIZEY then
+        if e.x > 0 and e.x <= worldmap.MAPSIZEX and e.y > 0 and e.y <= worldmap.MAPSIZEY then
             love.graphics.draw(tiles.targeter, e.x * tsize, e.y * tsize, 0, 2)
         end
     end
 
     love.graphics.setColor(0, 0, 0, 0.3)
-    for y = 1, MAPSIZEY do
-        for x = 1, MAPSIZEX do
-            if map[y][x].align == 2 then
+    for y = 1, worldmap.MAPSIZEY do
+        for x = 1, worldmap.MAPSIZEX do
+            if worldmap.map[y][x].align == 2 then
                 love.graphics.rectangle("fill", x * tsize, y * tsize, tsize, tsize)
             end
         end
@@ -450,9 +406,17 @@ local function draw()
         end
     end
 
-    love.graphics.print("Command Points: "..resources.getCommandPoints(), ACTIONSTARTX, 500)
-    love.graphics.print("Available Budget: "..resources.getAvailableGold(), ACTIONSTARTX, 532)
-    love.graphics.print("Magic Points: "..spells.getMP(), ACTIONSTARTX, 564)
+    love.graphics.print("Command Points: "..resources.getCommandPoints(), ACTIONSTARTX, 400)
+    love.graphics.print("Available Budget: "..resources.getAvailableGold(), ACTIONSTARTX, 432)
+    love.graphics.print("Magic Points: "..spells.getMP(), ACTIONSTARTX, 464)
+
+    -- Dark power display
+    if dark_power.plot.name ~= "None" then
+        love.graphics.print("Current plot: "..dark_power.plot.name, ACTIONSTARTX, 500)
+        love.graphics.print("Plot progress: "..dark_power.getPower().."/"..dark_power.plot.target, ACTIONSTARTX, 532)
+        -- TODO: PLOT graphic!
+        love.graphics.draw(tiles.targeter, dark_power.plot.x * tsize, dark_power.plot.y * tsize, 0, 2)
+    end
 end
 
 return {
