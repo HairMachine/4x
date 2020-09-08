@@ -31,7 +31,7 @@ local function SelectNextHero()
         if e.type == "hero" and e.moved == 0 then
             targeter.setUnit(k)
             targeter.setType("move")
-            targeter.setMap(e.x, e.y, e.speed, false)
+            targeter.setMoveMap(e.x, e.y, e.speed)
             return
         end
     end
@@ -315,7 +315,7 @@ local function mousepressed(x, y, button, istouch, presses)
         if e.type == "hero" and e.moved == 0 and e.x == tilex and e.y == tiley then
             targeter.setUnit(k)
             targeter.setType("move")
-            targeter.setMap(e.x, e.y, e.speed, false)
+            targeter.setMoveMap(e.x, e.y, e.speed)
             return
         end
     end
