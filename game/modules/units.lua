@@ -156,6 +156,8 @@ local function spawnByLocType(parent)
                 add("sage", parent.x, parent.y, parent)
             elseif parent.type == "barbarian_village" then
                 add("barbarian", parent.x, parent.y, parent)
+            elseif parent.type == "raider_camp" then
+                add("barbarian_sacker", parent.x, parent.y, parent)
             end
         end
     end
