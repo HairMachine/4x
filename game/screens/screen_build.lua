@@ -2,6 +2,7 @@ local locations = require 'modules/locations'
 local ui = require 'modules/ui_manager'
 local units = require 'modules/units'
 local resources = require 'modules/resources'
+local worldmap = require 'modules/worldmap'
 
 local buttonActions = {
     none = function() end,
@@ -40,6 +41,7 @@ local function mousepressed(x, y, button, istouch, presses)
                 locations.add(l.key, ctile.x, ctile.y, 1)
                 units.spawnByLocType({type = l.key, x = ctile.x, y = ctile.y})
                 resources.spendGold(l.cost)
+                worldmap.tileAlignmentChange()
                 ScreenSwitch("map")
             end
         end
