@@ -23,7 +23,6 @@ local darkPower = 0
 local buttons = {
     cast_spell = {x = 600, y = 50, width = 100, height = 32, text = "Cast Spell", action = "startCast", visible = 1},
     end_phase = {x = 600, y = 100, width = 100, height = 50, text = "End Phase", action = "endTurn", visible = 1},
-    --build = {x = 600, y = 150, width = 100, height = 32, text = "Build", action = "buildTower", visible = 1}
 }
 
 local function SelectNextHero()
@@ -197,16 +196,7 @@ local buttonActions = {
         targeter.callback = function(x, y)
             locations.setCurrentBuildingTile(x, y, worldmap.map[y][x].tile)
             ScreenSwitch("build")
-            targeter.clear()
             SelectNextHero()
-        end
-    end,
-    buildTower = function()
-        targeter.setSpellMap(2, false)
-        targeter.callback = function(x, y)
-            locations.setCurrentBuildingTile(x, y, worldmap.map[y][x].tile)
-            ScreenSwitch("build")
-            targeter.clear()
         end
     end,
     startCast = function()
@@ -286,7 +276,9 @@ local function update()
 end
 
 local function keypressed(key, scancode, isrepeat)
-    
+    if key == "escape" then
+        targeter.clear()
+    end
 end
 
 local function mousepressed(x, y, button, istouch, presses)
@@ -304,7 +296,6 @@ local function mousepressed(x, y, button, istouch, presses)
     if targeter.getUnit() > 0 and units.get()[targeter.getUnit()].moved == 0 then
         for k, e in pairs(units.get()[targeter.getUnit()].actions) do
             if x > ACTIONSTARTX and x < ACTIONSTARTX + ACTIONSIZEX and y > ACTIONSTARTY and y < ACTIONSTARTY + ACTIONSIZEY then
-                units.get()[targeter.getUnit()].moved = 1
                 buttonActions[e.action](units.get()[targeter.getUnit()])
             end
         end

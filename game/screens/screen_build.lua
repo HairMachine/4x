@@ -3,6 +3,7 @@ local ui = require 'modules/ui_manager'
 local units = require 'modules/units'
 local resources = require 'modules/resources'
 local worldmap = require 'modules/worldmap'
+local targeter = require 'modules/targeter'
 
 local buttonActions = {
     none = function() end,
@@ -42,6 +43,8 @@ local function mousepressed(x, y, button, istouch, presses)
                 units.spawnByLocType({type = l.key, x = ctile.x, y = ctile.y})
                 resources.spendGold(l.cost)
                 worldmap.tileAlignmentChange()
+                units.get()[targeter.getUnit()].moved = 1
+                targeter.clear()
                 ScreenSwitch("map")
             end
         end
