@@ -23,13 +23,13 @@ local function choosePlot()
     local r = love.math.random(1, 100)
     if r < 50 then
         plot.name = "Cave"
-        plot.target = 10
+        plot.target = 20
     elseif r < 80 then
         plot.name = "Dark Temple"
-        plot.target = 15
+        plot.target = 25
     else
         plot.name = "Fortress"
-        plot.target = 10
+        plot.target = 20
     end
     local caveLocs = {}
     for y = 1, worldmap.MAPSIZEY do
