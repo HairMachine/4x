@@ -2,6 +2,7 @@ local screens = {
     research = require 'screens/screen_research',
     cast = require 'screens/screen_cast',
     build = require 'screens/screen_build',
+    inventory = require 'screens/screen_inventory',
     map = require 'screens/screen_map',
     win = require 'screens/screen_win',
     lose = require 'screens/screen_lose'

@@ -2,6 +2,7 @@ local locations = require 'modules/locations'
 local animation = require 'modules/animation'
 local commands = require 'modules/commands'
 local resources = require 'modules/resources'
+local items = require 'modules/items'
 
 local data = {
     grunter = {
@@ -114,15 +115,25 @@ local function setAttackAnimation(unit, newx, newy)
     unit.animation = animation.add(false, animationData)
 end
 
-local function add(type, x, y, parent)
+local function add(t, x, y, parent)
     local newunit = {}
-    for k, p in pairs(data[type]) do
-        newunit[k] = p
+    for k, p in pairs(data[t]) do
+        if type(p) == "table" then
+            newunit[k] = {}
+            for k2, p2 in pairs(p) do
+                newunit[k][k2] = p2
+            end
+        else
+            newunit[k] = p
+        end
     end
-    newunit.type = type
+    newunit.type = t
     newunit.x = x
     newunit.y = y
     newunit.parent = parent
+    if newunit.type == "hero" then
+        newunit.slots = {weapon = {name = ""}, armour = {name = ""}, utility = {name = ""}}
+    end
     table.insert(units, newunit)
 
     -- Create animation data
@@ -209,8 +220,9 @@ local function fight()
         end
         if #siegelist > 0 then
             local sieged = siegelist[love.math.random(1, #siegelist)]
-            sieged.hp = sieged.hp - atk.attack
-            commands.new(function(params) 
+            local bonus = items.getEffects(atk.items, "demolishing")
+            sieged.hp = sieged.hp - (atk.attack + bonus)
+            commands.new(function(params)
                 if params.started == false then
                     setAttackAnimation(params.unit, params.x, params.y)
                     params.started = true
@@ -230,8 +242,10 @@ local function fight()
             end
             if #atklist > 0 then
                 local attacked = atklist[love.math.random(1, #atklist)]
-                attacked.hp = attacked.hp - atk.attack
-                commands.new(function(params) 
+                local damage = (atk.attack + items.getEffects(atk.items, "slaying")) - items.getEffects(attacked.items, "defence")
+                if damage < 0 then damage = 0 end
+                attacked.hp = attacked.hp - damage
+                commands.new(function(params)
                     if params.started == false then
                         setAttackAnimation(params.unit, params.x, params.y)
                         params.started = true
@@ -243,6 +257,11 @@ local function fight()
                     return false
                 end, {unit = atk, started = false, x = attacked.x, y = attacked.y})
                 -- TODO: Apply any special attacking effects that this unit might have
+                if attacked.hp <= 0 and (atk.class == "Skirmisher" or atk.class == "Hero") then
+                    if love.math.random(1, 3) == 3 then
+                        items.generate()
+                    end
+                end
             end
         end
     end

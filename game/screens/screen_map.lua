@@ -9,7 +9,7 @@ local animation = require 'modules/animation'
 local targeter = require 'modules/targeter'
 local commands = require 'modules/commands'
 local dark_power = require 'modules/dark_power'
-
+local items = require 'modules/items'
 
 local ACTIONSTARTX = 600
 local ACTIONSTARTY = 200
@@ -21,8 +21,9 @@ local tsize = 32
 local darkPower = 0
 
 local buttons = {
-    cast_spell = {x = 600, y = 50, width = 100, height = 32, text = "Cast Spell", action = "startCast", visible = 1},
-    end_phase = {x = 600, y = 100, width = 100, height = 50, text = "End Phase", action = "endTurn", visible = 1},
+    inventory = {x = 600, y = 50, width = 100, height = 32, text = "Items", action = "showInventory", visible = 1},
+    cast_spell = {x = 600, y = 100, width = 100, height = 32, text = "Cast Spell", action = "startCast", visible = 1},
+    end_phase = {x = 600, y = 150, width = 100, height = 32, text = "End Phase", action = "endTurn", visible = 1},
 }
 
 local function SelectNextHero()
@@ -60,6 +61,11 @@ local function EndTurn()
     targeter.clear()
     for k, e in pairs(units.get()) do
         e.moved = 0
+    end
+    -- Convert Rebels!
+    local rebelling = true
+    while resources.getAvailableGold() < 0 and rebelling do
+        rebelling = units.swapSidesRandom(2)
     end
     -- Move minions
     for k, e in pairs(units.get()) do
@@ -118,41 +124,52 @@ local function EndTurn()
     end
     -- Perform BATTLES!
     units.fight()
-    -- Perform BUILDING EFFECTS
-    for k, l in pairs(locations.get()) do
-        if l.key == "node" or l.key == "tower" then
-            spells.addMP(1)
-        elseif l.key == "dark_fortress" then
-            darkPower = darkPower + 1
-            -- TODO: BAD things happen as dark power goes up!
-        end
-    end
     -- Check on win conditions!
-    if locations.get()[2].hp <= 0 then
-        ScreenSwitch("win")
-        return
-    end
-    if locations.get()[1].hp <= 0 then
-        ScreenSwitch("lose")
-        return
-    end
-    -- Check for REBELS!
-    commands.new(function(params) 
-        local rebelling = true
-        while resources.getAvailableGold() < 0 and rebelling do
-            rebelling = units.swapSidesRandom(2)
+    commands.new(function(params)
+        if locations.get()[2].hp <= 0 then
+            ScreenSwitch("win")
+            return
+        end
+        if locations.get()[1].hp <= 0 then
+            ScreenSwitch("lose")
+            return
         end
         return true
     end, {})
-    -- MAKE MORE CAVES
-    commands.new(function(params) 
-        dark_power.advancePlot()
+    -- Show items
+    commands.new(function(params)
+        local dropped = items.getDropped()
+        for k, i in pairs(dropped) do
+            -- TODO: A UI. I guess we can stack the windows directly on top of each other and make sure the code returns from click
+            -- immediately after a button is pressed; a better method is actually having some proper UI abstraction we can use that
+            -- isn't a screen
+            print(i.name.." dropped!")
+            items.addToInventory(i)
+            items.removeFromDropped(k)
+        end
         return true
     end, {})
     -- Remove dead
     commands.new(function(params) 
         locations.remove()
         units.remove()
+        return true
+    end, {})
+    -- Perform BUILDING EFFECTS
+    commands.new(function(params)
+        for k, l in pairs(locations.get()) do
+            if l.key == "node" or l.key == "tower" then
+                spells.addMP(1)
+            elseif l.key == "dark_fortress" then
+                darkPower = darkPower + 1
+                -- TODO: BAD things happen as dark power goes up!
+            end
+        end
+        return true
+    end, {})
+    -- MAKE MORE CAVES
+    commands.new(function(params) 
+        dark_power.advancePlot()
         return true
     end, {})
     -- Research spells
@@ -201,6 +218,9 @@ local buttonActions = {
     end,
     startCast = function()
         ScreenSwitch("cast")
+    end,
+    showInventory = function()
+        ScreenSwitch("inventory")
     end
 }
 
