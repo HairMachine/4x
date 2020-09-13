@@ -22,7 +22,7 @@ local function tileAlignmentChange()
         end
     end
     -- Check for enclosed areas
-    -- First, find all the "free" dark tiles - these are the ones that don't have lighted tiles on 3 of their orthogonal directions
+    -- First, find all the "free" dark tiles - these are tiles that have any two opposite othogonal directions free of any lighted tiles
     local freemap = {}
     for y = 1, MAPSIZEY do
         freemap[y] = {}
