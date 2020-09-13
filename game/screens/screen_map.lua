@@ -67,7 +67,7 @@ local function EndTurn()
     while resources.getAvailableGold() < 0 and rebelling do
         rebelling = units.swapSidesRandom(2)
     end
-    -- Move minions
+    -- Move minions (+ pathfinding)
     for k, e in pairs(units.get()) do
         local target = {name = "None"}
         if e.class == "Sieger" then
@@ -111,13 +111,16 @@ local function EndTurn()
                         table.remove(candidateTiles, j)
                     elseif not units.tileIsAllowed(e, worldmap.map[newy][newx].tile) then
                         table.remove(candidateTiles, j)
-                    elseif units.atPos(newx, newy).name ~= "None" or locations.atPos(newx, newy).name ~= "None" then
+                    elseif locations.atPos(newx, newy).name ~= "None" then
                         table.remove(candidateTiles, j)
                     end
                 end
                 -- Choose the first as the target tile
                 if candidateTiles[1] then
-                    units.move(e, candidateTiles[1].x, candidateTiles[1].y)
+                    -- Units don't block candidate tile selection, but units can't walk into them
+                    if units.atPos(candidateTiles[1].x, candidateTiles[1].y).name == "None" then
+                        units.move(e, candidateTiles[1].x, candidateTiles[1].y)
+                    end
                 end
             end
         end

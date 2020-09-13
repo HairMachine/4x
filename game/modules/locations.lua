@@ -3,7 +3,7 @@ local resources = require 'modules/resources'
 local locations = {}
 
 local data =  {
-    cave = {key = "cave", name = "Cave", tile = "cave", allowedTiles = {}, cost = 0, hp = 10, maxHp = 5},
+    cave = {key = "cave", name = "Cave", tile = "cave", allowedTiles = {}, cost = 0, hp = 10, maxHp = 10},
     dark_temple = {key = "dark_temple", name = "Dark Temple", tile = "tower", allowedTiles = {}, cost = 0, hp = 10, maxHp = 10},
     fortress = {key = "fortress", name = "Fortress", tile = "cave", allowedTiles = {}, cost = 0, hp = 10, maxHp = 10},
     tower = {key = "tower", name = "Wizard's Tower", tile = "tower", allowedTiles = {}, cost = 0, hp = 10, maxHp = 10},
