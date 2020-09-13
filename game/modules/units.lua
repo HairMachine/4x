@@ -131,6 +131,7 @@ local function add(t, x, y, parent)
     newunit.x = x
     newunit.y = y
     newunit.parent = parent
+    newunit.maxHp = newunit.hp
     if newunit.type == "hero" then
         newunit.slots = {weapon = {name = ""}, armour = {name = ""}, utility = {name = ""}}
     end
@@ -355,7 +356,7 @@ local function swapSidesRandom(otherTeam)
         -- Destroy this unit's parent, if there is one
         if list[r].parent.x and list[r].parent.y then
             local l = locations.getByCoordinates(list[r].parent.x, list[r].parent.y)
-            l.hp = 0
+            if l then l.hp = 0 end
             locations.remove()
         end
     end

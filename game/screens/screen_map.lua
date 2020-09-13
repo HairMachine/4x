@@ -365,14 +365,7 @@ local function draw()
         love.graphics.draw(tiles[e.tile], e.x * tsize, e.y * tsize, 0 , 2)
     end
 
-    animation.draw()
-
-    for k, e in pairs(targeter.getMap()) do
-        if e.x > 0 and e.x <= worldmap.MAPSIZEX and e.y > 0 and e.y <= worldmap.MAPSIZEY then
-            love.graphics.draw(tiles.targeter, e.x * tsize, e.y * tsize, 0, 2)
-        end
-    end
-
+    -- Shadow for Dark /Chaotic areas
     love.graphics.setColor(0, 0, 0, 0.3)
     for y = 1, worldmap.MAPSIZEY do
         for x = 1, worldmap.MAPSIZEX do
@@ -382,6 +375,26 @@ local function draw()
         end
     end
     love.graphics.setColor(1, 1, 1, 1)
+
+    animation.draw()
+
+    -- Health bars
+    love.graphics.setColor(0, 1, 0, 1)
+    for k, u in pairs(units.get()) do
+        local length = math.floor(u.hp / u.maxHp * 32)
+        love.graphics.rectangle("fill", u.x * 32, u.y * 32 + 30, length, 2)
+    end
+    for k, l in pairs(locations.get()) do
+        local length = math.floor(l.hp / l.maxHp * 32)
+        love.graphics.rectangle("fill", l.x * 32, l.y * 32 + 30, length, 2)
+    end
+    love.graphics.setColor(1, 1, 1, 1)
+
+    for k, e in pairs(targeter.getMap()) do
+        if e.x > 0 and e.x <= worldmap.MAPSIZEX and e.y > 0 and e.y <= worldmap.MAPSIZEY then
+            love.graphics.draw(tiles.targeter, e.x * tsize, e.y * tsize, 0, 2)
+        end
+    end
 
     -- UI
     love.graphics.print("Currently casting: "..spells.getCasting().name, ACTIONSTARTX, 0)
