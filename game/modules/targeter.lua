@@ -60,7 +60,7 @@ local function setMoveMap(x, y, radius)
     map = {}
     for xt = x - radius, x + radius do
         for yt = y - radius, y + radius do
-            if not(yt == y and xt == x) and units.tileIsAllowed(units.get()[unit], worldmap.map[yt][xt].tile) then
+            if not(yt == y and xt == x) and units.tileIsAllowed(units.get()[unit], worldmap.map[yt][xt].tile) and units.atPos(xt, yt).name == "None" then
                 table.insert(map, {x = xt, y = yt})
             end
         end
