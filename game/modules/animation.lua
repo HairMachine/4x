@@ -1,4 +1,5 @@
 local tiles = require 'modules/tiledata'
+local camera = require 'modules/camera'
 
 local animations = {}
 
@@ -18,7 +19,9 @@ end
 
 local function draw()
     for k, a in pairs(animations) do
-        love.graphics.draw(tiles[a.frames[a.frame].tile], a.frames[a.frame].x, a.frames[a.frame].y, 0, 2)
+        if camera.isInView(a.frames[a.frame].x, a.frames[a.frame].y) then
+            love.graphics.draw(tiles[a.frames[a.frame].tile], camera.adjustX(a.frames[a.frame].x), camera.adjustY(a.frames[a.frame].y), 0, 2)
+        end
     end
 end
 

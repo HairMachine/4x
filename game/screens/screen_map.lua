@@ -10,6 +10,12 @@ local targeter = require 'modules/targeter'
 local commands = require 'modules/commands'
 local dark_power = require 'modules/dark_power'
 local items = require 'modules/items'
+local camera = require 'modules/camera'
+
+local screen = {
+    width = 800,
+    height = 600
+}
 
 local ACTIONSTARTX = 600
 local ACTIONSTARTY = 200
@@ -245,6 +251,9 @@ local buttonActions = {
 }
 
 local function load()
+    camera.setSize(600, 600)
+
+    -- Generate map
     for y = 1, worldmap.MAPSIZEY do
         worldmap.map[y] = {}
         for x = 1, worldmap.MAPSIZEX  do
@@ -313,6 +322,20 @@ end
 local function update()
     animation.play()
     commands.run()
+    -- Move camera
+    x, y = love.mouse.getPosition()
+    if x > screen.width - 5 then
+        camera.move(8, 0)
+    end
+    if y > screen.height - 5 then
+        camera.move(0, 8)
+    end
+    if x < 5 then
+        camera.move(-8, 0)
+    end
+    if y < 5 then
+        camera.move(0, -8)
+    end
 end
 
 local function keypressed(key, scancode, isrepeat)
@@ -326,8 +349,9 @@ local function mousepressed(x, y, button, istouch, presses)
         return
     end
 
-    local tilex = math.floor(x / tsize)
-    local tiley = math.floor(y / tsize)
+    local c = camera.get()
+    local tilex = math.floor((x + c.x) / tsize)
+    local tiley = math.floor((y + c.y) / tsize)
 
     -- Clicking on a button!
     buttonActions[ui.click(buttons, x, y)]()
@@ -377,20 +401,24 @@ end
 local function draw()
     for y = 1, worldmap.MAPSIZEY do
         for x = 1, worldmap.MAPSIZEX do
-            love.graphics.draw(tiles[worldmap.map[y][x].tile], x * tsize, y * tsize, 0, 2)
+            if camera.isInView(x * tsize, y * tsize) then
+                love.graphics.draw(tiles[worldmap.map[y][x].tile], camera.adjustX(x * tsize), camera.adjustY(y * tsize), 0, 2)
+            end
         end
     end
 
     for k, e in pairs(locations.get()) do
-        love.graphics.draw(tiles[e.tile], e.x * tsize, e.y * tsize, 0 , 2)
+        if camera.isInView(e.x * tsize, e.y * tsize) then
+            love.graphics.draw(tiles[e.tile], camera.adjustX(e.x * tsize), camera.adjustY(e.y * tsize), 0 , 2)
+        end
     end
 
     -- Shadow for Dark /Chaotic areas
     love.graphics.setColor(0, 0, 0, 0.3)
     for y = 1, worldmap.MAPSIZEY do
         for x = 1, worldmap.MAPSIZEX do
-            if worldmap.map[y][x].align == 2 then
-                love.graphics.rectangle("fill", x * tsize, y * tsize, tsize, tsize)
+            if worldmap.map[y][x].align == 2 and camera.isInView(x * tsize, y * tsize) then
+                love.graphics.rectangle("fill", camera.adjustX(x * tsize), camera.adjustY(y * tsize), tsize, tsize)
             end
         end
     end
@@ -401,18 +429,24 @@ local function draw()
     -- Health bars
     love.graphics.setColor(0, 1, 0, 1)
     for k, u in pairs(units.get()) do
-        local length = math.floor(u.hp / u.maxHp * 32)
-        love.graphics.rectangle("fill", u.x * 32, u.y * 32 + 30, length, 2)
+        if camera.isInView(u.x * tsize, u.y * tsize) then
+            local length = math.floor(u.hp / u.maxHp * tsize)
+            love.graphics.rectangle("fill", camera.adjustX(u.x * tsize), camera.adjustY(u.y * 32 + tsize - 2), length, 2)
+        end
     end
     for k, l in pairs(locations.get()) do
-        local length = math.floor(l.hp / l.maxHp * 32)
-        love.graphics.rectangle("fill", l.x * 32, l.y * 32 + 30, length, 2)
+        if camera.isInView(l.x * tsize, l.y * tsize) then
+            local length = math.floor(l.hp / l.maxHp * 32)
+            love.graphics.rectangle("fill", camera.adjustX(l.x * tsize), camera.adjustY(l.y * tsize + tsize - 2), length, 2)
+        end
     end
     love.graphics.setColor(1, 1, 1, 1)
 
     for k, e in pairs(targeter.getMap()) do
-        if e.x > 0 and e.x <= worldmap.MAPSIZEX and e.y > 0 and e.y <= worldmap.MAPSIZEY then
-            love.graphics.draw(tiles.targeter, e.x * tsize, e.y * tsize, 0, 2)
+        if camera.isInView(e.x * tsize, e.y * tsize) then
+            if e.x > 0 and e.x <= worldmap.MAPSIZEX and e.y > 0 and e.y <= worldmap.MAPSIZEY then
+                love.graphics.draw(tiles.targeter, camera.adjustX(e.x * tsize), camera.adjustY(e.y * tsize), 0, 2)
+            end
         end
     end
 
@@ -438,7 +472,9 @@ local function draw()
         love.graphics.print("Current plot: "..dark_power.plot.name, ACTIONSTARTX, 500)
         love.graphics.print("Plot progress: "..dark_power.getPower().."/"..dark_power.plot.target, ACTIONSTARTX, 532)
         -- TODO: PLOT graphic!
-        love.graphics.draw(tiles.targeter, dark_power.plot.x * tsize, dark_power.plot.y * tsize, 0, 2)
+        if camera.isInView(dark_power.plot.x * tsize, dark_power.plot.y * tsize) then
+            love.graphics.draw(tiles.targeter, camera.adjustX(dark_power.plot.x * tsize), camera.adjustY(dark_power.plot.y * tsize), 0, 2)
+        end
     end
 end
 
