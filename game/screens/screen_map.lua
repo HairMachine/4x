@@ -165,7 +165,6 @@ local function EndTurn()
                 spells.addMP(1)
             elseif l.key == "dark_fortress" then
                 darkPower = darkPower + 1
-                -- TODO: BAD things happen as dark power goes up!
             end
         end
         return true
@@ -186,6 +185,25 @@ local function EndTurn()
         spells.research(researchBonus)
         if spells.getLearning() == "none" and #spells.researchable > 0 then
             ScreenSwitch("research")
+        end
+        return true
+    end, {})
+    -- Regenerate health
+    commands.new(function(params) 
+        for k, u in pairs(units.get()) do
+            if u.class == "Hero" then
+                if u.hp < u.maxHp then
+                    if u.regen == nil then
+                        u.regen = 0
+                    else
+                        u.regen = u.regen + 1
+                    end
+                    if u.regen >= 5 then
+                        u.hp = u.hp +  1
+                        u.regen = 0
+                    end
+                end
+            end
         end
         return true
     end, {})
