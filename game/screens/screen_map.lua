@@ -23,7 +23,7 @@ local darkPower = 0
 local buttons = {
     inventory = {x = 600, y = 50, width = 100, height = 32, text = "Items", action = "showInventory", visible = 1},
     cast_spell = {x = 600, y = 100, width = 100, height = 32, text = "Cast Spell", action = "startCast", visible = 1},
-    end_phase = {x = 600, y = 150, width = 100, height = 32, text = "End Phase", action = "endTurn", visible = 1},
+    end_phase = {x = 600, y = 150, width = 100, height = 32, text = "End Turn", action = "endTurn", visible = 1},
 }
 
 local function SelectNextHero()
