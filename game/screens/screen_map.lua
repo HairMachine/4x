@@ -216,7 +216,6 @@ local buttonActions = {
         targeter.callback = function(x, y)
             locations.setCurrentBuildingTile(x, y, worldmap.map[y][x].tile)
             ScreenSwitch("build")
-            SelectNextHero()
         end
     end,
     startCast = function()
