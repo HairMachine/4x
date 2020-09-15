@@ -266,7 +266,7 @@ local function load()
             end
         end
     end
-    for c = 1, 10 do
+    for c = 1, math.floor(worldmap.MAPSIZEX + worldmap.MAPSIZEY / 2) do
         worldmap.map[love.math.random(2, worldmap.MAPSIZEY - 1)][love.math.random(2, worldmap.MAPSIZEX - 1)].tile = "mountain"
         worldmap.map[love.math.random(2, worldmap.MAPSIZEY - 1)][love.math.random(2, worldmap.MAPSIZEX - 1)].tile = "ruins"
         worldmap.map[love.math.random(2, worldmap.MAPSIZEY - 1)][love.math.random(2, worldmap.MAPSIZEX - 1)].tile = "tundra"
@@ -279,15 +279,17 @@ local function load()
 
     -- Make crystal and gold, evenly spaced
     local til = "ore"
-    for y = 0, 4 do
-        for x = 0, 4 do
+    for y = 0, math.floor(worldmap.MAPSIZEY / 3) - 1  do
+        for x = 0,  math.floor(worldmap.MAPSIZEX / 3) - 1 do
             local xoffs = love.math.random(0, 2)
             local yoffs = love.math.random(0, 2)
             -- Annoying hack to stop gold appearing on the tower tile - will have to be improved
             if xoffs == 0 and yoffs == 0 and x == 0 and y == 0 then
                 xoffs = xoffs + 1
             end
-            worldmap.map[y * 3 + yoffs + 2][x * 3 + xoffs + 2].tile = til
+            local yp = y * 3 + yoffs + 2
+            local xp = x * 3 + xoffs + 2
+            worldmap.map[yp][xp].tile = til
             if til == "ore" then til = "crystal" else til = "ore" end
         end
     end
