@@ -6,57 +6,53 @@ local items = require 'modules/items'
 
 local data = {
     grunter = {
-        name = "Grunters", tile = "monster", speed = 1, attack = 1, hp = 2, team = 2, moved = 0, class = "Sieger", actions = {}, 
+        name = "Grunters", tile = "monster", speed = 1, attack = 1, hp = 2, team = 2, moved = 0, class = "Sieger", actions = {}, range = 5,
         allowedTiles = {"grass", "ore", "crystal"}
     },
     soldier = {
-        name = "Plainsman Soldiers", tile = "army", speed = 1, attack = 1, hp = 5, team = 1, moved = 0, class = "Skirmisher", actions = {},
+        name = "Plainsman Soldiers", tile = "army", speed = 1, attack = 1, hp = 5, team = 1, moved = 0, class = "Skirmisher", actions = {}, range = 5,
         allowedTiles = {"grass", "ore", "crystal"}
     },
     sapper = {
-        name = "Plainsman Sappers", tile = "army", speed = 1, attack = 1, hp = 5, team = 1, moved = 0, class = "Sieger", actions = {},
+        name = "Plainsman Sappers", tile = "army", speed = 1, attack = 1, hp = 5, team = 1, moved = 0, class = "Sieger", actions = {}, range = 5,
         allowedTiles = {"grass", "ore", "crystal"}
     },
     guard = {
-        name = "Plainsman Guards", tile = "army", speed = 1, attack = 1, hp = 5, team = 1, moved = 0, class = "Defender", actions = {},
+        name = "Plainsman Guards", tile = "army", speed = 1, attack = 1, hp = 5, team = 1, moved = 0, class = "Defender", actions = {}, range = 3,
         allowedTiles = {"grass", "ore", "crystal"}
     },
     doom_guard = {
-        name = "Doom Guards", tile = "monster", speed  = 1, attack = 2, team = 2, hp = 10, moved = 0, class = "Defender", actions = {},
+        name = "Doom Guards", tile = "monster", speed  = 1, attack = 2, team = 2, hp = 10, moved = 0, class = "Defender", actions = {}, range = 3,
         allowedTiles = {"grass", "ore", "crystal"}
     },
     elf = {
-        name = "Elven Warriors", tile = "army", speed = 1, attack = 8, hp = 2, team = 1, moved = 0, class = "Defender", actions = {},
+        name = "Elven Warriors", tile = "army", speed = 1, attack = 8, hp = 2, team = 1, moved = 0, class = "Defender", actions = {}, range = 3,
         allowedTiles = {"grass", "ore", "crystal", "forest"}
     },
     elf_skirmisher = {
-        name = "Elven Skirmisher", tile = "army", speed = 1, attack = 8, hp = 2, team = 1, moved = 0, class = "Skirmisher", actions = {},
+        name = "Elven Skirmisher", tile = "army", speed = 1, attack = 8, hp = 2, team = 1, moved = 0, class = "Skirmisher", actions = {}, range = 5,
         allowedTiles = {"grass", "ore", "crystal", "forest"}
     },
     dwarf = {
-        name = "Dwarven Stalwarts", tile = "army", speed = 1, attack = 1, hp = 10, team = 1, moved = 0, class = "Defender", actions = {},
+        name = "Dwarven Stalwarts", tile = "army", speed = 1, attack = 1, hp = 10, team = 1, moved = 0, class = "Defender", actions = {}, range = 2,
         allowedTiles = {"grass", "ore", "crystal", "mountain"}
     },
     dwarf_sapper = {
-        name = "Dwarven Sappers", tile = "army", speed = 1, attack = 1, hp = 10, team = 1, moved = 0, class = "Sieger", actions = {},
+        name = "Dwarven Sappers", tile = "army", speed = 1, attack = 1, hp = 10, team = 1, moved = 0, class = "Sieger", actions = {}, range = 4,
         allowedTiles = {"grass", "ore", "crystal", "mountain"}
     },
     barbarian = {
-        name = "Barbarian Raiders", tile = "army", speed = 1, attack = 3, hp = 5, team = 1, moved = 0, class = "Skirmisher", actions = {},
+        name = "Barbarian Raiders", tile = "army", speed = 1, attack = 3, hp = 5, team = 1, moved = 0, class = "Skirmisher", actions = {}, range = 6,
         allowedTiles = {"grass", "ore", "crystal", "tundra"}
     },
     barbarian_sacker = {
-        name = "Barbarian Sackers", tile = "army", speed = 1, attack = 3, hp = 5, team = 1, moved = 0, class = "Sieger", actions = {},
-        allowedTiles = {"grass", "ore", "crystal", "tundra"}
-    },
-    sage = {
-        name = "Sage", tile = "army", speed = 1, attack = 1, hp = 1, team = 1, moved = 0, class = "Special", actions = {},
+        name = "Barbarian Sackers", tile = "army", speed = 1, attack = 3, hp = 5, team = 1, moved = 0, class = "Sieger", actions = {}, range = 6,
         allowedTiles = {"grass", "ore", "crystal", "tundra"}
     },
     hero = {
         name = "Hero", tile = "hero", speed = 1, attack = 5, hp = 10, team = 1, moved = 0, class = "Hero", actions = {
             {name = "Build", action = "build"}
-        }, allowedTiles = {"grass", "ore", "crystal"}
+        }, range = 0, allowedTiles = {"grass", "ore", "crystal"}
     }
 }
 
@@ -299,6 +295,29 @@ local function getClosestBuilding(unit)
     return found
 end
 
+local function getClosestBuildingWithinRange(unit, range)
+    local mindist = 9001
+    local found = {name = "None"}
+    for k, u in pairs(locations.get()) do
+        if u.team ~= unit.team then
+            local tx = unit.x
+            local ty = unit.y
+            if unit.parent.x and unit.parent.y then
+                tx = unit.parent.x
+                ty = unit.parent.y
+            end
+            if math.abs(u.x - tx) <= range and math.abs(u.y - ty) <= range then
+                local tdist = getDistBetween(unit.x, unit.y, u.x, u.y)
+                if tdist < mindist then
+                    mindist = tdist
+                    found = u
+                end
+            end
+        end
+    end
+    return found
+end
+
 local function getClosestUnitWithinRange(unit, range)
     local mindist = 9001
     local found = {name = "None"}
@@ -377,6 +396,7 @@ return {
     atPos = atPos,
     getClosestBuilding = getClosestBuilding,
     getClosestUnit = getClosestUnit,
+    getClosestBuildingWithinRange = getClosestBuildingWithinRange,
     getClosestUnitWithinRange = getClosestUnitWithinRange,
     spawnByLocType = spawnByLocType,
     swapSidesRandom = swapSidesRandom,

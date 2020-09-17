@@ -77,11 +77,9 @@ local function EndTurn()
     for k, e in pairs(units.get()) do
         local target = {name = "None"}
         if e.class == "Sieger" then
-            target = units.getClosestBuilding(e)
-        elseif e.class == "Skirmisher" then
-            target = units.getClosestUnit(e)
-        elseif e.class == "Defender" then
-            target = units.getClosestUnitWithinRange(e, 3)
+            target = units.getClosestBuildingWithinRange(e, e.range)
+        elseif e.class == "Skirmisher" or e.class == "Defender" then
+            target = units.getClosestUnitWithinRange(e, e.range)
             if target.name == "None" and (target.x ~= e.parent.x or target.y ~= e.parent.y) then
                 target.name = "Home"
                 target.x = e.parent.x
