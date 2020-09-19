@@ -300,9 +300,9 @@ local function load()
     units.add("hero", 2, 2)
     
     -- The DARK TOWER!
-    worldmap.map[worldmap.MAPSIZEX - 1][worldmap.MAPSIZEX - 1] = {tile = "grass"}
-    worldmap.map[worldmap.MAPSIZEX - 2][worldmap.MAPSIZEX - 1] = {tile = "grass"}
-    worldmap.map[worldmap.MAPSIZEX - 1][worldmap.MAPSIZEX - 2] = {tile = "grass"}
+    worldmap.map[worldmap.MAPSIZEY - 1][worldmap.MAPSIZEX - 1] = {tile = "grass"}
+    worldmap.map[worldmap.MAPSIZEY - 2][worldmap.MAPSIZEX - 1] = {tile = "grass"}
+    worldmap.map[worldmap.MAPSIZEY - 1][worldmap.MAPSIZEX - 2] = {tile = "grass"}
     locations.add("dark_tower", worldmap.MAPSIZEX - 1, worldmap.MAPSIZEY - 1, 2)
     units.add("doom_guard", worldmap.MAPSIZEX - 1, worldmap.MAPSIZEY - 2, {x = worldmap.MAPSIZEX - 1, y = worldmap.MAPSIZEY - 2, "null"})
     units.add("doom_guard", worldmap.MAPSIZEX - 2, worldmap.MAPSIZEY - 2, {x = worldmap.MAPSIZEX - 2, y = worldmap.MAPSIZEY - 2, "null"})
