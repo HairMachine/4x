@@ -10,12 +10,13 @@ local data = {
     none = {name = "", key = "", castCost = 0, researchCost = 0},
     phase_tower = {name = "Phase Tower", key = "phase_tower", castCost = 10, researchCost = 0},
     lightning_bolt = {name = "Lighting Bolt", key = "lightning_bolt", castCost = 5, researchCost = 100},
-    summon_hero = {name = "Summon Hero", key = "summon_hero", castCost = 30, researchCost = 0},
+    summon_hero = {name = "Summon Hero", key = "summon_hero", castCost = 30, researchCost = 150},
+    terraform = {name = "Terraform", key = "terraform", castCost = 5, researchCost = 50}
 }
 
-local known = {"summon_hero"}
+local known = {}
 
-local researchable = {"lightning_bolt"}
+local researchable = {"lightning_bolt", "summon_hero", "terraform"}
 
 local function startLearning(spell) 
     learning = spell

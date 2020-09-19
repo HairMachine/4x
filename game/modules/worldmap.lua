@@ -2,7 +2,7 @@ local locations = require 'modules/locations'
 
 local map = {}
 local MAPSIZEX = 50
-local MAPSIZEY = 50
+local MAPSIZEY = 7
 
 local function tileAlignmentChange()
     for y = 1, MAPSIZEY do

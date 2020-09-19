@@ -20,7 +20,8 @@ local data =  {
     barbarian_village = {key = "barbarian_village", name = "Barbarian Village", tile = "city", allowedTiles = {"tundra"}, cost = 3, hp = 5, maxHp = 5},
     raider_camp = {key = "raider_camp", name = "Raider Camp", tile = "city", allowedTiles = {"tundra"}, cost = 3, hp = 5, maxHp = 5},
     shipyard = {key = "shipyard", name = "Shipyard", tile = "city", allowedTiles = {"water"}, cost = 2, hp = 5, maxHp = 5},
-    sage_guild = {key = "sage_guild", name = "Sage Guild", tile = "city", allowedTiles = {"ruins"}, cost = 5, hp = 1, maxHp = 5},
+    sage_guild = {key = "sage_guild", name = "Sage Guild", tile = "city", allowedTiles = {"ruins"}, cost = 5, hp = 5, maxHp = 5},
+    hq = {key = "hq", name = "HQ", tile = "tower", allowedTiles = {"grass"}, cost = 10, hp = 10, maxHp = 10}
 }
 
 local currentBuildingTile = {tile = "grass", x = 1, y = 1}
@@ -34,6 +35,10 @@ local function add(type, x, y, team)
     loc.y = y
     loc.team = team
     table.insert(locations, loc)
+    -- special building effects
+    if loc.key == "hq" then
+        resources.spendCommandPoints(-1)
+    end
 end
 
 local function get()
@@ -68,6 +73,10 @@ local function remove()
     for i = #locations, 1, -1 do
         if locations[i].hp <= 0 then
             resources.spendGold(-locations[i].cost)
+            -- special building effects
+            if locations[i].key == "hq" then
+                resources.spendCommandPoints(1)
+            end
             table.remove(locations, i)
         end
     end

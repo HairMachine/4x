@@ -6,53 +6,53 @@ local items = require 'modules/items'
 
 local data = {
     grunter = {
-        name = "Grunters", tile = "monster", speed = 1, attack = 1, hp = 2, team = 2, moved = 0, class = "Sieger", actions = {}, range = 5,
-        allowedTiles = {"grass", "ore", "crystal"}
+        name = "Grunters", tile = "monster", speed = 1, attack = 1, hp = 2, team = 2, moved = 0, class = "Sieger", actions = {}, range = 10,
+        allowedTiles = {"grass", "ore", "crystal", "forest", "tundra", "ruins"}
     },
     soldier = {
-        name = "Plainsman Soldiers", tile = "army", speed = 1, attack = 1, hp = 5, team = 1, moved = 0, class = "Skirmisher", actions = {}, range = 5,
-        allowedTiles = {"grass", "ore", "crystal"}
+        name = "Plainsman Soldiers", tile = "army", speed = 1, attack = 1, hp = 5, team = 1, moved = 0, class = "Skirmisher", actions = {}, range = 10,
+        allowedTiles = {"grass", "ore", "crystal", "forest", "tundra", "ruins"}
     },
     sapper = {
-        name = "Plainsman Sappers", tile = "army", speed = 1, attack = 1, hp = 5, team = 1, moved = 0, class = "Sieger", actions = {}, range = 5,
-        allowedTiles = {"grass", "ore", "crystal"}
+        name = "Plainsman Sappers", tile = "army", speed = 1, attack = 1, hp = 5, team = 1, moved = 0, class = "Sieger", actions = {}, range = 10,
+        allowedTiles = {"grass", "ore", "crystal", "forest", "tundra", "ruins"}
     },
     guard = {
-        name = "Plainsman Guards", tile = "army", speed = 1, attack = 1, hp = 5, team = 1, moved = 0, class = "Defender", actions = {}, range = 3,
-        allowedTiles = {"grass", "ore", "crystal"}
+        name = "Plainsman Guards", tile = "army", speed = 1, attack = 1, hp = 5, team = 1, moved = 0, class = "Defender", actions = {}, range = 6,
+        allowedTiles = {"grass", "ore", "crystal", "forest", "tundra", "ruins"}
     },
     doom_guard = {
-        name = "Doom Guards", tile = "monster", speed  = 1, attack = 2, team = 2, hp = 10, moved = 0, class = "Defender", actions = {}, range = 3,
-        allowedTiles = {"grass", "ore", "crystal"}
+        name = "Doom Guards", tile = "monster", speed  = 1, attack = 2, team = 2, hp = 10, moved = 0, class = "Defender", actions = {}, range = 6,
+        allowedTiles = {"grass", "ore", "crystal", "forest", "tundra", "ruins"}
     },
     elf = {
-        name = "Elven Warriors", tile = "army", speed = 1, attack = 8, hp = 2, team = 1, moved = 0, class = "Defender", actions = {}, range = 3,
-        allowedTiles = {"grass", "ore", "crystal", "forest"}
+        name = "Elven Warriors", tile = "army", speed = 1, attack = 8, hp = 2, team = 1, moved = 0, class = "Defender", actions = {}, range = 6,
+        allowedTiles = {"grass", "ore", "crystal", "forest", "tundra", "ruins"}
     },
     elf_skirmisher = {
-        name = "Elven Skirmisher", tile = "army", speed = 1, attack = 8, hp = 2, team = 1, moved = 0, class = "Skirmisher", actions = {}, range = 5,
-        allowedTiles = {"grass", "ore", "crystal", "forest"}
+        name = "Elven Skirmisher", tile = "army", speed = 1, attack = 8, hp = 2, team = 1, moved = 0, class = "Skirmisher", actions = {}, range = 10,
+        allowedTiles = {"grass", "ore", "crystal", "forest", "tundra", "ruins"}
     },
     dwarf = {
-        name = "Dwarven Stalwarts", tile = "army", speed = 1, attack = 1, hp = 10, team = 1, moved = 0, class = "Defender", actions = {}, range = 2,
-        allowedTiles = {"grass", "ore", "crystal", "mountain"}
+        name = "Dwarven Stalwarts", tile = "army", speed = 1, attack = 1, hp = 10, team = 1, moved = 0, class = "Defender", actions = {}, range = 4,
+        allowedTiles = {"grass", "ore", "crystal", "mountain", "tundra", "ruins"}
     },
     dwarf_sapper = {
-        name = "Dwarven Sappers", tile = "army", speed = 1, attack = 1, hp = 10, team = 1, moved = 0, class = "Sieger", actions = {}, range = 4,
-        allowedTiles = {"grass", "ore", "crystal", "mountain"}
+        name = "Dwarven Sappers", tile = "army", speed = 1, attack = 1, hp = 10, team = 1, moved = 0, class = "Sieger", actions = {}, range = 8,
+        allowedTiles = {"grass", "ore", "crystal", "mountain", "tundra", "ruins"}
     },
     barbarian = {
-        name = "Barbarian Raiders", tile = "army", speed = 1, attack = 3, hp = 5, team = 1, moved = 0, class = "Skirmisher", actions = {}, range = 6,
-        allowedTiles = {"grass", "ore", "crystal", "tundra"}
+        name = "Barbarian Raiders", tile = "army", speed = 1, attack = 3, hp = 5, team = 1, moved = 0, class = "Skirmisher", actions = {}, range = 12,
+        allowedTiles = {"grass", "ore", "crystal", "tundra", "forest", "ruins"}
     },
     barbarian_sacker = {
-        name = "Barbarian Sackers", tile = "army", speed = 1, attack = 3, hp = 5, team = 1, moved = 0, class = "Sieger", actions = {}, range = 6,
-        allowedTiles = {"grass", "ore", "crystal", "tundra"}
+        name = "Barbarian Sackers", tile = "army", speed = 1, attack = 3, hp = 5, team = 1, moved = 0, class = "Sieger", actions = {}, range = 12,
+        allowedTiles = {"grass", "ore", "crystal", "tundra", "forest", "ruins"}
     },
     hero = {
         name = "Hero", tile = "hero", speed = 1, attack = 5, hp = 10, team = 1, moved = 0, class = "Hero", actions = {
             {name = "Build", action = "build"}
-        }, range = 0, allowedTiles = {"grass", "ore", "crystal"}
+        }, range = 0, allowedTiles = {"grass", "ore", "crystal", "ruins", "forest", "tundra"}
     }
 }
 
@@ -177,10 +177,6 @@ local function remove()
             -- Spawn a new unit from this unit's parent
             if units[i].parent ~= nil then
                 spawnByLocType(units[i].parent)
-            end
-            -- Special case: give back a command point if a hero died
-            if units[i].type == "hero" then
-                resources.spendCommandPoints(-1)
             end
             animation.clear(units[i].animation)
             table.remove(units, i)

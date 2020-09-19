@@ -60,6 +60,13 @@ local spellActions = {
     summon_hero = function()
         units.add("hero", locations.get()[1].x, locations.get()[1].y, {})
         resources.spendCommandPoints(1)
+    end,
+    terraform = function()
+        targeter.setSpellMap(1, true)
+        targeter.callback = function(x, y)
+            worldmap.map[y][x].tile = "grass"
+            targeter.clear()
+        end
     end
 }
 
@@ -86,7 +93,7 @@ local function EndTurn()
                 target.y = e.parent.y
             end
         end
-        if target.name ~= "None" and target.x ~= e.x and target.y ~= e.y then
+        if target.name ~= "None" and (target.x ~= e.x or target.y ~= e.y) then
             for i = 1, e.speed do
                 -- Take distance of all tiles adjacent to the moving unit, store in table
                 local candidateTiles = {}
@@ -135,11 +142,20 @@ local function EndTurn()
     commands.new(function(params)
         if locations.get()[2].hp <= 0 then
             ScreenSwitch("win")
-            return
+            return true
         end
         if locations.get()[1].hp <= 0 then
             ScreenSwitch("lose")
-            return
+            return true
+        end
+        local herocount = 0
+        for k, u in pairs(units.get()) do
+            if u.class == "Hero" then herocount = herocount + 1 end
+        end
+        if herocount == 0 then
+            if resources.getCommandPoints() <= 0 then
+                ScreenSwitch("lose")
+            end
         end
         return true
     end, {})
