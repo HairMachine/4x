@@ -53,7 +53,7 @@ end
 
 local function draw()
     for k, l in pairs(locations.getAllowedBuildings()) do
-        love.graphics.print(l.name.." ("..l.cost..")", 0, 32 * (k - 1))        
+        love.graphics.print(l.name.." ("..l.cost.."gp)", 0, 32 * (k - 1))        
     end
     ui.draw(buttons)
 end
