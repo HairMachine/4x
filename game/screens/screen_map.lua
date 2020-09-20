@@ -285,6 +285,8 @@ local buttonActions = {
             end
             worldmap.map[y][x].tile = "grass"
             targeter.clear()
+            entity.moved = 1
+            SelectNextHero()
         end
     end
 }
