@@ -10,7 +10,7 @@ local data = {
         allowedTiles = {"grass", "ore", "crystal", "forest", "tundra"}
     },
     soldier = {
-        name = "Plainsman Soldiers", tile = "army", speed = 1, attack = 1, hp = 5, team = 1, moved = 0, class = "Skirmisher", actions = {}, range = 10,
+        name = "Plainsman Soldiers", tile = "army", speed = 1, attack = 1, hp = 5, team = 1, moved = 0, class = "Skirmisher", actions = {}, range = 12,
         allowedTiles = {"grass", "ore", "crystal", "forest", "tundra"}
     },
     sapper = {
@@ -46,7 +46,7 @@ local data = {
         allowedTiles = {"grass", "ore", "crystal", "tundra", "forest"}
     },
     barbarian_sacker = {
-        name = "Barbarian Sackers", tile = "army", speed = 1, attack = 3, hp = 5, team = 1, moved = 0, class = "Sieger", actions = {}, range = 12,
+        name = "Barbarian Sackers", tile = "army", speed = 1, attack = 3, hp = 5, team = 1, moved = 0, class = "Sieger", actions = {}, range = 10,
         allowedTiles = {"grass", "ore", "crystal", "tundra", "forest"}
     },
     hero = {
