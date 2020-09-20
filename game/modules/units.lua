@@ -57,6 +57,8 @@ local data = {
     }
 }
 
+local respawning = {}
+
 local units = {}
 
 local function get()
@@ -177,10 +179,21 @@ local function remove()
         if units[i].hp <= 0 then
             -- Spawn a new unit from this unit's parent
             if units[i].parent ~= nil then
-                spawnByLocType(units[i].parent)
+                table.insert(respawning, {data = units[i].parent, timer = 5})
             end
             animation.clear(units[i].animation)
             table.remove(units, i)
+        end
+    end
+end
+
+local function respawnTimer()
+    for k = #respawning, 1, -1 do
+        local i = respawning[k]
+        i.timer = i.timer - 1
+        if i.timer <= 0 then
+            spawnByLocType(i.data)
+            table.remove(respawning, k)
         end
     end
 end
@@ -401,5 +414,6 @@ return {
     setIdleAnimation = setIdleAnimation,
     move = move,
     fight = fight,
-    getDistBetween = getDistBetween
+    getDistBetween = getDistBetween,
+    respawnTimer = respawnTimer
 }

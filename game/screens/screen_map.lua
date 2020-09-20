@@ -176,6 +176,7 @@ local function EndTurn()
     commands.new(function(params) 
         locations.remove()
         units.remove()
+        units.respawnTimer()
         return true
     end, {})
     -- Perform BUILDING EFFECTS
@@ -337,9 +338,8 @@ local function load()
 
     -- TODO Make rivers
 
-    -- Wizard's tower and engineer always first
+    -- Wizard's tower always first
     locations.add("tower", 2, 2, 1)
-    --units.add("engineer", 2, 2, {type = "tower", x = 2, y = 2})
     units.add("hero", 2, 2)
     
     -- The DARK TOWER!
