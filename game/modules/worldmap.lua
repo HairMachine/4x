@@ -1,8 +1,10 @@
 local locations = require 'modules/locations'
 
 local map = {}
-local MAPSIZEX = 50
-local MAPSIZEY = 7
+local cols = 8
+local rows = 3
+local MAPSIZEX = 8 * 5
+local MAPSIZEY = 3 * 5
 
 local function tileAlignmentChange()
     for y = 1, MAPSIZEY do
@@ -100,9 +102,85 @@ local function tileAlignmentChange()
     end
 end
 
+local function drawTile()
+    local tile = {}
+    for y = 1, 5 do
+        tile[y] = {}
+        for x = 1, 5  do
+            if x == 1 or x == 5 then
+                tile[y][x] = "water"
+            else
+                tile[y][x] = "grass"
+            end
+        end
+    end
+    for c = 1, 5 do
+        tile[love.math.random(2, 4)][love.math.random(2, 4)] = "mountain"
+        tile[love.math.random(2, 4)][love.math.random(2, 4)] = "ruins"
+        tile[love.math.random(2, 4)][love.math.random(2, 4)] = "tundra"
+        tile[love.math.random(2, 4)][love.math.random(2, 4)] = "forest"
+    end
+    return tile
+end
+
+local function generate()
+    local yp = 1
+    local xp = 1
+
+    for y = 1, MAPSIZEY do
+        map[y] = {}
+        for x = 1, MAPSIZEX do
+            map[y][x] = {tile = "water", align = 2}
+        end
+    end
+
+    for c = 1, cols do
+        for r = 1, rows do
+            local tile = drawTile()
+            local startx = (c - 1) * 5
+            local starty = (r - 1) * 5
+            for ky, vy in pairs(tile) do
+                for kx, vx in pairs(vy) do
+                    print(starty + ky, startx + kx)
+                    map[starty + ky][startx + kx] = {tile = vx, align = 2}
+                end
+            end
+        end
+    end
+
+    for c = 0, cols - 2 do
+        local connected = love.math.random(0, rows - 1)
+        -- Connect the tiles
+        for y = connected * 5 + 1, connected * 5 + 3 do
+            for x = c * 5 + 4, c * 5 + 7 do
+                map[y][x].tile = "grass"
+            end
+        end
+    end
+
+    local til = "ore"
+    for y = 0, math.floor(MAPSIZEY / 3) - 1  do
+        for x = 0,  math.floor(MAPSIZEX / 3) - 1 do
+            local xoffs = love.math.random(0, 2)
+            local yoffs = love.math.random(0, 2)
+            -- Annoying hack to stop gold appearing on the tower tile - will have to be improved
+            if (xoffs == 0 and yoffs == 0 and x == 0 and y == 0) then
+                xoffs = xoffs + 1
+            end
+            local yp = y * 3 + yoffs + 2
+            local xp = x * 3 + xoffs + 2
+            if xp <= MAPSIZEX and yp <= MAPSIZEY then
+                map[yp][xp].tile = til
+            end
+            if til == "ore" then til = "crystal" else til = "ore" end
+        end
+    end
+end
+
 return {
     map = map,
     MAPSIZEX = MAPSIZEX,
     MAPSIZEY = MAPSIZEY,
-    tileAlignmentChange = tileAlignmentChange
+    tileAlignmentChange = tileAlignmentChange,
+    generate = generate
 }

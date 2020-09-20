@@ -296,47 +296,7 @@ local function load()
     camera.setSize(600, 600)
 
     -- Generate map
-    for y = 1, worldmap.MAPSIZEY do
-        worldmap.map[y] = {}
-        for x = 1, worldmap.MAPSIZEX  do
-            if x == 1 or y == 1 or x == worldmap.MAPSIZEX or y == worldmap.MAPSIZEY then
-                worldmap.map[y][x] = {tile = "water", align = 2}
-            elseif (x == 2 or y == 2 or x ==  worldmap.MAPSIZEX - 1 or y == worldmap.MAPSIZEY - 1) and love.math.random(1, 10) >= 7 then
-                worldmap.map[y][x] = {tile = "water", align = 2}
-            else 
-                worldmap.map[y][x] = {tile = "grass", align = 2}
-            end
-        end
-    end
-    for c = 1, math.floor(worldmap.MAPSIZEX + worldmap.MAPSIZEY / 2) do
-        worldmap.map[love.math.random(2, worldmap.MAPSIZEY - 1)][love.math.random(2, worldmap.MAPSIZEX - 1)].tile = "mountain"
-        worldmap.map[love.math.random(2, worldmap.MAPSIZEY - 1)][love.math.random(2, worldmap.MAPSIZEX - 1)].tile = "ruins"
-        worldmap.map[love.math.random(2, worldmap.MAPSIZEY - 1)][love.math.random(2, worldmap.MAPSIZEX - 1)].tile = "tundra"
-        worldmap.map[love.math.random(2, worldmap.MAPSIZEY - 1)][love.math.random(2, worldmap.MAPSIZEX - 1)].tile = "forest"
-    end
-    -- Area around the tower is cleared of any doohickies
-    worldmap.map[2][2] = {tile = "grass"}
-    worldmap.map[3][2] = {tile = "grass"}
-    worldmap.map[2][3] = {tile = "grass"}
-
-    -- Make crystal and gold, evenly spaced
-    local til = "ore"
-    for y = 0, math.floor(worldmap.MAPSIZEY / 3) - 1  do
-        for x = 0,  math.floor(worldmap.MAPSIZEX / 3) - 1 do
-            local xoffs = love.math.random(0, 2)
-            local yoffs = love.math.random(0, 2)
-            -- Annoying hack to stop gold appearing on the tower tile - will have to be improved
-            if xoffs == 0 and yoffs == 0 and x == 0 and y == 0 then
-                xoffs = xoffs + 1
-            end
-            local yp = y * 3 + yoffs + 2
-            local xp = x * 3 + xoffs + 2
-            worldmap.map[yp][xp].tile = til
-            if til == "ore" then til = "crystal" else til = "ore" end
-        end
-    end
-
-    -- TODO Make rivers
+    worldmap.generate()
 
     -- Wizard's tower always first
     locations.add("tower", 2, 2, 1)
