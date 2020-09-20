@@ -67,6 +67,19 @@ local function setMoveMap(x, y, radius)
     end
 end
 
+local function setExploreMap(x, y, radius)
+    map = {}
+    for xt = x - radius, x + radius do
+        for yt = y - radius, y + radius do
+            if not(yt == y and xt == x) and yt > 0 and yt <= worldmap.MAPSIZEY and xt > 0 and xt <= worldmap.MAPSIZEX then
+                if worldmap.map[yt][xt].tile == "ruins" then
+                    table.insert(map, {x = xt, y = yt})
+                end
+            end
+        end
+    end
+end
+
 local function clear()
     map = {}
     unit = 0
@@ -94,6 +107,7 @@ return {
     setSpellMap = setSpellMap,
     setBuildMap = setBuildMap,
     setMoveMap = setMoveMap,
+    setExploreMap = setExploreMap,
     clear = clear,
     callback = callback,
     getType = getType,

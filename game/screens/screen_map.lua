@@ -261,6 +261,31 @@ local buttonActions = {
     end,
     showInventory = function()
         ScreenSwitch("inventory")
+    end,
+    explore = function(entity)
+        targeter.setExploreMap(entity.x, entity.y, 1)
+        targeter.setType("spell")
+        targeter.callback = function(x, y)
+            print("RUIN EXPLORED")
+            local roll = love.math.random(1, 6)
+            if roll <= 3 then
+                print("Treasure found!")
+                resources.spendGold(-1)
+            elseif roll <= 6 then
+                items.generate()
+                local dropped = items.getDropped()
+                for k, i in pairs(dropped) do
+                    -- TODO: A UI. I guess we can stack the windows directly on top of each other and make sure the code returns from click
+                    -- immediately after a button is pressed; a better method is actually having some proper UI abstraction we can use that
+                    -- isn't a screen
+                    print(i.name.." dropped!")
+                    items.addToInventory(i)
+                    items.removeFromDropped(k)
+                end
+            end
+            worldmap.map[y][x].tile = "grass"
+            targeter.clear()
+        end
     end
 }
 
@@ -375,7 +400,7 @@ local function mousepressed(x, y, button, istouch, presses)
     -- Clicking on a unit action!
     if targeter.getUnit() > 0 and units.get()[targeter.getUnit()].moved == 0 then
         for k, e in pairs(units.get()[targeter.getUnit()].actions) do
-            if x > ACTIONSTARTX and x < ACTIONSTARTX + ACTIONSIZEX and y > ACTIONSTARTY and y < ACTIONSTARTY + ACTIONSIZEY then
+            if x > ACTIONSTARTX and x < ACTIONSTARTX + ACTIONSIZEX and y > ACTIONSTARTY + (k-1) * ACTIONSIZEY and y < ACTIONSTARTY + (k-1) * ACTIONSIZEY + ACTIONSIZEY then
                 buttonActions[e.action](units.get()[targeter.getUnit()])
             end
         end
@@ -396,12 +421,6 @@ local function mousepressed(x, y, button, istouch, presses)
         if e.x > 0 and e.x <= worldmap.MAPSIZEX and e.y > 0 and e.y <= worldmap.MAPSIZEY then
             if e.x == tilex and e.y == tiley then
                 if targeter.getType() == "move" then
-                    -- check if a unit is on this tile
-                    for ku, u in pairs(units.get()) do
-                        if u.x == e.x and u.y == e.y then 
-                            return
-                        end
-                    end
                     local unitToMove = units.get()[targeter.getUnit()]
                     units.move(unitToMove, tilex, tiley)
                     targeter.clear()
