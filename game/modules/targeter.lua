@@ -50,7 +50,11 @@ local function setBuildMap(x, y, radius)
     for xt = x - radius, x + radius do
         for yt = y - radius, y + radius do
             if locations.atPos(xt, yt).name == "None" and not(yt == y and xt == x) then
-                table.insert(map, {x = xt, y = yt})
+                if yt > 0 and yt <= worldmap.MAPSIZEY and xt > 0 and xt <= worldmap.MAPSIZEX then
+                    if worldmap.map[yt][xt].align == 1 or not (worldmap.map[yt][xt].tile == "ore" or worldmap.map[yt][xt].tile == "crystal") then
+                        table.insert(map, {x = xt, y = yt})
+                    end
+                end
             end
         end
     end 
