@@ -122,7 +122,7 @@ local function EndTurn()
                         table.remove(candidateTiles, j)
                     elseif not units.tileIsAllowed(e, worldmap.map[newy][newx].tile) then
                         table.remove(candidateTiles, j)
-                    elseif locations.atPos(newx, newy).name ~= "None" then
+                    elseif locations.atPos(newx, newy).name ~= "None" and locations.atPos(newx, newy).team ~= e.team then
                         table.remove(candidateTiles, j)
                     end
                 end

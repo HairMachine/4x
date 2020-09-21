@@ -66,7 +66,10 @@ local function setMoveMap(x, y, radius)
         for yt = y - radius, y + radius do
             if not(yt == y and xt == x) and yt > 0 and yt <= worldmap.MAPSIZEY and xt > 0 and xt <= worldmap.MAPSIZEX then
                 if units.tileIsAllowed(units.get()[unit], worldmap.map[yt][xt].tile) and units.atPos(xt, yt).name == "None" then
-                    table.insert(map, {x = xt, y = yt})
+                    local loc = locations.atPos(xt, yt)
+                    if loc.name == "None" or loc.team == units.get()[unit] then
+                        table.insert(map, {x = xt, y = yt})
+                    end
                 end
             end
         end

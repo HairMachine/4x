@@ -141,7 +141,6 @@ local function generate()
             local starty = (r - 1) * 5
             for ky, vy in pairs(tile) do
                 for kx, vx in pairs(vy) do
-                    print(starty + ky, startx + kx)
                     map[starty + ky][startx + kx] = {tile = vx, align = 2}
                 end
             end

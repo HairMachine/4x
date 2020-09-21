@@ -187,17 +187,6 @@ local function remove()
     end
 end
 
-local function respawnTimer()
-    for k = #respawning, 1, -1 do
-        local i = respawning[k]
-        i.timer = i.timer - 1
-        if i.timer <= 0 then
-            spawnByLocType(i.data)
-            table.remove(respawning, k)
-        end
-    end
-end
-
 local function move(unit, x, y)
     local oldx = unit.x
     local oldy = unit.y
@@ -397,6 +386,19 @@ local function tileIsAllowed(unit, tile)
         if e == tile then return true end
     end
     return false
+end
+
+local function respawnTimer()
+    for k = #respawning, 1, -1 do
+        local i = respawning[k]
+        i.timer = i.timer - 1
+        if i.timer <= 0 then
+            if atPos(i.data.x, i.data.y).name == "None" then
+                spawnByLocType(i.data)
+                table.remove(respawning, k)
+            end
+        end
+    end
 end
 
 return {
