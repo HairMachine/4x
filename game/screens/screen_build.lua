@@ -5,23 +5,33 @@ local resources = require 'modules/resources'
 local worldmap = require 'modules/worldmap'
 local targeter = require 'modules/targeter'
 
-local buttonActions = {
-    none = function() end,
-    cancel = function()
-        ScreenSwitch("map")
-    end
-}
-
-local buttons = {
-    cancel = {x = 600, y = 50, width = 100, height = 32, text = "Cancel", action = "cancel", visible = 1}
-}
+local buttons = {}
 
 local function load()
     
 end
 
 local function show()
-
+    buttons = {
+        cancel = {x = 600, y = 50, width = 100, height = 32, text = "Cancel", visible = 1, action = function(event) 
+            ScreenSwitch("map")
+        end}
+    }
+    for k, l in pairs(locations.getAllowedBuildings()) do
+        love.graphics.print(l.name.." ("..l.cost.."gp)", 0, 32 * (k - 1))  
+        table.insert(buttons, {x = 0, y = (k-1) * 32, width = 300, height = 32, text = l.name.." ("..l.cost.."gp)", visible = 1, loc = l, action = function(event) 
+            if resources.enoughGold(event.loc.cost) then
+                local ctile = locations.getCurrentBuildingTile()
+                locations.add(event.loc.key, ctile.x, ctile.y, 1)
+                units.spawnByLocType({type = event.loc.key, x = ctile.x, y = ctile.y})
+                resources.spendGold(event.loc.cost)
+                worldmap.tileAlignmentChange()
+                units.get()[targeter.getUnit()].moved = 1
+                targeter.clear()
+                ScreenSwitch("map")
+            end
+        end})      
+    end
 end
 
 local function update()
@@ -33,28 +43,10 @@ local function keypressed(key, scancode, isrepeat)
 end
 
 local function mousepressed(x, y, button, istouch, presses)
-    buttonActions[ui.click(buttons, x, y)]()
-
-    for k, l in pairs(locations.getAllowedBuildings()) do
-        if y > (k - 1) * 32 and y < k * 32 then
-            if resources.enoughGold(l.cost) then
-                local ctile = locations.getCurrentBuildingTile()
-                locations.add(l.key, ctile.x, ctile.y, 1)
-                units.spawnByLocType({type = l.key, x = ctile.x, y = ctile.y})
-                resources.spendGold(l.cost)
-                worldmap.tileAlignmentChange()
-                units.get()[targeter.getUnit()].moved = 1
-                targeter.clear()
-                ScreenSwitch("map")
-            end
-        end
-    end
+    ui.click(buttons, x, y)
 end
 
 local function draw()
-    for k, l in pairs(locations.getAllowedBuildings()) do
-        love.graphics.print(l.name.." ("..l.cost.."gp)", 0, 32 * (k - 1))        
-    end
     ui.draw(buttons)
 end
 

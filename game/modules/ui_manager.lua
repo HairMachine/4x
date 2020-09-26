@@ -3,6 +3,11 @@ local function draw(elements)
         if e.visible == 1 then
             love.graphics.rectangle("line", e.x, e.y, e.width, e.height)
             love.graphics.print(e.text, e.x, e.y)
+            if e.children then
+                for k2, e2 in pairs(e.children) do
+                    draw(e.children)
+                end
+            end
         end
     end
 end
@@ -10,10 +15,19 @@ end
 local function click(elements, x, y) 
     for k, e in pairs(elements) do
         if e.visible == 1 and x > e.x and x < e.x + e.width and y > e.y and y < e.y + e.height then
-            return e.action
+            if e.action then
+                e.action(e)
+                return true
+            elseif e.children then
+                for k2, e2 in pairs(e.children) do
+                    if click(e.children) == true then
+                        return true
+                    end
+                end
+            end
         end
     end
-    return "none"
+    return false
 end
 
 return {

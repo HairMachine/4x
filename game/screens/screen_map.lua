@@ -26,18 +26,24 @@ local tsize = 32
 
 local darkPower = 0
 
-local buttons = {
-    inventory = {x = 600, y = 50, width = 100, height = 32, text = "Items", action = "showInventory", visible = 1},
-    cast_spell = {x = 600, y = 100, width = 100, height = 32, text = "Cast Spell", action = "startCast", visible = 1},
-    end_phase = {x = 600, y = 150, width = 100, height = 32, text = "End Turn", action = "endTurn", visible = 1},
-}
+local buttons = {}
+
+local function SelectHero(k, e)
+    targeter.setUnit(k)
+    targeter.setType("move")
+    targeter.setMoveMap(e.x, e.y, e.speed)
+    buttons.explore.visible = 1
+    buttons.explore.unit = e
+    buttons.explore.unitKey = k
+    buttons.build.visible = 1
+    buttons.build.unit = e
+    buttons.build.unitKey = k
+end
 
 local function SelectNextHero()
     for k, e in pairs(units.get()) do
         if e.type == "hero" and e.moved == 0 then
-            targeter.setUnit(k)
-            targeter.setType("move")
-            targeter.setMoveMap(e.x, e.y, e.speed)
+            SelectHero(k, e)
             return
         end
     end
@@ -243,55 +249,6 @@ local function EndTurn()
     end, {})
 end
 
-local buttonActions = {
-    none = function() end,
-    endTurn = function()
-        EndTurn()
-    end,
-    build = function(entity)
-        -- TODO: Cancelling currently fucks this up, it needs to work better
-        targeter.setBuildMap(entity.x, entity.y, 1)
-        targeter.setType("spell")
-        targeter.callback = function(x, y)
-            locations.setCurrentBuildingTile(x, y, worldmap.map[y][x].tile)
-            ScreenSwitch("build")
-        end
-    end,
-    startCast = function()
-        ScreenSwitch("cast")
-    end,
-    showInventory = function()
-        ScreenSwitch("inventory")
-    end,
-    explore = function(entity)
-        targeter.setExploreMap(entity.x, entity.y, 1)
-        targeter.setType("spell")
-        targeter.callback = function(x, y)
-            print("RUIN EXPLORED")
-            local roll = love.math.random(1, 6)
-            if roll <= 3 then
-                print("Treasure found!")
-                resources.spendGold(-1)
-            elseif roll <= 6 then
-                items.generate()
-                local dropped = items.getDropped()
-                for k, i in pairs(dropped) do
-                    -- TODO: A UI. I guess we can stack the windows directly on top of each other and make sure the code returns from click
-                    -- immediately after a button is pressed; a better method is actually having some proper UI abstraction we can use that
-                    -- isn't a screen
-                    print(i.name.." dropped!")
-                    items.addToInventory(i)
-                    items.removeFromDropped(k)
-                end
-            end
-            worldmap.map[y][x].tile = "grass"
-            targeter.clear()
-            entity.moved = 1
-            SelectNextHero()
-        end
-    end
-}
-
 local function load()
     camera.setSize(600, 600)
 
@@ -313,13 +270,67 @@ local function load()
     
     -- Set tile alignments
     worldmap.tileAlignmentChange()
-    
-    -- Start!
-    SelectNextHero()
 end
 
 local function show()
-    
+    buttons = {
+        inventory = {x = 600, y = 50, width = 100, height = 32, text = "Items", action = "showInventory", visible = 1, action = function() 
+            ScreenSwitch("inventory")
+        end},
+        cast_spell = {x = 600, y = 100, width = 100, height = 32, text = "Cast Spell", action = "startCast", visible = 1, action = function() 
+            ScreenSwitch("cast")
+        end},
+        end_phase = {x = 600, y = 150, width = 100, height = 32, text = "End Turn", action = "endTurn", visible = 1, action = function()
+            EndTurn()
+        end},
+        build = {x = ACTIONSTARTX, y = ACTIONSTARTY, width = 100, height = 32, text = "Build", action = "build", visible = 0, action = function(event)
+            if event.unit.moved == 1 then 
+                return 
+            end
+            -- TODO: Cancelling currently fucks this up, it needs to work better
+            targeter.setUnit(event.unitKey)
+            targeter.setBuildMap(event.unit.x, event.unit.y, 1)
+            targeter.setType("spell")
+            targeter.callback = function(x, y)
+                locations.setCurrentBuildingTile(x, y, worldmap.map[y][x].tile)
+                ScreenSwitch("build")
+            end
+        end},
+        explore =  {x = ACTIONSTARTX, y = ACTIONSTARTY + 32, width = 100, height = 32, text = "Explore", action = "explore", visible = 0, action = function(event)
+            if event.unit.moved == 1 then
+                return
+            end
+            targeter.setUnit(event.unitKey)
+            targeter.setExploreMap(event.unit.x, event.unit.y, 1)
+            targeter.setType("spell")
+            targeter.callback = function(x, y)
+                print("RUIN EXPLORED")
+                local roll = love.math.random(1, 6)
+                if roll <= 3 then
+                    print("Treasure found!")
+                    resources.spendGold(-1)
+                elseif roll <= 6 then
+                    items.generate()
+                    local dropped = items.getDropped()
+                    for k, i in pairs(dropped) do
+                        -- TODO: A UI. I guess we can stack the windows directly on top of each other and make sure the code returns from click
+                        -- immediately after a button is pressed; a better method is actually having some proper UI abstraction we can use that
+                        -- isn't a screen
+                        print(i.name.." dropped!")
+                        items.addToInventory(i)
+                        items.removeFromDropped(k)
+                    end
+                end
+                worldmap.map[y][x].tile = "grass"
+                targeter.clear()
+                event.unit.moved = 1
+                SelectNextHero()
+            end
+        end}
+    }
+
+    -- Start!
+    SelectNextHero()
 end
 
 local function update()
@@ -357,23 +368,14 @@ local function mousepressed(x, y, button, istouch, presses)
     local tiley = math.floor((y + c.y) / tsize)
 
     -- Clicking on a button!
-    buttonActions[ui.click(buttons, x, y)]()
-
-    -- Clicking on a unit action!
-    if targeter.getUnit() > 0 and units.get()[targeter.getUnit()].moved == 0 then
-        for k, e in pairs(units.get()[targeter.getUnit()].actions) do
-            if x > ACTIONSTARTX and x < ACTIONSTARTX + ACTIONSIZEX and y > ACTIONSTARTY + (k-1) * ACTIONSIZEY and y < ACTIONSTARTY + (k-1) * ACTIONSIZEY + ACTIONSIZEY then
-                buttonActions[e.action](units.get()[targeter.getUnit()])
-            end
-        end
-    end
+    ui.click(buttons, x, y)
 
     -- Clicking on a unit!
     for k, e in pairs(units.get()) do
-        if e.type == "hero" and e.moved == 0 and e.x == tilex and e.y == tiley then
-            targeter.setUnit(k)
-            targeter.setType("move")
-            targeter.setMoveMap(e.x, e.y, e.speed)
+        if e.moved == 0 and e.x == tilex and e.y == tiley then
+            if e.type == "hero" then
+                SelectHero(k, e)
+            end
             return
         end
     end
@@ -451,14 +453,6 @@ local function draw()
     love.graphics.print("Currently casting: "..spells.getCasting().name, ACTIONSTARTX, 0)
 
     ui.draw(buttons)
-
-    -- Unit options
-    if targeter.getUnit() > 0 and units.get()[targeter.getUnit()].moved == 0 then
-        for k, e in pairs(units.get()[targeter.getUnit()].actions) do
-            love.graphics.rectangle("line", ACTIONSTARTX, ACTIONSTARTY + (k-1) * ACTIONSIZEY, ACTIONSIZEX, ACTIONSIZEY)
-            love.graphics.print(e.name, ACTIONSTARTX, ACTIONSTARTY + (k-1) * ACTIONSIZEY)
-        end
-    end
 
     love.graphics.print("Command Points: "..resources.getCommandPoints(), ACTIONSTARTX, 400)
     love.graphics.print("Available Budget: "..resources.getAvailableGold(), ACTIONSTARTX, 432)
