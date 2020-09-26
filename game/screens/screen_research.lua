@@ -29,7 +29,7 @@ local function show()
         if spells.getLearning() == s then
             spellBtn.text = "Currently learning "..spellBtn.text
         end
-        table.insert(buttons, spellBtn)
+        buttons["spell_"..k] = spellBtn
     end
 end
 

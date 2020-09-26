@@ -22,7 +22,7 @@ local function show()
         end}
     }
     for k, s in pairs(spells.known) do
-        table.insert(buttons, {x = 0, y = (k-1) * 32, width = 300, height = 32, text = spells.data[s].name, visible = 1, spell = s, action = function(event)
+        buttons["spell_"..k] = {x = 0, y = (k-1) * 32, width = 300, height = 32, text = spells.data[s].name, visible = 1, spell = s, action = function(event)
             if s == "summon_hero" and resources.getCommandPoints() < 1 then
                 errorBox = true
                 errorText = "You need at least one command point available to cast this spell again!"
@@ -35,7 +35,7 @@ local function show()
                 spells.startCasting(s)
             end
             ScreenSwitch("map")
-        end})
+        end}
     end
 
 end

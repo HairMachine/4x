@@ -3,23 +3,8 @@ local units = require 'modules/units'
 local items = require 'modules/items'
 
 local buttons = {}
-local itemButtons = {}
 
 local currentHero = 0
-
-local function itemUiBuild()
-    itemButtons = {}
-    for k, i in pairs(items.getInventory()) do
-        table.insert(itemButtons, {x = 400, y = (k+1)*32, width = 300, height = 32, text = i.name.." ("..i.slot..")", visible = 1, item = i, key = k, action = function(event)
-            if units.get()[currentHero].slots[event.item.slot].name ~= "" then
-                items.addToInventory(event.item)
-            end
-            units.get()[currentHero].slots[event.item.slot] = i
-            items.removeFromInventory(event.key)
-            itemUiBuild()
-        end})
-    end
-end
 
 local function load()
     
@@ -35,13 +20,22 @@ local function show()
     for k, u in pairs(units.get()) do
         if u.class == "Hero" then
             if currentHero == 0 then currentHero = k end
-            table.insert(buttons, {x = p * 64, y = 32, width = 63, height = 32, text = u.name, visible = 1, hero = k, action = function(event)
+            buttons["hero_"..k] = {x = p * 64, y = 32, width = 63, height = 32, text = u.name, visible = 1, hero = k, action = function(event)
                 currentHero = event.hero
-            end})
+            end}
             p = p + 1
         end
     end
-    itemUiBuild()
+    for k, i in pairs(items.getInventory()) do
+        buttons["item_"..k] = {x = 400, y = (k+1)*32, width = 300, height = 32, text = i.name.." ("..i.slot..")", visible = 1, item = i, key = k, action = function(event)
+            if units.get()[currentHero].slots[event.item.slot].name ~= "" then
+                items.addToInventory(event.item)
+            end
+            units.get()[currentHero].slots[event.item.slot] = i
+            items.removeFromInventory(event.key)
+            buttons["item_"..k] = nil
+        end}
+    end
 end
 
 local function update()
@@ -54,7 +48,6 @@ end
 
 local function mousepressed(x, y, button, istouch, presses)
     ui.click(buttons, x, y)
-    ui.click(itemButtons, x, y)
 end
 
 local function draw()
@@ -67,7 +60,6 @@ local function draw()
     end
     
     ui.draw(buttons)
-    ui.draw(itemButtons)
 end
 
 return {
