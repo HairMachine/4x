@@ -245,7 +245,7 @@ local function EndTurn()
 end
 
 local function load()
-    camera.setSize(600, 600)
+    camera.setSize(720, 532)
 
     -- Generate map
     worldmap.generate()
@@ -445,6 +445,17 @@ local function draw()
     end
 
     -- UI
+    -- Map borders
+    -- Wonky logic because the camera just assumes its origin is 0, 0
+    love.graphics.rectangle("line", 32, 32, camera.get().w - 32, camera.get().h - 32)
+    love.graphics.setColor(0, 0, 0, 1)
+    love.graphics.rectangle("fill", 0, 0, camera.get().w, 31)
+    love.graphics.rectangle("fill", 0, 0, 31, camera.get().h)
+    love.graphics.rectangle("fill", camera.get().w, 0, 32, camera.get().h)
+    love.graphics.rectangle("fill", 0, camera.get().h, camera.get().w, 32)
+    love.graphics.setColor(1, 1, 1, 1)
+
+    -- Sidebar
     love.graphics.print("Currently casting: "..spells.getCasting().name, ACTIONSTARTX, 0)
 
     ui.draw(buttons)
