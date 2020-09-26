@@ -12,12 +12,7 @@ local dark_power = require 'modules/dark_power'
 local items = require 'modules/items'
 local camera = require 'modules/camera'
 
-local screen = {
-    width = 800,
-    height = 600
-}
-
-local ACTIONSTARTX = 600
+local ACTIONSTARTX = 760
 local ACTIONSTARTY = 200
 local ACTIONSIZEX = 64
 local ACTIONSIZEY = 32
@@ -274,13 +269,13 @@ end
 
 local function show()
     buttons = {
-        inventory = {x = 600, y = 50, width = 100, height = 32, text = "Items", action = "showInventory", visible = 1, action = function() 
+        inventory = {x = ACTIONSTARTX, y = 50, width = 100, height = 32, text = "Items", action = "showInventory", visible = 1, action = function() 
             ScreenSwitch("inventory")
         end},
-        cast_spell = {x = 600, y = 100, width = 100, height = 32, text = "Cast Spell", action = "startCast", visible = 1, action = function() 
+        cast_spell = {x = ACTIONSTARTX, y = 100, width = 100, height = 32, text = "Cast Spell", action = "startCast", visible = 1, action = function() 
             ScreenSwitch("cast")
         end},
-        end_phase = {x = 600, y = 150, width = 100, height = 32, text = "End Turn", action = "endTurn", visible = 1, action = function()
+        end_phase = {x = ACTIONSTARTX, y = 150, width = 100, height = 32, text = "End Turn", action = "endTurn", visible = 1, action = function()
             EndTurn()
         end},
         build = {x = ACTIONSTARTX, y = ACTIONSTARTY, width = 100, height = 32, text = "Build", action = "build", visible = 0, action = function(event)
@@ -338,10 +333,10 @@ local function update()
     commands.run()
     -- Move camera
     x, y = love.mouse.getPosition()
-    if x > screen.width - 5 then
+    if x > WINDOW.width - 5 then
         camera.move(8, 0)
     end
-    if y > screen.height - 5 then
+    if y > WINDOW.height - 5 then
         camera.move(0, 8)
     end
     if x < 5 then
