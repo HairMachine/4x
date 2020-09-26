@@ -2,7 +2,7 @@ local function draw(elements)
     for k, e in pairs(elements) do
         if e.visible == 1 then
             love.graphics.rectangle("line", e.x, e.y, e.width, e.height)
-            love.graphics.print(e.text, e.x, e.y)
+            love.graphics.printf(e.text, e.x, e.y, e.width)
             if e.children then
                 for k2, e2 in pairs(e.children) do
                     draw(e.children)
@@ -12,7 +12,7 @@ local function draw(elements)
     end
 end
 
-local function click(elements, x, y) 
+local function click(elements, x, y)
     for k, e in pairs(elements) do
         if e.visible == 1 and x > e.x and x < e.x + e.width and y > e.y and y < e.y + e.height then
             if e.action then
@@ -20,7 +20,7 @@ local function click(elements, x, y)
                 return true
             elseif e.children then
                 for k2, e2 in pairs(e.children) do
-                    if click(e.children) == true then
+                    if click(e.children, x, y) == true then
                         return true
                     end
                 end
