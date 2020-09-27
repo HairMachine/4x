@@ -44,6 +44,14 @@ local function SelectNextHero()
     end
 end
 
+local function InfoPopup(title, description)
+    buttons.info_popup = {x = 300, y = 200, width = 300, height = 300, visible = 1, text = title.."\n\n"..description, children = {
+        {x = 450, y = 400, height = 32, width = 100, visible = 1, text = "OK", action = function() 
+            buttons.info_popup = nil
+        end}
+    }}
+end
+
 local spellActions = {
     none = function() end,
     lightning_bolt = function()
@@ -163,13 +171,14 @@ local function EndTurn()
     -- Show items
     commands.new(function(params)
         local dropped = items.getDropped()
-        for k, i in pairs(dropped) do
-            -- TODO: A UI. I guess we can stack the windows directly on top of each other and make sure the code returns from click
-            -- immediately after a button is pressed; a better method is actually having some proper UI abstraction we can use that
-            -- isn't a screen
-            print(i.name.." dropped!")
-            items.addToInventory(i)
-            items.removeFromDropped(k)
+        local itemText = ""
+        if (#dropped > 0) then
+            for k, i in pairs(dropped) do
+                itemText = itemText.."Found "..i.name.."!\n"
+                items.addToInventory(i)
+                items.removeFromDropped(k)
+            end
+            InfoPopup("Monsters dropped items!", itemText)
         end
         return true
     end, {})
@@ -299,22 +308,20 @@ local function show()
             targeter.setExploreMap(event.unit.x, event.unit.y, 1)
             targeter.setType("spell")
             targeter.callback = function(x, y)
-                print("RUIN EXPLORED")
                 local roll = love.math.random(1, 6)
                 if roll <= 3 then
-                    print("Treasure found!")
+                    InfoPopup("Explored Runis!", "Found a cache of gold! Budget increased by 1.")
                     resources.spendGold(-1)
                 elseif roll <= 6 then
                     items.generate()
                     local dropped = items.getDropped()
+                    local itemText = ""
                     for k, i in pairs(dropped) do
-                        -- TODO: A UI. I guess we can stack the windows directly on top of each other and make sure the code returns from click
-                        -- immediately after a button is pressed; a better method is actually having some proper UI abstraction we can use that
-                        -- isn't a screen
-                        print(i.name.." dropped!")
+                        itemText = itemText.."Found "..i.name.."!"
                         items.addToInventory(i)
                         items.removeFromDropped(k)
                     end
+                    InfoPopup("Ruins Explored!", itemText)
                 end
                 worldmap.map[y][x].tile = "grass"
                 targeter.clear()

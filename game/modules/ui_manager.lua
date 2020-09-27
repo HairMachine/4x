@@ -2,6 +2,9 @@ local function draw(elements)
     for k, e in pairs(elements) do
         if e.visible == 1 then
             love.graphics.rectangle("line", e.x, e.y, e.width, e.height)
+            love.graphics.setColor(0.1, 0.1, 0.2, 1)
+            love.graphics.rectangle("fill", e.x + 1, e.y + 1, e.width - 2, e.height - 2)
+            love.graphics.setColor(1, 1, 1, 1)
             love.graphics.printf(e.text, e.x, e.y, e.width)
             if e.children then
                 for k2, e2 in pairs(e.children) do
