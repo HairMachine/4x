@@ -97,6 +97,8 @@ local function EndTurn()
             resources.spendGold(l.upkeep)
         end
     end
+    -- Taxes
+    resources.spendGold(-math.floor(worldmap.getTotalPopulation() / 10))
     -- Move minions (+ pathfinding)
     for k, e in pairs(units.get()) do
         local target = {name = "None"}
@@ -340,7 +342,7 @@ local function show()
             targeter.callback = function(x, y)
                 local roll = love.math.random(1, 6)
                 if roll <= 3 then
-                    local gp = love.math.random(1, 10) + 15
+                    local gp = love.math.random(100, 200)
                     InfoPopup("Explored Runis!", "Found "..gp.." gold!")
                     resources.spendGold(-gp)
                 elseif roll <= 6 then

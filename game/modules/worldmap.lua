@@ -103,10 +103,21 @@ local function generate()
     end
 end
 
+local function getTotalPopulation()
+    local pop = 0
+    for yt = 1, MAPSIZEY do
+        for xt = 1, MAPSIZEX do
+            pop = pop + map[yt][xt].population
+        end
+    end
+    return pop
+end
+
 return {
     map = map,
     MAPSIZEX = MAPSIZEX,
     MAPSIZEY = MAPSIZEY,
     generate = generate,
-    makeTile = makeTile
+    makeTile = makeTile,
+    getTotalPopulation = getTotalPopulation
 }
