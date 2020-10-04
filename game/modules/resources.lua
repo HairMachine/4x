@@ -1,17 +1,16 @@
-local goldUsed = 0
 local goldOwned = 100
 local commandPoints = 1
 
 local function getAvailableGold()
-    return goldOwned - goldUsed
+    return goldOwned
 end
 
 local function enoughGold(amnt)
-    return amnt + goldUsed <= goldOwned
+    return amnt <= goldOwned
 end
 
 local function spendGold(amnt)
-    goldUsed = goldUsed + amnt
+    goldOwned = goldOwned - amnt
     return true
 end
 

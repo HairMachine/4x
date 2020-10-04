@@ -353,32 +353,6 @@ local function getClosestUnit(unit)
     return found
 end
 
-local function swapSidesRandom(otherTeam)
-    local list = {}
-    for k, e in pairs(units) do
-        if e.team ~= otherTeam and e.class ~= "Hero" then
-            table.insert(list, e)
-        end
-    end
-    if #list == 0 then
-        return false
-    end
-    local r = love.math.random(1, #list)
-    list[r].team = otherTeam
-    -- TODO: This is a hack / placeholder and should be fixed - more systematic way of having tiles and team, perhaps
-    -- a standardised background or something rather than it literally just being on the tile
-    if otherTeam == 2 then
-        list[r].tile = "monster"
-        -- Destroy this unit's parent, if there is one
-        if list[r].parent.x and list[r].parent.y then
-            local l = locations.getByCoordinates(list[r].parent.x, list[r].parent.y)
-            if l then l.hp = 0 end
-            locations.remove()
-        end
-    end
-    return true
-end
-
 local function tileIsAllowed(unit, tile)
     for k, e in pairs(unit.allowedTiles) do
         if e == tile then return true end
@@ -409,7 +383,6 @@ return {
     getClosestBuildingWithinRange = getClosestBuildingWithinRange,
     getClosestUnitWithinRange = getClosestUnitWithinRange,
     spawnByLocType = spawnByLocType,
-    swapSidesRandom = swapSidesRandom,
     tileIsAllowed = tileIsAllowed,
     setIdleAnimation = setIdleAnimation,
     move = move,

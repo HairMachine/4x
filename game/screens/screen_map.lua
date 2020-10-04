@@ -91,10 +91,11 @@ local function EndTurn()
             locations.growSettlement(x, y)
         end
     end
-    -- Convert Rebels!
-    local rebelling = true
-    while resources.getAvailableGold() < 0 and rebelling do
-        rebelling = units.swapSidesRandom(2)
+    -- Upkeep costs
+    for k, l in pairs(locations.get()) do
+        if l.team == 1 then
+            resources.spendGold(l.upkeep)
+        end
     end
     -- Move minions (+ pathfinding)
     for k, e in pairs(units.get()) do
@@ -310,7 +311,9 @@ local function show()
             ScreenSwitch("cast")
         end},
         build = {x = ACTIONSTARTX, y = 150, width = 100, height = 32, text = "Build", visible = 1, action = function()
-            ScreenSwitch("build")
+            if resources.getAvailableGold() > 0 then
+                ScreenSwitch("build")
+            end
         end},
         end_phase = {x = ACTIONSTARTX, y = 500, width = 100, height = 32, text = "End Turn", visible = 1, action = function()
             EndTurn()
@@ -337,8 +340,9 @@ local function show()
             targeter.callback = function(x, y)
                 local roll = love.math.random(1, 6)
                 if roll <= 3 then
-                    InfoPopup("Explored Runis!", "Found a cache of gold! Budget increased by 1.")
-                    resources.spendGold(-1)
+                    local gp = love.math.random(1, 10) + 15
+                    InfoPopup("Explored Runis!", "Found "..gp.." gold!")
+                    resources.spendGold(-gp)
                 elseif roll <= 6 then
                     items.generate()
                     local dropped = items.getDropped()

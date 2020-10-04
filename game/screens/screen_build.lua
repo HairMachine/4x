@@ -7,17 +7,6 @@ local production = require 'modules/production'
 
 local buttons = {}
 
-local function oldcrap()
-    local ctile = locations.getCurrentBuildingTile()
-    locations.add(event.loc.key, ctile.x, ctile.y, 1)
-    units.spawnByLocType({type = event.loc.key, x = ctile.x, y = ctile.y})
-    resources.spendGold(event.loc.cost)
-    locations.tileAlignmentChange()
-    units.get()[targeter.getUnit()].moved = 1
-    targeter.clear()
-    ScreenSwitch("map")
-end
-
 local function load()
     
 end

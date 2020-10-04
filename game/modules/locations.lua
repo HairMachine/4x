@@ -9,13 +9,13 @@ local data =  {
     fortress = {key = "fortress", name = "Fortress", tile = "cave", allowedTiles = {}, upkeep = 0, production = 0, hp = 10, maxHp = 10},
     dark_tower = {key = "dark_tower", name = "Dark Tower", tile = "tower", allowedTiles = {}, upkeep = 0, production = 0, hp = 100, maxHp = 100},
     tower = {key = "tower", name = "Wizard's Tower", tile = "tower", allowedTiles = {}, upkeep = 0, production = 0, hp = 10, maxHp = 10, align = 2},
-    barracks = {key = "barracks", name = "Plainsman Barracks", tile = "city", allowedTiles = {"grass"}, upkeep = 0, production = 500, hp = 5, maxHp = 5},
-    mine = {key = "mine", name = "Gold Mine", tile = "city", allowedTiles = {"ore"}, upkeep = 0, production = 500, hp = 2, maxHp = 2},
-    node = {key = "node", name = "Magical Node", tile = "city", allowedTiles = {"crystal"}, upkeep = 0, production = 500, hp = 2, maxHp = 2},
-    sylvan_glade = {key = "sylvan_glade", name = "Sylvan Glade", tile = "city", allowedTiles = {"forest"}, upkeep = 0, production = 500, hp = 5, maxHp = 5},
-    shipyard = {key = "shipyard", name = "Shipyard", tile = "city", allowedTiles = {"water"}, upkeep = 0, production = 500, hp = 5, maxHp = 5},
-    farm = {key = "farm", name = "Farm", tile = "city", allowedTiles = {"grass"}, upkeep = 0, production = 500, hp = 5, maxHp = 5},
-    hamlet = {key = "hamlet", name = "Hamlet", tile = "city", allowedTiles = {}, upkeep = 0, production = 0, hp = 10, maxHp = 10, align = 3}
+    barracks = {key = "barracks", name = "Barracks", tile = "city", allowedTiles = {"grass"}, upkeep = 0, production = 500, hp = 5, maxHp = 5},
+    mine = {key = "mine", name = "Gold Mine", tile = "city", allowedTiles = {"ore"}, upkeep = -50, production = 500, hp = 2, maxHp = 2},
+    node = {key = "node", name = "Magical Node", tile = "city", allowedTiles = {"crystal"}, upkeep = 20, production = 500, hp = 2, maxHp = 2},
+    sylvan_glade = {key = "sylvan_glade", name = "Sylvan Glade", tile = "city", allowedTiles = {"forest"}, upkeep = 10, production = 500, hp = 5, maxHp = 5},
+    shipyard = {key = "shipyard", name = "Shipyard", tile = "city", allowedTiles = {"water"}, upkeep = 10, production = 500, hp = 5, maxHp = 5},
+    farm = {key = "farm", name = "Farm", tile = "city", allowedTiles = {"grass"}, upkeep = 10, production = 500, hp = 5, maxHp = 5},
+    hamlet = {key = "hamlet", name = "Hamlet", tile = "city", allowedTiles = {}, upkeep = 50, production = 0, hp = 10, maxHp = 10, align = 3}
 }
 
 local currentBuildingTile = {tile = "grass", x = 1, y = 1}
@@ -195,7 +195,6 @@ local function growSettlement(x, y)
         local tile = worldmap.map[y][x]
         tile.food = tile.food - 1
         tile.population = tile.population + 1
-        resources.spendGold(-1)
     end
 end
 
