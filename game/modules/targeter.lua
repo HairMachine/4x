@@ -45,13 +45,13 @@ local function setSpellMap(radius, wizards)
     type = "spell"
 end
 
-local function setBuildMap(x, y, radius)
+local function setFoundingMap(x, y, radius)
     map = {}
     for xt = x - radius, x + radius do
         for yt = y - radius, y + radius do
             if locations.atPos(xt, yt).name == "None" and not(yt == y and xt == x) then
                 if yt > 0 and yt <= worldmap.MAPSIZEY and xt > 0 and xt <= worldmap.MAPSIZEX then
-                    if worldmap.map[yt][xt].align == 1 or not (worldmap.map[yt][xt].tile == "ore" or worldmap.map[yt][xt].tile == "crystal") then
+                    if worldmap.map[yt][xt].align == 2 then
                         table.insert(map, {x = xt, y = yt})
                     end
                 end
@@ -67,7 +67,7 @@ local function setMoveMap(x, y, radius)
             if not(yt == y and xt == x) and yt > 0 and yt <= worldmap.MAPSIZEY and xt > 0 and xt <= worldmap.MAPSIZEX then
                 if units.tileIsAllowed(units.get()[unit], worldmap.map[yt][xt].tile) and units.atPos(xt, yt).name == "None" then
                     local loc = locations.atPos(xt, yt)
-                    if loc.name == "None" or loc.team == units.get()[unit] then
+                    if loc.name == "None" or loc.team == units.get()[unit].team then
                         table.insert(map, {x = xt, y = yt})
                     end
                 end
@@ -89,9 +89,26 @@ local function setExploreMap(x, y, radius)
     end
 end
 
+local function setBuildMap(buildData)
+    for k, l in pairs(locations.get()) do
+        if l.team == 1 then
+            local bdata = locations.getData()[buildData.key]
+            for xt = l.x - 1, l.x + 1 do
+                for yt = l.y - 1, l.y + 1 do
+                    if yt > 0 and yt <= worldmap.MAPSIZEY and xt > 0 and xt <= worldmap.MAPSIZEX then
+                        if worldmap.map[yt][xt].align == 1 and locations.allowedTile(bdata.allowedTiles, worldmap.map[yt][xt].tile) then
+                            table.insert(map, {x = xt, y = yt})
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
 local function clear()
     map = {}
-    unit = 0
+    unit = -1
 end
 
 local function getType()
@@ -114,9 +131,10 @@ return {
     getMap = getMap,
     setMap = setMap,
     setSpellMap = setSpellMap,
-    setBuildMap = setBuildMap,
+    setFoundingMap = setFoundingMap,
     setMoveMap = setMoveMap,
     setExploreMap = setExploreMap,
+    setBuildMap = setBuildMap,
     clear = clear,
     callback = callback,
     getType = getType,

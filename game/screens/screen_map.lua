@@ -11,6 +11,7 @@ local commands = require 'modules/commands'
 local dark_power = require 'modules/dark_power'
 local items = require 'modules/items'
 local camera = require 'modules/camera'
+local production = require 'modules/production'
 
 local ACTIONSTARTX = 760
 local ACTIONSTARTY = 200
@@ -30,9 +31,9 @@ local function SelectHero(k, e)
     buttons.explore.visible = 1
     buttons.explore.unit = e
     buttons.explore.unitKey = k
-    buttons.build.visible = 1
-    buttons.build.unit = e
-    buttons.build.unitKey = k
+    buttons.found_city.visible = 1
+    buttons.found_city.unit = e
+    buttons.found_city.unitKey = k
 end
 
 local function SelectNextHero()
@@ -73,7 +74,7 @@ local spellActions = {
     terraform = function()
         targeter.setSpellMap(1, true)
         targeter.callback = function(x, y)
-            worldmap.map[y][x].tile = "grass"
+            worldmap.map[y][x] = worldmap.makeTile(grass)
             targeter.clear()
         end
     end
@@ -83,6 +84,12 @@ local function EndTurn()
     targeter.clear()
     for k, e in pairs(units.get()) do
         e.moved = 0
+    end
+    -- Population growth
+    for y, row in pairs(worldmap.map) do
+        for x, cell in pairs(row) do
+            locations.growSettlement(x, y)
+        end
     end
     -- Convert Rebels!
     local rebelling = true
@@ -220,7 +227,7 @@ local function EndTurn()
         return true
     end, {})
     -- Regenerate health
-    commands.new(function(params) 
+    commands.new(function(params)
         for k, u in pairs(units.get()) do
             if u.class == "Hero" then
                 if u.hp < u.maxHp then
@@ -239,15 +246,33 @@ local function EndTurn()
         return true
     end, {})
     -- Start turn
-    commands.new(function(params) 
+    commands.new(function(params)
         SelectNextHero()
         return true
     end, {})
     -- Cast spells
-    commands.new(function(params) 
+    commands.new(function(params)
         if spells.cast() then
             spellActions[spells.getCasting().key]()
             spells.stopCasting()
+            return true
+        else
+            return true
+        end
+    end, {})
+    -- Buildings
+    commands.new(function(params)
+        production.progressBuilding()
+        local built = production.getFinishedBuilding()
+        if built then
+            targeter.clear()
+            targeter.setType("spell")
+            targeter.setBuildMap(built.data)
+            targeter.callback = function(x, y)
+                locations.add(built.data.key, x, y, 1)
+                production.removeBuilding(built.index)
+                targeter.clear()
+            end
         end
         return true
     end, {})
@@ -264,43 +289,45 @@ local function load()
     units.add("hero", 2, 2)
     
     -- The DARK TOWER!
-    worldmap.map[worldmap.MAPSIZEY - 1][worldmap.MAPSIZEX - 1] = {tile = "grass"}
-    worldmap.map[worldmap.MAPSIZEY - 2][worldmap.MAPSIZEX - 1] = {tile = "grass"}
-    worldmap.map[worldmap.MAPSIZEY - 1][worldmap.MAPSIZEX - 2] = {tile = "grass"}
+    worldmap.map[worldmap.MAPSIZEY - 1][worldmap.MAPSIZEX - 1] = worldmap.makeTile("grass")
+    worldmap.map[worldmap.MAPSIZEY - 2][worldmap.MAPSIZEX - 1] = worldmap.makeTile("grass")
+    worldmap.map[worldmap.MAPSIZEY - 1][worldmap.MAPSIZEX - 2] = worldmap.makeTile("grass")
     locations.add("dark_tower", worldmap.MAPSIZEX - 1, worldmap.MAPSIZEY - 1, 2)
     units.add("doom_guard", worldmap.MAPSIZEX - 1, worldmap.MAPSIZEY - 2, {x = worldmap.MAPSIZEX - 1, y = worldmap.MAPSIZEY - 2, "null"})
     units.add("doom_guard", worldmap.MAPSIZEX - 2, worldmap.MAPSIZEY - 2, {x = worldmap.MAPSIZEX - 2, y = worldmap.MAPSIZEY - 2, "null"})
     units.add("doom_guard", worldmap.MAPSIZEX - 2, worldmap.MAPSIZEY - 1, {x = worldmap.MAPSIZEX - 2, y = worldmap.MAPSIZEY - 1, "null"})
     
     -- Set tile alignments
-    worldmap.tileAlignmentChange()
+    locations.tileAlignmentChange()
 end
 
 local function show()
     buttons = {
-        inventory = {x = ACTIONSTARTX, y = 50, width = 100, height = 32, text = "Items", action = "showInventory", visible = 1, action = function() 
+        inventory = {x = ACTIONSTARTX, y = 50, width = 100, height = 32, text = "Items", visible = 1, action = function() 
             ScreenSwitch("inventory")
         end},
-        cast_spell = {x = ACTIONSTARTX, y = 100, width = 100, height = 32, text = "Cast Spell", action = "startCast", visible = 1, action = function() 
+        cast_spell = {x = ACTIONSTARTX, y = 100, width = 100, height = 32, text = "Cast Spell", visible = 1, action = function() 
             ScreenSwitch("cast")
         end},
-        end_phase = {x = ACTIONSTARTX, y = 150, width = 100, height = 32, text = "End Turn", action = "endTurn", visible = 1, action = function()
+        build = {x = ACTIONSTARTX, y = 150, width = 100, height = 32, text = "Build", visible = 1, action = function()
+            ScreenSwitch("build")
+        end},
+        end_phase = {x = ACTIONSTARTX, y = 500, width = 100, height = 32, text = "End Turn", visible = 1, action = function()
             EndTurn()
         end},
-        build = {x = ACTIONSTARTX, y = ACTIONSTARTY, width = 100, height = 32, text = "Build", action = "build", visible = 0, action = function(event)
-            if event.unit.moved == 1 then 
-                return 
+        found_city = {x = ACTIONSTARTX, y = ACTIONSTARTY, width = 100, height = 32, text = "Found City", visible = 0, action = function(event)
+            if event.unit.moved == 1 then
+                return
             end
-            -- TODO: Cancelling currently fucks this up, it needs to work better
             targeter.setUnit(event.unitKey)
-            targeter.setBuildMap(event.unit.x, event.unit.y, 1)
+            targeter.setFoundingMap(event.unit.x, event.unit.y, 1)
             targeter.setType("spell")
             targeter.callback = function(x, y)
-                locations.setCurrentBuildingTile(x, y, worldmap.map[y][x].tile)
-                ScreenSwitch("build")
+                locations.add("hamlet", x, y, 1)
+                locations.tileAlignmentChange()
             end
         end},
-        explore =  {x = ACTIONSTARTX, y = ACTIONSTARTY + 32, width = 100, height = 32, text = "Explore", action = "explore", visible = 0, action = function(event)
+        explore =  {x = ACTIONSTARTX, y = ACTIONSTARTY + 32, width = 100, height = 32, text = "Explore", visible = 0, action = function(event)
             if event.unit.moved == 1 then
                 return
             end
@@ -323,7 +350,8 @@ local function show()
                     end
                     InfoPopup("Ruins Explored!", itemText)
                 end
-                worldmap.map[y][x].tile = "grass"
+                worldmap.map[y][x] = worldmap.makeTile("grass")
+                locations.tileAlignmentChange()
                 targeter.clear()
                 event.unit.moved = 1
                 SelectNextHero()
@@ -386,13 +414,16 @@ local function mousepressed(x, y, button, istouch, presses)
     for k, e in pairs(targeter.getMap()) do
         if e.x > 0 and e.x <= worldmap.MAPSIZEX and e.y > 0 and e.y <= worldmap.MAPSIZEY then
             if e.x == tilex and e.y == tiley then
-                if targeter.getType() == "move" then
+                if targeter.getType() == "move" and targeter.getUnit() >= 0 then
                     local unitToMove = units.get()[targeter.getUnit()]
                     units.move(unitToMove, tilex, tiley)
                     targeter.clear()
                     SelectNextHero()
+                    return
                 elseif targeter.getType() == "spell" then
                     targeter.callback(tilex, tiley)
+                    SelectNextHero()
+                    return
                 end
             end
         end
@@ -470,16 +501,6 @@ local function draw()
     love.graphics.print("Command Points: "..resources.getCommandPoints(), ACTIONSTARTX, 400)
     love.graphics.print("Available Budget: "..resources.getAvailableGold(), ACTIONSTARTX, 432)
     love.graphics.print("Magic Points: "..spells.getMP(), ACTIONSTARTX, 464)
-
-    -- Dark power display
-    if dark_power.plot.name ~= "None" then
-        love.graphics.print("Current plot: "..dark_power.plot.name, ACTIONSTARTX, 500)
-        love.graphics.print("Plot progress: "..dark_power.getPower().."/"..dark_power.plot.target, ACTIONSTARTX, 532)
-        -- TODO: PLOT graphic!
-        if camera.isInView(dark_power.plot.x * tsize, dark_power.plot.y * tsize) then
-            love.graphics.draw(tiles.targeter, camera.adjustX(dark_power.plot.x * tsize), camera.adjustY(dark_power.plot.y * tsize), 0, 2)
-        end
-    end
 end
 
 return {
