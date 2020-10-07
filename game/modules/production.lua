@@ -46,7 +46,7 @@ end
 
 local function getFinishedBuilding()
     for k, v in pairs(inProgress) do
-        if v.type == "location" and v.progress >= v.cost then
+        if  v.progress >= v.cost then
             return {index = k, data = v}
         end
     end

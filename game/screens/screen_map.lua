@@ -268,13 +268,25 @@ local function EndTurn()
         production.progressBuilding()
         local built = production.getFinishedBuilding()
         if built then
-            targeter.clear()
-            targeter.setType("spell")
-            targeter.setBuildMap(built.data)
-            targeter.callback = function(x, y)
-                locations.add(built.data.key, x, y, 1)
-                production.removeBuilding(built.index)
+            if built.data.type == "location" then
                 targeter.clear()
+                targeter.setType("spell")
+                targeter.setBuildMap(built.data)
+                targeter.callback = function(x, y)
+                    locations.add(built.data.key, x, y, 1)
+                    production.removeBuilding(built.index)
+                    targeter.clear()
+                end
+            else
+                targeter.clear()
+                targeter.setType("spell")
+                targeter.setDeployMap(built.data)
+                targeter.callback = function(x, y)
+                    local place = locations.atPos(x, y)
+                    table.insert(place.units, units.getData()[built.data.key])
+                    production.removeBuilding(built.index)
+                    targeter.clear()
+                end
             end
         end
         return true

@@ -106,6 +106,14 @@ local function setBuildMap(buildData)
     end
 end
 
+local function setDeployMap(buildData)
+    for k, l in pairs(locations.get()) do
+        if l.maxUnits and #l.units < l.maxUnits then
+            table.insert(map, {x = l.x, y = l.y})
+        end
+    end
+end
+
 local function clear()
     map = {}
     unit = -1
@@ -135,6 +143,7 @@ return {
     setMoveMap = setMoveMap,
     setExploreMap = setExploreMap,
     setBuildMap = setBuildMap,
+    setDeployMap = setDeployMap,
     clear = clear,
     callback = callback,
     getType = getType,

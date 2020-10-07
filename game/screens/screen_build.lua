@@ -18,13 +18,28 @@ local function show()
         end}
     }
     for k, l in pairs(locations.getAllowedBuildings()) do
-        buttons["building_"..l.key] =  {
+        buttons["building_"..k] =  {
             x = 0, y = (k-1) * 32, width = 300, height = 32, 
             text = l.name.." (Prd: "..l.production..", Upk: "..l.upkeep..")", 
             visible = 1, loc = l, action = function(event)
                 production.beginBuilding({name = l.name, cost = l.production, type = "location", key = l.key})  
             end
         }
+    end
+    if locations.getFreeUnitSlotCount() > 0 then
+        local i = 0
+        for k, u in pairs(units.getData()) do
+            if u.production > 0 then
+                buttons["unit_"..k] = {
+                    x = 315, y = i * 32, width = 300, height = 32,
+                    text = u.name.." (Prd: "..u.production..", Upk: "..u.upkeep..")",
+                    visible = 1, unit = u, action = function(event)
+                        production.beginBuilding({name = u.name, cost = u.production, type = "unit", key = k})
+                    end
+                }
+                i = i + 1
+            end
+        end
     end
 end
 

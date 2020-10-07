@@ -9,7 +9,7 @@ local data =  {
     fortress = {key = "fortress", name = "Fortress", tile = "cave", allowedTiles = {}, upkeep = 0, production = 0, hp = 10, maxHp = 10},
     dark_tower = {key = "dark_tower", name = "Dark Tower", tile = "tower", allowedTiles = {}, upkeep = 0, production = 0, hp = 100, maxHp = 100},
     tower = {key = "tower", name = "Wizard's Tower", tile = "tower", allowedTiles = {}, upkeep = 0, production = 0, hp = 10, maxHp = 10, align = 2},
-    barracks = {key = "barracks", name = "Barracks", tile = "city", allowedTiles = {"grass"}, upkeep = 0, production = 500, hp = 5, maxHp = 5},
+    barracks = {key = "barracks", name = "Barracks", tile = "city", allowedTiles = {"grass"}, upkeep = 0, production = 500, hp = 5, maxHp = 5, units = {}, maxUnits = 6},
     mine = {key = "mine", name = "Gold Mine", tile = "city", allowedTiles = {"ore"}, upkeep = -50, production = 500, hp = 2, maxHp = 2},
     node = {key = "node", name = "Magical Node", tile = "city", allowedTiles = {"crystal"}, upkeep = 20, production = 500, hp = 2, maxHp = 2},
     sylvan_glade = {key = "sylvan_glade", name = "Sylvan Glade", tile = "city", allowedTiles = {"forest"}, upkeep = 10, production = 500, hp = 5, maxHp = 5},
@@ -205,6 +205,16 @@ local function allowedTile(allowedTiles, tile)
     return false
 end
 
+local function getFreeUnitSlotCount()
+    local slots = 0
+    for k, l in pairs(locations) do
+        if l.maxUnits then
+            slots = slots + l.maxUnits - #l.units
+        end
+    end
+    return slots
+end
+
 return {
     add = add,
     get = get,
@@ -216,5 +226,6 @@ return {
     atPos = atPos,
     tileAlignmentChange = tileAlignmentChange,
     growSettlement = growSettlement,
-    allowedTile = allowedTile
+    allowedTile = allowedTile,
+    getFreeUnitSlotCount = getFreeUnitSlotCount
 }
