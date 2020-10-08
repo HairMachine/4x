@@ -10,6 +10,7 @@ local screens = {
     cast = require 'screens/screen_cast',
     build = require 'screens/screen_build',
     inventory = require 'screens/screen_inventory',
+    deploy = require 'screens/screen_deploy',
     map = require 'screens/screen_map',
     win = require 'screens/screen_win',
     lose = require 'screens/screen_lose'

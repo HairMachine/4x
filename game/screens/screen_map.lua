@@ -14,7 +14,6 @@ local camera = require 'modules/camera'
 local production = require 'modules/production'
 
 local ACTIONSTARTX = 760
-local ACTIONSTARTY = 200
 local ACTIONSIZEX = 64
 local ACTIONSIZEY = 32
 
@@ -280,10 +279,10 @@ local function EndTurn()
             else
                 targeter.clear()
                 targeter.setType("spell")
-                targeter.setDeployMap(built.data)
+                targeter.setBuildUnitMap(built.data)
                 targeter.callback = function(x, y)
                     local place = locations.atPos(x, y)
-                    table.insert(place.units, units.getData()[built.data.key])
+                    table.insert(place.units, built.data.key)
                     production.removeBuilding(built.index)
                     targeter.clear()
                 end
@@ -329,10 +328,10 @@ local function show()
                 ScreenSwitch("build")
             end
         end},
-        end_phase = {x = ACTIONSTARTX, y = 500, width = 100, height = 32, text = "End Turn", visible = 1, action = function()
-            EndTurn()
+        deploy = {x = ACTIONSTARTX, y = 200, width = 100, height = 32, text = "Deploy", visible = 1, action = function()
+            ScreenSwitch("deploy")
         end},
-        found_city = {x = ACTIONSTARTX, y = ACTIONSTARTY, width = 100, height = 32, text = "Found City", visible = 0, action = function(event)
+        found_city = {x = ACTIONSTARTX, y = 250, width = 100, height = 32, text = "Found City", visible = 0, action = function(event)
             if event.unit.moved == 1 then
                 return
             end
@@ -344,7 +343,7 @@ local function show()
                 locations.tileAlignmentChange()
             end
         end},
-        explore =  {x = ACTIONSTARTX, y = ACTIONSTARTY + 32, width = 100, height = 32, text = "Explore", visible = 0, action = function(event)
+        explore =  {x = ACTIONSTARTX, y = 300, width = 100, height = 32, text = "Explore", visible = 0, action = function(event)
             if event.unit.moved == 1 then
                 return
             end
@@ -374,6 +373,9 @@ local function show()
                 event.unit.moved = 1
                 SelectNextHero()
             end
+        end},
+        end_phase = {x = ACTIONSTARTX, y = 500, width = 100, height = 32, text = "End Turn", visible = 1, action = function()
+            EndTurn()
         end}
     }
 

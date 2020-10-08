@@ -1,13 +1,9 @@
 local ui = require 'modules/ui_manager'
 
 local buttons = {
-    dummy = {x = 600, y = 100, width = 100, height = 50, text = "OK", action = "dummy", visible = 1}
-}
-
-local buttonActions = {
-    dummy = function()
-        
-    end
+    cancel = {x = 600, y = 100, width = 100, height = 50, text = "Cancel", visible = 1, action = function()
+    
+    end}
 }
 
 local function load()
@@ -27,11 +23,11 @@ local function keypressed(key, scancode, isrepeat)
 end
 
 local function mousepressed(x, y, button, istouch, presses)
-    buttonActions[ui.click(buttons, x, y)]()
+   ui.click(buttons, x, y)
 end
 
 local function draw()
-    love.graphics.print("Inventory")
+    love.graphics.print("Screen")
     ui.draw(buttons)
 end
 

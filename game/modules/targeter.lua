@@ -106,10 +106,24 @@ local function setBuildMap(buildData)
     end
 end
 
-local function setDeployMap(buildData)
+local function setBuildUnitMap(buildData)
     for k, l in pairs(locations.get()) do
         if l.maxUnits and #l.units < l.maxUnits then
             table.insert(map, {x = l.x, y = l.y})
+        end
+    end
+end
+
+local function setDeployMap()
+    for k, l in pairs(locations.get()) do
+        if l.maxUnits and l.maxUnits > 0 then
+            for yt = l.y - 3, l.y + 3 do
+                for xt = l.x - 3, l.x + 3 do
+                    if yt > 0 and xt > 0 and yt <= worldmap.MAPSIZEY and yt <= worldmap.MAPSIZEX then
+                        table.insert(map, {x = xt, y = yt})
+                    end
+                end
+            end
         end
     end
 end
@@ -143,6 +157,7 @@ return {
     setMoveMap = setMoveMap,
     setExploreMap = setExploreMap,
     setBuildMap = setBuildMap,
+    setBuildUnitMap = setBuildUnitMap,
     setDeployMap = setDeployMap,
     clear = clear,
     callback = callback,
