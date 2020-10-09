@@ -21,7 +21,6 @@ local function show()
             for k2, u in pairs(l.units) do
                 buttons['unit_'..k..'_'..k2] = {
                     x = 0, y = ypos, width = 300, height = 32, text = units.getData()[u].name, visible = 1, action = function()
-                        targeter.clear()
                         targeter.setType("spell")
                         targeter.setDeployMap()
                         targeter.callback = function(x, y)

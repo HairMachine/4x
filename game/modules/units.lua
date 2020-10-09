@@ -180,7 +180,7 @@ local function remove()
     for i = #units, 1, -1 do
         if units[i].hp <= 0 then
             -- Spawn a new unit from this unit's parent
-            if units[i].parent ~= nil then
+            if units[i].parent ~= nil and units[i].team == 2 then
                 table.insert(respawning, {data = units[i].parent, timer = 5})
             end
             animation.clear(units[i].animation)
@@ -272,6 +272,16 @@ local function atPos(x, y)
         end
     end
     return {name = "None"}
+end
+
+local function removeAtPos(x, y)
+    for k, u in pairs(units) do
+        if u.x == x and u.y == y then
+            animation.clear(units[k].animation)
+            table.remove(units, k)
+            return
+        end
+    end
 end
 
 local function getDistBetween(fx, fy, tx, ty)
@@ -383,6 +393,7 @@ return {
     add = add,
     remove = remove,
     atPos = atPos,
+    removeAtPos = removeAtPos,
     getClosestBuilding = getClosestBuilding,
     getClosestUnit = getClosestUnit,
     getClosestBuildingWithinRange = getClosestBuildingWithinRange,

@@ -90,6 +90,7 @@ local function setExploreMap(x, y, radius)
 end
 
 local function setBuildMap(buildData)
+    map = {}
     for k, l in pairs(locations.get()) do
         if l.team == 1 then
             local bdata = locations.getData()[buildData.key]
@@ -107,6 +108,7 @@ local function setBuildMap(buildData)
 end
 
 local function setBuildUnitMap(buildData)
+    map = {}
     for k, l in pairs(locations.get()) do
         if l.maxUnits and #l.units < l.maxUnits then
             table.insert(map, {x = l.x, y = l.y})
@@ -115,6 +117,7 @@ local function setBuildUnitMap(buildData)
 end
 
 local function setDeployMap()
+    map = {}
     for k, l in pairs(locations.get()) do
         if l.maxUnits and l.maxUnits > 0 then
             for yt = l.y - 3, l.y + 3 do
@@ -124,6 +127,15 @@ local function setDeployMap()
                     end
                 end
             end
+        end
+    end
+end
+
+local function setRecallMap()
+    map = {}
+    for k, u in pairs(units.get()) do
+        if u.team == 1 and u.class ~= "Hero" then
+            table.insert(map, {x = u.x,  y = u.y})
         end
     end
 end
@@ -159,6 +171,7 @@ return {
     setBuildMap = setBuildMap,
     setBuildUnitMap = setBuildUnitMap,
     setDeployMap = setDeployMap,
+    setRecallMap = setRecallMap,
     clear = clear,
     callback = callback,
     getType = getType,

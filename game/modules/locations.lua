@@ -9,7 +9,7 @@ local data =  {
     fortress = {key = "fortress", name = "Fortress", tile = "cave", allowedTiles = {}, upkeep = 0, production = 0, hp = 10, maxHp = 10},
     dark_tower = {key = "dark_tower", name = "Dark Tower", tile = "tower", allowedTiles = {}, upkeep = 0, production = 0, hp = 100, maxHp = 100},
     tower = {key = "tower", name = "Wizard's Tower", tile = "tower", allowedTiles = {}, upkeep = 0, production = 0, hp = 10, maxHp = 10, align = 2},
-    barracks = {key = "barracks", name = "Barracks", tile = "city", allowedTiles = {"grass"}, upkeep = 0, production = 500, hp = 5, maxHp = 5, units = {}, maxUnits = 6},
+    barracks = {key = "barracks", name = "Barracks", tile = "city", allowedTiles = {"grass"}, upkeep = 0, production = 500, hp = 5, maxHp = 5, maxUnits = 6},
     mine = {key = "mine", name = "Gold Mine", tile = "city", allowedTiles = {"ore"}, upkeep = -50, production = 500, hp = 2, maxHp = 2},
     node = {key = "node", name = "Magical Node", tile = "city", allowedTiles = {"crystal"}, upkeep = 20, production = 500, hp = 2, maxHp = 2},
     sylvan_glade = {key = "sylvan_glade", name = "Sylvan Glade", tile = "city", allowedTiles = {"forest"}, upkeep = 10, production = 500, hp = 5, maxHp = 5},
@@ -34,6 +34,9 @@ local function add(type, x, y, team)
     local loc = {}
     for k, v in pairs(data[type]) do
         loc[k] = v
+        if k == "maxUnits" then
+            loc.units = {}
+        end
     end
     loc.x = x
     loc.y = y

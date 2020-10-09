@@ -268,7 +268,6 @@ local function EndTurn()
         local built = production.getFinishedBuilding()
         if built then
             if built.data.type == "location" then
-                targeter.clear()
                 targeter.setType("spell")
                 targeter.setBuildMap(built.data)
                 targeter.callback = function(x, y)
@@ -277,7 +276,6 @@ local function EndTurn()
                     targeter.clear()
                 end
             else
-                targeter.clear()
                 targeter.setType("spell")
                 targeter.setBuildUnitMap(built.data)
                 targeter.callback = function(x, y)
@@ -317,21 +315,36 @@ end
 
 local function show()
     buttons = {
-        inventory = {x = ACTIONSTARTX, y = 50, width = 100, height = 32, text = "Items", visible = 1, action = function() 
+        inventory = {x = ACTIONSTARTX, y = 32, width = 100, height = 32, text = "Items", visible = 1, action = function() 
             ScreenSwitch("inventory")
         end},
-        cast_spell = {x = ACTIONSTARTX, y = 100, width = 100, height = 32, text = "Cast Spell", visible = 1, action = function() 
+        cast_spell = {x = ACTIONSTARTX, y = 64, width = 100, height = 32, text = "Cast Spell", visible = 1, action = function() 
             ScreenSwitch("cast")
         end},
-        build = {x = ACTIONSTARTX, y = 150, width = 100, height = 32, text = "Build", visible = 1, action = function()
+        build = {x = ACTIONSTARTX, y = 96, width = 100, height = 32, text = "Build", visible = 1, action = function()
             if resources.getAvailableGold() > 0 then
                 ScreenSwitch("build")
             end
         end},
-        deploy = {x = ACTIONSTARTX, y = 200, width = 100, height = 32, text = "Deploy", visible = 1, action = function()
+        deploy = {x = ACTIONSTARTX, y = 128, width = 100, height = 32, text = "Deploy", visible = 1, action = function()
             ScreenSwitch("deploy")
         end},
-        found_city = {x = ACTIONSTARTX, y = 250, width = 100, height = 32, text = "Found City", visible = 0, action = function(event)
+        recall = {x = ACTIONSTARTX, y = 160, width = 100, height = 32, text = "Recall", visible = 1, action = function()
+            targeter.setRecallMap()
+            targeter.setType("spell")
+            targeter.callback = function(x, y)
+                local u = units.atPos(x, y)
+                for k, l in pairs(locations.get()) do
+                    if l.x == u.parent.x and l.y == u.parent.y then
+                        table.insert(l.units, u.type)
+                        break
+                    end
+                end
+                units.removeAtPos(x, y)
+                targeter.clear()
+            end
+        end},
+        found_city = {x = ACTIONSTARTX, y = 192, width = 100, height = 32, text = "Found City", visible = 0, action = function(event)
             if event.unit.moved == 1 then
                 return
             end
@@ -341,9 +354,10 @@ local function show()
             targeter.callback = function(x, y)
                 locations.add("hamlet", x, y, 1)
                 locations.tileAlignmentChange()
+                targeter.clear()
             end
         end},
-        explore =  {x = ACTIONSTARTX, y = 300, width = 100, height = 32, text = "Explore", visible = 0, action = function(event)
+        explore =  {x = ACTIONSTARTX, y = 224, width = 100, height = 32, text = "Explore", visible = 0, action = function(event)
             if event.unit.moved == 1 then
                 return
             end
@@ -378,9 +392,6 @@ local function show()
             EndTurn()
         end}
     }
-
-    -- Start!
-    SelectNextHero()
 end
 
 local function update()
@@ -425,8 +436,8 @@ local function mousepressed(x, y, button, istouch, presses)
         if e.moved == 0 and e.x == tilex and e.y == tiley then
             if e.type == "hero" then
                 SelectHero(k, e)
+                return
             end
-            return
         end
     end
 
