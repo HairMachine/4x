@@ -19,19 +19,21 @@ local function show()
     for k, l in pairs(locations.get()) do
         if l.maxUnits then
             for k2, u in pairs(l.units) do
-                buttons['unit_'..k..'_'..k2] = {
-                    x = 0, y = ypos, width = 300, height = 32, text = units.getData()[u].name, visible = 1, action = function()
-                        targeter.setType("spell")
-                        targeter.setDeployMap()
-                        targeter.callback = function(x, y)
-                            units.add(u, x, y, {key = l.key, x = l.x, y = l.y})
-                            table.remove(l.units, k2)
-                            targeter.clear()
+                if u.cooldown <= 0 then
+                    buttons['unit_'..k..'_'..k2] = {
+                        x = 0, y = ypos, width = 300, height = 32, text = units.getData()[u.unit].name, visible = 1, action = function()
+                            targeter.setType("spell")
+                            targeter.setDeployMap()
+                            targeter.callback = function(x, y)
+                                units.add(u.unit, x, y, {key = l.key, x = l.x, y = l.y})
+                                table.remove(l.units, k2)
+                                targeter.clear()
+                            end
+                            ScreenSwitch("map")
                         end
-                        ScreenSwitch("map")
-                    end
-                }
-                ypos = ypos + 32
+                    }
+                    ypos = ypos + 32
+                end
             end
         end
     end

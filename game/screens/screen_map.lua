@@ -90,10 +90,21 @@ local function EndTurn()
             locations.growSettlement(x, y)
         end
     end
-    -- Upkeep costs
+    -- Upkeep costs, cooldowns
     for k, l in pairs(locations.get()) do
         if l.team == 1 then
             resources.spendGold(l.upkeep)
+            if l.maxUnits then
+                for k2, u in pairs(l.units) do
+                    u.cooldown = u.cooldown - 1
+                    resources.spendGold(math.floor(units.getData()[u.unit].upkeep / 2))
+                end
+            end
+        end
+    end
+    for k, u in pairs(units.get()) do
+        if u.team == 1 then
+            resources.spendGold(u.upkeep)
         end
     end
     -- Taxes
@@ -280,7 +291,7 @@ local function EndTurn()
                 targeter.setBuildUnitMap(built.data)
                 targeter.callback = function(x, y)
                     local place = locations.atPos(x, y)
-                    table.insert(place.units, built.data.key)
+                    table.insert(place.units, {unit = built.data.key, cooldown = 0})
                     production.removeBuilding(built.index)
                     targeter.clear()
                 end
@@ -336,7 +347,7 @@ local function show()
                 local u = units.atPos(x, y)
                 for k, l in pairs(locations.get()) do
                     if l.x == u.parent.x and l.y == u.parent.y then
-                        table.insert(l.units, u.type)
+                        table.insert(l.units, {unit = u.type, cooldown = 5})
                         break
                     end
                 end
