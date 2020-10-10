@@ -277,12 +277,11 @@ local function load()
 
     -- Wizard's tower always first
     locations.add("tower", 2, 2, 1)
-    units.add("hero", 2, 2)
     
     -- The DARK TOWER!
-    worldmap.map[worldmap.MAPSIZEY - 1][worldmap.MAPSIZEX - 1] = worldmap.makeTile("grass")
-    worldmap.map[worldmap.MAPSIZEY - 2][worldmap.MAPSIZEX - 1] = worldmap.makeTile("grass")
-    worldmap.map[worldmap.MAPSIZEY - 1][worldmap.MAPSIZEX - 2] = worldmap.makeTile("grass")
+    worldmap.map[worldmap.MAPSIZEY - 1][worldmap.MAPSIZEX - 1] = worldmap.makeTile("grass", 99)
+    worldmap.map[worldmap.MAPSIZEY - 2][worldmap.MAPSIZEX - 1] = worldmap.makeTile("grass", 99)
+    worldmap.map[worldmap.MAPSIZEY - 1][worldmap.MAPSIZEX - 2] = worldmap.makeTile("grass", 99)
     locations.add("dark_tower", worldmap.MAPSIZEX - 1, worldmap.MAPSIZEY - 1, 2)
     units.add("doom_guard", worldmap.MAPSIZEX - 1, worldmap.MAPSIZEY - 2, {x = worldmap.MAPSIZEX - 1, y = worldmap.MAPSIZEY - 2, "null"})
     units.add("doom_guard", worldmap.MAPSIZEX - 2, worldmap.MAPSIZEY - 2, {x = worldmap.MAPSIZEX - 2, y = worldmap.MAPSIZEY - 2, "null"})
@@ -290,6 +289,10 @@ local function load()
     
     -- Set tile alignments
     locations.tileAlignmentChange()
+
+    -- Starting units
+    units.add("hero", 2, 2)
+    worldmap.explore(2, 2, 2)
 end
 
 local function show()
@@ -360,7 +363,7 @@ local function show()
                     end
                     InfoPopup("Ruins Explored!", itemText)
                 end
-                worldmap.map[y][x] = worldmap.makeTile("grass")
+                worldmap.map[y][x] = worldmap.makeTile("grass", worldmap.map[y][x].align)
                 locations.tileAlignmentChange()
                 targeter.clear()
                 event.unit.moved = 1
@@ -427,6 +430,7 @@ local function mousepressed(x, y, button, istouch, presses)
                 if targeter.getType() == "move" and targeter.getUnit() >= 0 then
                     local unitToMove = units.get()[targeter.getUnit()]
                     units.move(unitToMove, tilex, tiley)
+                    worldmap.explore(tilex, tiley, 2)
                     targeter.clear()
                     SelectNextHero()
                     return
@@ -443,14 +447,14 @@ end
 local function draw()
     for y = 1, worldmap.MAPSIZEY do
         for x = 1, worldmap.MAPSIZEX do
-            if camera.isInView(x * tsize, y * tsize) then
+            if camera.isInView(x * tsize, y * tsize) and worldmap.map[y][x].align < 99 then
                 love.graphics.draw(tiles[worldmap.map[y][x].tile], camera.adjustX(x * tsize), camera.adjustY(y * tsize), 0, 2)
             end
         end
     end
 
     for k, e in pairs(locations.get()) do
-        if camera.isInView(e.x * tsize, e.y * tsize) then
+        if camera.isInView(e.x * tsize, e.y * tsize) and worldmap.map[e.y][e.x].align < 99 then
             love.graphics.draw(tiles[e.tile], camera.adjustX(e.x * tsize), camera.adjustY(e.y * tsize), 0 , 2)
         end
     end
@@ -471,13 +475,13 @@ local function draw()
     -- Health bars
     love.graphics.setColor(0, 1, 0, 1)
     for k, u in pairs(units.get()) do
-        if camera.isInView(u.x * tsize, u.y * tsize) then
+        if camera.isInView(u.x * tsize, u.y * tsize) and worldmap.map[u.y][u.x].align < 99 then
             local length = math.floor(u.hp / u.maxHp * tsize)
             love.graphics.rectangle("fill", camera.adjustX(u.x * tsize), camera.adjustY(u.y * 32 + tsize - 2), length, 2)
         end
     end
     for k, l in pairs(locations.get()) do
-        if camera.isInView(l.x * tsize, l.y * tsize) then
+        if camera.isInView(l.x * tsize, l.y * tsize) and worldmap.map[l.y][l.x].align < 99 then
             local length = math.floor(l.hp / l.maxHp * 32)
             love.graphics.rectangle("fill", camera.adjustX(l.x * tsize), camera.adjustY(l.y * tsize + tsize - 2), length, 2)
         end

@@ -15,12 +15,12 @@ local tileData = {
     crystal = {tile = "crystal", abundance = 0, production = 0}
 }
 
-local function makeTile(type)
+local function makeTile(type, align)
     local newTile = {}
     for k, v in pairs(tileData[type]) do
         newTile[k] = v
     end
-    newTile.align = 2
+    newTile.align = align
     newTile.food = 0
     newTile.desirability = 0
     newTile.revenue = 0
@@ -57,7 +57,7 @@ local function generate()
     for y = 1, MAPSIZEY do
         map[y] = {}
         for x = 1, MAPSIZEX do
-            map[y][x] = makeTile("water")
+            map[y][x] = makeTile("water", 99)
         end
     end
 
@@ -68,7 +68,7 @@ local function generate()
             local starty = (r - 1) * 5
             for ky, vy in pairs(area) do
                 for kx, vx in pairs(vy) do
-                    map[starty + ky][startx + kx] = makeTile(vx)
+                    map[starty + ky][startx + kx] = makeTile(vx, 99)
                 end
             end
         end
@@ -79,7 +79,7 @@ local function generate()
         -- Connect the tiles
         for y = connected * 5 + 1, connected * 5 + 3 do
             for x = c * 5 + 4, c * 5 + 7 do
-                map[y][x] = makeTile("grass")
+                map[y][x] = makeTile("grass", 99)
             end
         end
     end
@@ -96,7 +96,7 @@ local function generate()
             local yp = y * 3 + yoffs + 2
             local xp = x * 3 + xoffs + 2
             if xp <= MAPSIZEX and yp <= MAPSIZEY then
-                map[yp][xp] = makeTile(til)
+                map[yp][xp] = makeTile(til, 99)
             end
             if til == "ore" then til = "crystal" else til = "ore" end
         end
@@ -113,11 +113,24 @@ local function getTotalPopulation()
     return pop
 end
 
+local function explore(x, y, range)
+    for yt = y - range, y + range do
+        for xt = x - range, x + range do
+            if yt > 0 and yt <= MAPSIZEY and xt > 0 and xt <= MAPSIZEX then
+                if map[yt][xt].align == 99 then
+                    map[yt][xt].align = 2
+                end
+            end
+        end
+    end
+end
+
 return {
     map = map,
     MAPSIZEX = MAPSIZEX,
     MAPSIZEY = MAPSIZEY,
     generate = generate,
     makeTile = makeTile,
-    getTotalPopulation = getTotalPopulation
+    getTotalPopulation = getTotalPopulation,
+    explore = explore
 }

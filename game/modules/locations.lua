@@ -100,7 +100,9 @@ local function tileAlignmentChange()
     local map = worldmap.map
     for y = 1, worldmap.MAPSIZEY do
         for x = 1, worldmap.MAPSIZEX do
-            map[y][x].align = 2
+            if map[y][x].align == 1 then
+                map[y][x].align = 2
+            end
         end
     end
     for k, l in pairs(locations) do

@@ -3,6 +3,7 @@ local animation = require 'modules/animation'
 local commands = require 'modules/commands'
 local resources = require 'modules/resources'
 local items = require 'modules/items'
+local worldmap = require 'modules/worldmap'
 
 local data = {
     grunter = {
@@ -55,15 +56,20 @@ local function setIdleAnimation(unit)
     if unit.animation then
         animation.clear(unit.animation)
     end
-    unit.animation = animation.add(true, {
-        {tile = unit.tile, x = unit.x * 32, y =  unit.y * 32, tics = 15},
-        {tile = unit.tile, x = unit.x * 32, y =  unit.y * 32 - 5, tics = 15}
-    })
+    if worldmap.map[unit.y][unit.x].align < 99 then
+        unit.animation = animation.add(true, {
+            {tile = unit.tile, x = unit.x * 32, y =  unit.y * 32, tics = 15},
+            {tile = unit.tile, x = unit.x * 32, y =  unit.y * 32 - 5, tics = 15}
+        })
+    end
 end
 
 local function setMoveAnimation(unit, oldx, newx, oldy, newy)
     if unit.animation then
         animation.clear(unit.animation)
+    end
+    if worldmap.map[oldy][oldx].align == 99 then
+        return
     end
     local animationData = {}
     local xdiff = 0
@@ -81,6 +87,9 @@ end
 local function setAttackAnimation(unit, newx, newy)
     if unit.animation then
         animation.clear(unit.animation)
+    end
+    if worldmap.map[newy][newx].align == 99 then
+        return
     end
     local animationData = {}
     local xdiff = 0
