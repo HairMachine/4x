@@ -108,7 +108,7 @@ local function EndTurn()
         end
     end
     -- Taxes
-    resources.spendGold(-math.floor(worldmap.getTotalPopulation() / 10))
+    resources.spendGold(-math.floor(worldmap.getTotalPopulation() * 2))
     -- Move minions (+ pathfinding)
     for k, e in pairs(units.get()) do
         local target = {name = "None"}
