@@ -28,32 +28,30 @@ local function turnsToBuild(cost)
 end
 
 local function beginBuilding(buildData)
-    buildData.progress = 0
-    table.insert(inProgress, buildData)
+    for k, v in pairs(buildData) do
+        inProgress[k] = v
+    end
+    inProgress.progress = 0
 end
 
 local function progressBuilding()
-    if #inProgress == 0 then
+    if not inProgress.name then
         return
     end
     -- Split the production value between the number of things being built
     setProductionValue()
-    local pa = math.floor(production / #inProgress)
-    for k, v in pairs(inProgress) do
-        v.progress = v.progress + pa
-    end
+    inProgress.progress = inProgress.progress + production
 end
 
 local function getFinishedBuilding()
-    for k, v in pairs(inProgress) do
-        if  v.progress >= v.cost then
-            return {index = k, data = v}
-        end
+    if not inProgress.name then return end
+    if inProgress.progress >= inProgress.cost then
+        return inProgress
     end
 end
 
-local function removeBuilding(index)
-    table.remove(inProgress, index)
+local function removeBuilding()
+    inProgress = {}
 end
 
 return {
