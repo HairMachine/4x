@@ -1,3 +1,9 @@
+local worldmap = require 'modules/worldmap'
+local units = require 'modules/units'
+local locations = require 'modules/locations'
+local targeter = require 'modules/targeter'
+local resources = require 'modules/resources'
+
 local mp = 25
 local rp = 5
 local sp = 5
@@ -7,11 +13,30 @@ local casting = "none"
 local cpSpent = 0
 
 local data = {
-    none = {name = "", key = "", castCost = 0, researchCost = 0},
-    phase_tower = {name = "Phase Tower", key = "phase_tower", castCost = 10, researchCost = 0},
-    lightning_bolt = {name = "Lighting Bolt", key = "lightning_bolt", castCost = 5, researchCost = 100},
-    summon_hero = {name = "Summon Hero", key = "summon_hero", castCost = 30, researchCost = 150},
-    terraform = {name = "Terraform", key = "terraform", castCost = 5, researchCost = 50}
+    none = {name = "", key = "", castCost = 0, researchCost = 0, action = function() end},
+    lightning_bolt = {name = "Lighting Bolt", key = "lightning_bolt", castCost = 5, researchCost = 100, action = function()
+        targeter.setSpellMap(3, true)
+        targeter.callback = function(x, y)
+            for k, u in pairs(units.get()) do
+                if x == u.x and y == u.y then
+                    u.hp = u.hp - 10
+                end
+            end
+            units.remove()
+            targeter.clear()
+        end
+    end},
+    summon_hero = {name = "Summon Hero", key = "summon_hero", castCost = 30, researchCost = 150, action = function()
+        units.add("hero", locations.get()[1].x, locations.get()[1].y, {})
+        resources.spendCommandPoints(1)
+    end},
+    terraform = {name = "Terraform", key = "terraform", castCost = 5, researchCost = 50, action = function()
+        targeter.setSpellMap(1, true)
+        targeter.callback = function(x, y)
+            worldmap.map[y][x] = worldmap.makeTile(grass)
+            targeter.clear()
+        end
+    end}
 }
 
 local known = {}
@@ -69,6 +94,8 @@ local function cast()
     cpSpent = cpSpent + cost
     if cpSpent >= data[casting].castCost then
         cpSpent = 0
+        data[casting].action()
+        casting = "none"
         return true
     end
     return false

@@ -52,33 +52,6 @@ local function InfoPopup(title, description)
     }}
 end
 
-local spellActions = {
-    none = function() end,
-    lightning_bolt = function()
-        targeter.setSpellMap(3, true)
-        targeter.callback = function(x, y)
-            for k, u in pairs(units.get()) do
-                if x == u.x and y == u.y then
-                    u.hp = u.hp - 10
-                end
-            end
-            units.remove()
-            targeter.clear()
-        end
-    end,
-    summon_hero = function()
-        units.add("hero", locations.get()[1].x, locations.get()[1].y, {})
-        resources.spendCommandPoints(1)
-    end,
-    terraform = function()
-        targeter.setSpellMap(1, true)
-        targeter.callback = function(x, y)
-            worldmap.map[y][x] = worldmap.makeTile(grass)
-            targeter.clear()
-        end
-    end
-}
-
 local function EndTurn()
     targeter.clear()
     for k, e in pairs(units.get()) do
@@ -265,13 +238,8 @@ local function EndTurn()
     end, {})
     -- Cast spells
     commands.new(function(params)
-        if spells.cast() then
-            spellActions[spells.getCasting().key]()
-            spells.stopCasting()
-            return true
-        else
-            return true
-        end
+        spells.cast()
+        return true
     end, {})
     -- Buildings
     commands.new(function(params)
