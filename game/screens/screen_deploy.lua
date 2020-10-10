@@ -23,7 +23,7 @@ local function show()
                     buttons['unit_'..k..'_'..k2] = {
                         x = 0, y = ypos, width = 300, height = 32, text = units.getData()[u.unit].name, visible = 1, action = function()
                             targeter.setType("spell")
-                            targeter.setDeployMap()
+                            targeter.setDeployMap(u.unit)
                             targeter.callback = function(x, y)
                                 units.add(u.unit, x, y, {key = l.key, x = l.x, y = l.y})
                                 table.remove(l.units, k2)

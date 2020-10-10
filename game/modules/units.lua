@@ -14,20 +14,24 @@ local data = {
         allowedTiles = {"grass", "ore", "crystal", "forest", "tundra"}
     },
     soldier = {
-        name = "Soldier", tile = "army", speed = 1, attack = 1, hp = 5, team = 1, moved = 0, class = "Skirmisher", range = 12, production = 300, upkeep = 4,
+        name = "Soldier", tile = "army", speed = 1, attack = 1, hp = 5, team = 1, moved = 0, class = "Skirmisher", range = 12, production = 200, upkeep = 2,
         allowedTiles = {"grass", "ore", "crystal", "forest", "tundra"}
     },
     elf_skirmisher = {
-        name = "Centaur Archers", tile = "army", speed = 1, attack = 8, hp = 2, team = 1, moved = 0, class = "Skirmisher", range = 10, production = 300, upkeep = 4,
+        name = "Centaur Archers", tile = "army", speed = 1, attack = 8, hp = 2, team = 1, moved = 0, class = "Skirmisher", range = 10, production = 400, upkeep = 6,
         allowedTiles = {"grass", "ore", "crystal", "forest", "tundra"}
     },
     dwarf_sapper = {
-        name = "Steam Cannon", tile = "army", speed = 1, attack = 1, hp = 10, team = 1, moved = 0, class = "Sieger", range = 8, production = 300, upkeep = 4,
-        allowedTiles = {"grass", "ore", "crystal", "mountain", "tundra"}
+        name = "Steam Cannon", tile = "army", speed = 1, attack = 4, hp = 10, team = 1, moved = 0, class = "Sieger", range = 8, production = 300, upkeep = 4,
+        allowedTiles = {"grass", "ore", "crystal", "tundra"}
     },
     barbarian = {
-        name = "Snakeman Raiders", tile = "army", speed = 1, attack = 3, hp = 5, team = 1, moved = 0, class = "Skirmisher", range = 12, production = 300, upkeep = 4,
-        allowedTiles = {"grass", "ore", "crystal", "tundra", "forest"}
+        name = "Snakeman Raiders", tile = "army", speed = 1, attack = 3, hp = 5, team = 1, moved = 0, class = "Skirmisher", range = 12, production = 400, upkeep = 4,
+        allowedTiles = {"grass", "ore", "crystal", "tundra", "forest", "mountain"}
+    },
+    barque = {
+        name = "Barque", tile = "army", speed = 1, attack = 4, hp = 4, team = 1, moved = 0, class = "Sieger", range = 12, production = 800, upkeep = 8,
+        allowedTiles = {"water"}
     },
     hero = {
         name = "Hero", tile = "hero", speed = 1, attack = 5, hp = 10, team = 1, moved = 0, class = "Hero", range = 0, production = 0, upkeep = 0,

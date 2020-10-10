@@ -116,14 +116,16 @@ local function setBuildUnitMap(buildData)
     end
 end
 
-local function setDeployMap()
+local function setDeployMap(unitKey)
     map = {}
     for k, l in pairs(locations.get()) do
         if l.maxUnits and l.maxUnits > 0 then
             for yt = l.y - 3, l.y + 3 do
                 for xt = l.x - 3, l.x + 3 do
                     if yt > 0 and xt > 0 and yt <= worldmap.MAPSIZEY and yt <= worldmap.MAPSIZEX then
-                        table.insert(map, {x = xt, y = yt})
+                        if units.tileIsAllowed(units.getData()[unitKey], worldmap.map[yt][xt].tile) then
+                            table.insert(map, {x = xt, y = yt})
+                        end
                     end
                 end
             end
