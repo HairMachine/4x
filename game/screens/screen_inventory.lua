@@ -11,6 +11,7 @@ local function load()
 end
 
 local function show()
+    currentHero = 0
     buttons = {
         close = {x = 700, y = 500, width = 100, height = 50, text = "OK", visible = 1, action = function(event)
             ScreenSwitch("map")
@@ -53,7 +54,7 @@ end
 local function draw()
     love.graphics.print("Inventory")
 
-    if currentHero > 0 then
+    if currentHero > 0 and units.get()[currentHero].slots then
         love.graphics.print("Weapon: "..units.get()[currentHero].slots.weapon.name, 0, 128)
         love.graphics.print("Armour: "..units.get()[currentHero].slots.armour.name, 0, 128 + 32)
         love.graphics.print("Utility: "..units.get()[currentHero].slots.utility.name, 0, 128 + 64)

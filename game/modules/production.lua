@@ -12,7 +12,7 @@ local function setProductionValue()
     end
     for yt = 1, worldmap.MAPSIZEY do
         for xt = 1, worldmap.MAPSIZEX do
-            production = production + worldmap.map[yt][xt].population
+            production = production + worldmap.map[yt][xt].population * 10
         end
     end
 end

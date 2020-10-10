@@ -4,18 +4,19 @@ local worldmap = require 'modules/worldmap'
 local locations = {}
 
 local data =  {
-    cave = {key = "cave", name = "Cave", tile = "cave", allowedTiles = {}, upkeep = 0, production = 0, hp = 10, maxHp = 10},
-    dark_temple = {key = "dark_temple", name = "Dark Temple", tile = "tower", allowedTiles = {}, upkeep = 0, production = 0, hp = 10, maxHp = 10},
-    fortress = {key = "fortress", name = "Fortress", tile = "cave", allowedTiles = {}, upkeep = 0, production = 0, hp = 10, maxHp = 10},
-    dark_tower = {key = "dark_tower", name = "Dark Tower", tile = "tower", allowedTiles = {}, upkeep = 0, production = 0, hp = 100, maxHp = 100},
-    tower = {key = "tower", name = "Wizard's Tower", tile = "tower", allowedTiles = {}, upkeep = 0, production = 0, hp = 10, maxHp = 10, align = 2},
-    barracks = {key = "barracks", name = "Barracks", tile = "city", allowedTiles = {"grass"}, upkeep = 0, production = 500, hp = 5, maxHp = 5, maxUnits = 6},
-    mine = {key = "mine", name = "Gold Mine", tile = "city", allowedTiles = {"ore"}, upkeep = -50, production = 500, hp = 2, maxHp = 2},
-    node = {key = "node", name = "Magical Node", tile = "city", allowedTiles = {"crystal"}, upkeep = 20, production = 500, hp = 2, maxHp = 2},
-    sylvan_glade = {key = "sylvan_glade", name = "Sylvan Glade", tile = "city", allowedTiles = {"forest"}, upkeep = 10, production = 500, hp = 5, maxHp = 5},
-    shipyard = {key = "shipyard", name = "Shipyard", tile = "city", allowedTiles = {"water"}, upkeep = 10, production = 500, hp = 5, maxHp = 5},
-    farm = {key = "farm", name = "Farm", tile = "city", allowedTiles = {"grass"}, upkeep = 10, production = 500, hp = 5, maxHp = 5},
-    hamlet = {key = "hamlet", name = "Hamlet", tile = "city", allowedTiles = {}, upkeep = 50, production = 0, hp = 10, maxHp = 10, align = 3}
+    cave = {key = "cave", class = "dungeon", name = "Cave", tile = "cave", allowedTiles = {}, upkeep = 0, production = 0, hp = 10, maxHp = 10},
+    dark_temple = {key = "dark_temple", class = "dungeon", name = "Dark Temple", tile = "tower", allowedTiles = {}, upkeep = 0, production = 0, hp = 10, maxHp = 10},
+    fortress = {key = "fortress", class = "dungeon", name = "Fortress", tile = "cave", allowedTiles = {}, upkeep = 0, production = 0, hp = 10, maxHp = 10},
+    dark_tower = {key = "dark_tower", class = "dungeon", name = "Dark Tower", tile = "tower", allowedTiles = {}, upkeep = 0, production = 0, hp = 100, maxHp = 100},
+    tower = {key = "tower", class = "town_centre", name = "Wizard's Tower", tile = "tower", allowedTiles = {}, upkeep = 0, production = 0, hp = 10, maxHp = 10, align = 2},
+    barracks = {key = "barracks", class = "barracks", name = "Barracks", tile = "city", allowedTiles = {"grass"}, upkeep = 0, production = 500, hp = 5, maxHp = 5, maxUnits = 6},
+    mine = {key = "mine", class = "utility", name = "Gold Mine", tile = "city", allowedTiles = {"ore"}, upkeep = -50, production = 500, hp = 2, maxHp = 2},
+    node = {key = "node", class = "utility", name = "Magical Node", tile = "city", allowedTiles = {"crystal"}, upkeep = 20, production = 500, hp = 2, maxHp = 2},
+    sylvan_glade = {key = "sylvan_glade", class = "utility", name = "Sylvan Glade", tile = "city", allowedTiles = {"forest"}, upkeep = 10, production = 500, hp = 5, maxHp = 5},
+    shipyard = {key = "shipyard", class = "barracks", name = "Shipyard", tile = "city", allowedTiles = {"water"}, upkeep = 10, production = 500, hp = 5, maxHp = 5},
+    farm = {key = "farm",  class = "utility", name = "Farm", tile = "city", allowedTiles = {"grass"}, upkeep = 10, production = 500, hp = 5, maxHp = 5},
+    hamlet = {key = "hamlet", class = "utility", name = "Settlement", tile = "city", allowedTiles = {}, upkeep = 50, production = 0, hp = 10, maxHp = 10, align = 3},
+    housing = {key = "housing", class = "housing", name = "Housing", tile = "city", allowedTiles = {"grass"}, upkeep = 10, production = 200, hp = 8, maxHp = 8},
 }
 
 local currentBuildingTile = {tile = "grass", x = 1, y = 1}
@@ -194,10 +195,17 @@ end
 
 local function growSettlement(x, y)
     local cell = worldmap.map[y][x]
-    if cell.food and cell.food >= 1 then
+    local locAt = atPos(x, y)
+    if locAt.class == "housing" and cell.food and cell.food >= 1 then
         local tile = worldmap.map[y][x]
         tile.food = tile.food - 1
         tile.population = tile.population + 1
+        -- Change the tile! TODO: 3 separate states - huts for < 5, nice houses for < 10, tower blocks for > 10
+        if locAt.tile == "city" and tile.population >= 5 then
+            locAt.tile = "tower" -- uh... new tile needed!
+        elseif locAt.tile == "tower" and tile.population < 5 then
+            locAt.tile = "city"
+        end
     end
 end
 
