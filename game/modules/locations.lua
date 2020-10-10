@@ -9,7 +9,7 @@ local data =  {
     fortress = {key = "fortress", class = "dungeon", name = "Fortress", tile = "cave", allowedTiles = {}, upkeep = 0, production = 0, hp = 10, maxHp = 10},
     dark_tower = {key = "dark_tower", class = "dungeon", name = "Dark Tower", tile = "tower", allowedTiles = {}, upkeep = 0, production = 0, hp = 100, maxHp = 100},
     tower = {key = "tower", class = "town_centre", name = "Wizard's Tower", tile = "tower", allowedTiles = {}, upkeep = 0, production = 0, hp = 10, maxHp = 10, align = 2},
-    barracks = {key = "barracks", class = "barracks", name = "Barracks", tile = "city", allowedTiles = {"grass"}, upkeep = 0, production = 500, hp = 5, maxHp = 5, maxUnits = 6},
+    barracks = {key = "barracks", class = "barracks", name = "Barracks", tile = "city", allowedTiles = {"grass"}, upkeep = 10, production = 500, hp = 5, maxHp = 5, maxUnits = 6},
     mine = {key = "mine", class = "utility", name = "Gold Mine", tile = "city", allowedTiles = {"ore"}, upkeep = -50, production = 500, hp = 2, maxHp = 2},
     node = {key = "node", class = "utility", name = "Magical Node", tile = "city", allowedTiles = {"crystal"}, upkeep = 20, production = 500, hp = 2, maxHp = 2},
     sylvan_glade = {key = "sylvan_glade", class = "utility", name = "Sylvan Glade", tile = "city", allowedTiles = {"forest"}, upkeep = 10, production = 500, hp = 5, maxHp = 5},
@@ -17,6 +17,7 @@ local data =  {
     farm = {key = "farm",  class = "utility", name = "Farm", tile = "city", allowedTiles = {"grass"}, upkeep = 10, production = 500, hp = 5, maxHp = 5},
     hamlet = {key = "hamlet", class = "utility", name = "Settlement", tile = "city", allowedTiles = {}, upkeep = 50, production = 0, hp = 10, maxHp = 10, align = 3},
     housing = {key = "housing", class = "housing", name = "Housing", tile = "city", allowedTiles = {"grass"}, upkeep = 10, production = 200, hp = 8, maxHp = 8},
+    road = {key = "road", class = "utility", name = "Road", tile = "city", allowedTiles = {"grass", "forest", "mountain", "tundra"}, upkeep = 2, production = 50, hp = 3, maxHp = 3}
 }
 
 local currentBuildingTile = {tile = "grass", x = 1, y = 1}
