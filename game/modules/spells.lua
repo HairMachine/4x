@@ -9,12 +9,11 @@ local rp = 5
 local sp = 5
 local learning = "none"
 local rpSpent = 0
-local casting = "none"
 local cpSpent = 0
 
 local data = {
     none = {name = "", key = "", castCost = 0, researchCost = 0, action = function() end},
-    lightning_bolt = {name = "Lighting Bolt", key = "lightning_bolt", castCost = 5, researchCost = 100, action = function()
+    lightning_bolt = {name = "Lighting Bolt", key = "lightning_bolt", castCost = 25, researchCost = 100, action = function()
         targeter.setSpellMap(3, true)
         targeter.callback = function(x, y)
             for k, u in pairs(units.get()) do
@@ -26,14 +25,14 @@ local data = {
             targeter.clear()
         end
     end},
-    summon_hero = {name = "Summon Hero", key = "summon_hero", castCost = 30, researchCost = 150, action = function()
+    summon_hero = {name = "Summon Hero", key = "summon_hero", castCost = 200, researchCost = 150, action = function()
         units.add("hero", locations.get()[1].x, locations.get()[1].y, {})
         resources.spendCommandPoints(1)
     end},
-    terraform = {name = "Terraform", key = "terraform", castCost = 5, researchCost = 50, action = function()
+    terraform = {name = "Terraform", key = "terraform", castCost = 15, researchCost = 50, action = function()
         targeter.setSpellMap(1, true)
         targeter.callback = function(x, y)
-            worldmap.map[y][x] = worldmap.makeTile(grass)
+            worldmap.map[y][x] = worldmap.makeTile("grass", worldmap[y][x].align)
             targeter.clear()
         end
     end}
@@ -70,39 +69,31 @@ local function research(bonus)
     return false
 end
 
-local function startCasting(spell)
-    casting = spell
-end
-
 local function getCasting()
     return data[casting]
 end
 
-local function cast()
-    if casting == "none" then
+local function cast(spell)
+    if spell == "none" then
         return false
     end
-    if mp <= 0 then
+    if mp <= data[spell].castCost then
         return false
     end
-    local cost = sp
-    mp = mp - sp
-    if mp < 0 then
-        cost = math.abs(mp)
-        mp = mp + cost
-    end
-    cpSpent = cpSpent + cost
-    if cpSpent >= data[casting].castCost then
-        cpSpent = 0
-        data[casting].action()
-        casting = "none"
-        return true
-    end
-    return false
+    mp = mp - data[spell].castCost
+    data[spell].action()
+    data[spell].cooldown = data[spell].castCost
 end
 
-local function stopCasting()
-    casting = "none"
+local function cooldown()
+    for k, v in pairs(data) do
+        if v.cooldown then
+            v.cooldown = v.cooldown - sp
+            if v.cooldown <= 0 then
+                v.cooldown = nil
+            end
+        end
+    end
 end
 
 local function getMP()
@@ -121,9 +112,8 @@ return {
     startLearning = startLearning,
     research = research,
     getCasting = getCasting,
-    startCasting = startCasting,
-    stopCasting = stopCasting,
     cast = cast,
     getMP = getMP,
-    addMP = addMP
+    addMP = addMP,
+    cooldown = cooldown
 }

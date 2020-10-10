@@ -236,9 +236,9 @@ local function EndTurn()
         SelectNextHero()
         return true
     end, {})
-    -- Cast spells
+    -- Cooldown spells
     commands.new(function(params)
-        spells.cast()
+        spells.cooldown()
         return true
     end, {})
     -- Buildings
@@ -508,8 +508,6 @@ local function draw()
     love.graphics.setColor(1, 1, 1, 1)
 
     -- Sidebar
-    love.graphics.print("Currently casting: "..spells.getCasting().name, ACTIONSTARTX, 0)
-
     ui.draw(buttons)
 
     love.graphics.print("Command Points: "..resources.getCommandPoints(), ACTIONSTARTX, 400)

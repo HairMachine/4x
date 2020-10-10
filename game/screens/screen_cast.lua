@@ -21,19 +21,21 @@ local function show()
         
     }
     for k, s in pairs(spells.known) do
-        buttons["spell_"..k] = {x = 0, y = (k-1) * 32, width = 300, height = 32, text = spells.data[s].name, visible = 1, spell = s, action = function(event)
-            if s == "summon_hero" and resources.getCommandPoints() < 1 then
-                buttons.error_box.text = "You need at least one command point available to cast this spell again!"
-                buttons.error_box.visible = 1
-                return
+        buttons["spell_"..k] = {x = 0, y = (k-1) * 32, width = 300, height = 32, visible = 1, spell = s}
+        if not spells.data[s].cooldown then
+            buttons["spell_"..k].text = spells.data[s].name
+            buttons["spell_"..k].action = function(event)
+                if s == "summon_hero" and resources.getCommandPoints() < 1 then
+                    buttons.error_box.text = "You need at least one command point available to cast this spell again!"
+                    buttons.error_box.visible = 1
+                    return
+                end
+                spells.cast(s)
+                ScreenSwitch("map")
             end
-            if spells.getCasting().key == s then
-                spells.startCasting("none")
-            else
-                spells.startCasting(s)
-            end
-            ScreenSwitch("map")
-        end}
+        else
+            buttons["spell_"..k].text = spells.data[s].name.." ("..spells.data[s].cooldown.." left to recharge)"
+        end
     end
 
 end
