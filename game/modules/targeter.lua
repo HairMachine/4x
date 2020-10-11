@@ -131,6 +131,15 @@ local function setRecallMap()
     end
 end
 
+local function setUnitMap(team)
+    map = {}
+    for k, u in pairs(units.get()) do
+        if (team == nil or u.team == team) then
+            table.insert(map, {x = u.x, y = u.y})
+        end
+    end
+end
+
 local function clear()
     map = {}
     unit = -1
@@ -163,6 +172,7 @@ return {
     setBuildUnitMap = setBuildUnitMap,
     setDeployMap = setDeployMap,
     setRecallMap = setRecallMap,
+    setUnitMap = setUnitMap,
     clear = clear,
     callback = callback,
     getType = getType,
