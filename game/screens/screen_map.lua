@@ -252,6 +252,7 @@ local function EndTurn()
                 targeter.callback = function(x, y)
                     locations.add(built.key, x, y, 1)
                     production.removeBuilding()
+                    locations.tileAlignmentChange()
                     targeter.clear()
                 end
             else
