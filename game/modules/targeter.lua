@@ -22,23 +22,12 @@ local function setMap(x, y, radius, excludeSelf)
     end 
 end
 
-local function setSpellMap(radius, wizards)
+local function setSpellMap()
     map = {}
-    -- around wizard's tower
-    for x = locations.get()[1].x - radius, locations.get()[1].x + radius do
-        for y = locations.get()[1].y - radius, locations.get()[1].y + radius do
-            table.insert(map, {x = x, y = y})
-        end
-    end
-    -- around wizards!
-    if wizards == true then
-        for k, e in pairs(units.get()) do
-            if e.type == "wizard" or e.type == "hero" then
-                for x = e.x - radius, e.x + radius do
-                    for y = e.y - radius, e.y + radius do
-                        table.insert(map, {x = x, y = y})
-                    end
-                end
+    for y = 1, worldmap.MAPSIZEY do
+        for x = 1, worldmap.MAPSIZEX do
+            if worldmap.map[y][x].align < 99 then
+                table.insert(map, {x = x, y = y})
             end
         end
     end
