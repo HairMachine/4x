@@ -398,6 +398,8 @@ end
 local function keypressed(key, scancode, isrepeat)
     if key == "escape" then
         targeter.clear()
+    elseif key == "space" then
+        EndTurn()
     end
 end
 
