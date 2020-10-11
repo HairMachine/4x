@@ -33,7 +33,7 @@ local data = {
     terraform = {name = "Terraform", key = "terraform", castCost = 15, researchCost = 50, action = function()
         targeter.setSpellMap()
         targeter.callback = function(x, y)
-            worldmap.map[y][x] = worldmap.makeTile("grass", worldmap[y][x].align)
+            worldmap.map[y][x] = worldmap.makeTile("grass", worldmap.map[y][x].align)
             targeter.clear()
         end
     end}
