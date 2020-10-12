@@ -34,7 +34,7 @@ local function choosePlot()
     local caveLocs = {}
     for y = 1, worldmap.MAPSIZEY do
         for x = 1, worldmap.MAPSIZEX do
-            if worldmap.map[y][x].align ~= 1 and locations.atPos(x, y).name == "None" then
+            if worldmap.map[y][x].align ~= CONSTS.lightTile and locations.atPos(x, y).name == "None" then
                 table.insert(caveLocs, {x = x, y = y})
             end
         end

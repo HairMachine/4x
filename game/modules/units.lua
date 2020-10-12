@@ -56,7 +56,7 @@ local function setIdleAnimation(unit)
     if unit.animation then
         animation.clear(unit.animation)
     end
-    if worldmap.map[unit.y][unit.x].align < 99 then
+    if worldmap.map[unit.y][unit.x].align ~= CONSTS.unexploredTile then
         unit.animation = animation.add(true, {
             {tile = unit.tile, x = unit.x * 32, y =  unit.y * 32, tics = 15},
             {tile = unit.tile, x = unit.x * 32, y =  unit.y * 32 - 5, tics = 15}
@@ -68,7 +68,7 @@ local function setMoveAnimation(unit, oldx, newx, oldy, newy)
     if unit.animation then
         animation.clear(unit.animation)
     end
-    if worldmap.map[oldy][oldx].align == 99 then
+    if worldmap.map[oldy][oldx].align == CONSTS.unexploredTile then
         return
     end
     local animationData = {}
@@ -88,7 +88,7 @@ local function setAttackAnimation(unit, newx, newy)
     if unit.animation then
         animation.clear(unit.animation)
     end
-    if worldmap.map[newy][newx].align == 99 then
+    if worldmap.map[newy][newx].align == CONSTS.unexploredTile then
         return
     end
     local animationData = {}

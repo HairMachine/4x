@@ -101,8 +101,8 @@ local function tileAlignmentChange()
     local map = worldmap.map
     for y = 1, worldmap.MAPSIZEY do
         for x = 1, worldmap.MAPSIZEX do
-            if map[y][x].align == 1 then
-                map[y][x].align = 2
+            if map[y][x].align == CONSTS.lightTile then
+                map[y][x].align = CONSTS.darkTile
             end
         end
     end
@@ -111,7 +111,7 @@ local function tileAlignmentChange()
             for xi = l.x - l.align, l.x + l.align do
                 for yi = l.y - l.align, l.y + l.align do
                     if xi > 0 and xi <= worldmap.MAPSIZEX and yi > 0 and yi <= worldmap.MAPSIZEY then
-                        map[yi][xi].align = 1
+                        map[yi][xi].align = CONSTS.lightTile
                     end
                 end
             end
@@ -124,31 +124,31 @@ local function tileAlignmentChange()
         freemap[y] = {}
         for x = 1, worldmap.MAPSIZEX do
             -- Lighted tiles are ALWAYS unfree
-            if map[y][x].align == 1 then
+            if map[y][x].align == CONSTS.lightTile then
                 freemap[y][x] = false
             else
                 local surroundX = 0
                 local surroundY = 0
                 for n = 1, y do
-                    if map[n][x].align == 1 then 
+                    if map[n][x].align == CONSTS.lightTile then 
                         surroundY = surroundY + 1 
                         break
                     end
                 end
                 for e = x, worldmap.MAPSIZEX do
-                    if map[y][e].align == 1 then 
+                    if map[y][e].align == CONSTS.lightTile then 
                         surroundX = surroundX + 1
                         break
                     end
                 end
                 for s = y, worldmap.MAPSIZEY do
-                    if map[s][x].align == 1 then 
+                    if map[s][x].align == CONSTS.lightTile then 
                         surroundY = surroundY + 1 
                         break
                     end
                 end
                 for w = 1, x do
-                    if map[y][w].align == 1 then 
+                    if map[y][w].align == CONSTS.lightTile then 
                         surroundX = surroundX + 1 
                         break
                     end
@@ -167,7 +167,7 @@ local function tileAlignmentChange()
         changed = false
         for y = 1, worldmap.MAPSIZEY do
             for x = 1, worldmap.MAPSIZEX do
-                if freemap[y][x] == false and map[y][x].align == 2 then
+                if freemap[y][x] == false and map[y][x].align == CONSTS.darkTile then
                     if y - 1 >= 1 and freemap[y - 1][x] == true then 
                         freemap[y][x] = true
                         changed = true
@@ -191,7 +191,7 @@ local function tileAlignmentChange()
     -- All the remaining unfree tiles should now be lighted
     for y = 1, worldmap.MAPSIZEY do
         for x = 1, worldmap.MAPSIZEX do
-            if freemap[y][x] == false then map[y][x].align = 1 end
+            if freemap[y][x] == false then map[y][x].align = CONSTS.lightTile end
         end
     end
 end

@@ -5,6 +5,14 @@ WINDOW = {
     trans = 0
 }
 
+CONSTS = {
+    playerTeam = 1,
+    enemyTeam = 2,
+    lightTile = 1,
+    darkTile = 2,
+    unexploredTile = 99
+}
+
 local screens = {
     research = require 'screens/screen_research',
     cast = require 'screens/screen_cast',

@@ -26,7 +26,7 @@ local function setSpellMap()
     map = {}
     for y = 1, worldmap.MAPSIZEY do
         for x = 1, worldmap.MAPSIZEX do
-            if worldmap.map[y][x].align < 99 then
+            if worldmap.map[y][x].align ~= CONSTS.unexploredTile then
                 table.insert(map, {x = x, y = y})
             end
         end
@@ -40,7 +40,7 @@ local function setFoundingMap(x, y, radius)
         for yt = y - radius, y + radius do
             if locations.atPos(xt, yt).name == "None" and not(yt == y and xt == x) then
                 if yt > 0 and yt <= worldmap.MAPSIZEY and xt > 0 and xt <= worldmap.MAPSIZEX then
-                    if worldmap.map[yt][xt].align == 2 then
+                    if worldmap.map[yt][xt].align == CONSTS.darkTile then
                         table.insert(map, {x = xt, y = yt})
                     end
                 end
@@ -86,7 +86,7 @@ local function setBuildMap(buildData)
             for xt = l.x - 1, l.x + 1 do
                 for yt = l.y - 1, l.y + 1 do
                     if yt > 0 and yt <= worldmap.MAPSIZEY and xt > 0 and xt <= worldmap.MAPSIZEX then
-                        if worldmap.map[yt][xt].align == 1 and locations.allowedTile(bdata.allowedTiles, worldmap.map[yt][xt].tile) then
+                        if worldmap.map[yt][xt].align == CONSTS.lightTile and locations.allowedTile(bdata.allowedTiles, worldmap.map[yt][xt].tile) then
                             table.insert(map, {x = xt, y = yt})
                         end
                     end

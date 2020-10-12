@@ -117,8 +117,8 @@ local function explore(x, y, range)
     for yt = y - range, y + range do
         for xt = x - range, x + range do
             if yt > 0 and yt <= MAPSIZEY and xt > 0 and xt <= MAPSIZEX then
-                if map[yt][xt].align == 99 then
-                    map[yt][xt].align = 2
+                if map[yt][xt].align == CONSTS.unexploredTile then
+                    map[yt][xt].align = CONSTS.darkTile
                 end
             end
         end

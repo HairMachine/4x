@@ -450,14 +450,14 @@ end
 local function draw()
     for y = 1, worldmap.MAPSIZEY do
         for x = 1, worldmap.MAPSIZEX do
-            if camera.isInView(x * tsize, y * tsize) and worldmap.map[y][x].align < 99 then
+            if camera.isInView(x * tsize, y * tsize) and worldmap.map[y][x].align ~= CONSTS.unexploredTile then
                 love.graphics.draw(tiles[worldmap.map[y][x].tile], camera.adjustX(x * tsize), camera.adjustY(y * tsize), 0, 2)
             end
         end
     end
 
     for k, e in pairs(locations.get()) do
-        if camera.isInView(e.x * tsize, e.y * tsize) and worldmap.map[e.y][e.x].align < 99 then
+        if camera.isInView(e.x * tsize, e.y * tsize) and worldmap.map[e.y][e.x].align ~= CONSTS.unexploredTile then
             love.graphics.draw(tiles[e.tile], camera.adjustX(e.x * tsize), camera.adjustY(e.y * tsize), 0 , 2)
         end
     end
@@ -466,7 +466,7 @@ local function draw()
     love.graphics.setColor(0, 0, 0, 0.3)
     for y = 1, worldmap.MAPSIZEY do
         for x = 1, worldmap.MAPSIZEX do
-            if worldmap.map[y][x].align == 2 and camera.isInView(x * tsize, y * tsize) then
+            if worldmap.map[y][x].align == CONSTS.darkTile and camera.isInView(x * tsize, y * tsize) then
                 love.graphics.rectangle("fill", camera.adjustX(x * tsize), camera.adjustY(y * tsize), tsize, tsize)
             end
         end
@@ -478,13 +478,13 @@ local function draw()
     -- Health bars
     love.graphics.setColor(0, 1, 0, 1)
     for k, u in pairs(units.get()) do
-        if camera.isInView(u.x * tsize, u.y * tsize) and worldmap.map[u.y][u.x].align < 99 then
+        if camera.isInView(u.x * tsize, u.y * tsize) and worldmap.map[u.y][u.x].align ~= CONSTS.unexploredTile then
             local length = math.floor(u.hp / u.maxHp * tsize)
             love.graphics.rectangle("fill", camera.adjustX(u.x * tsize), camera.adjustY(u.y * 32 + tsize - 2), length, 2)
         end
     end
     for k, l in pairs(locations.get()) do
-        if camera.isInView(l.x * tsize, l.y * tsize) and worldmap.map[l.y][l.x].align < 99 then
+        if camera.isInView(l.x * tsize, l.y * tsize) and worldmap.map[l.y][l.x].align ~= CONSTS.unexploredTile then
             local length = math.floor(l.hp / l.maxHp * 32)
             love.graphics.rectangle("fill", camera.adjustX(l.x * tsize), camera.adjustY(l.y * tsize + tsize - 2), length, 2)
         end
