@@ -107,7 +107,7 @@ local function tileAlignmentChange()
         end
     end
     for k, l in pairs(locations) do
-        if l.team == 1 and l.align then
+        if l.team == CONSTS.playerTeam and l.align then
             for xi = l.x - l.align, l.x + l.align do
                 for yi = l.y - l.align, l.y + l.align do
                     if xi > 0 and xi <= worldmap.MAPSIZEX and yi > 0 and yi <= worldmap.MAPSIZEY then

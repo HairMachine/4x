@@ -65,7 +65,7 @@ local function EndTurn()
     end
     -- Upkeep costs, cooldowns
     for k, l in pairs(locations.get()) do
-        if l.team == 1 then
+        if l.team == CONSTS.playerTeam then
             resources.spendGold(l.upkeep)
             if l.maxUnits then
                 for k2, u in pairs(l.units) do
@@ -76,7 +76,7 @@ local function EndTurn()
         end
     end
     for k, u in pairs(units.get()) do
-        if u.team == 1 then
+        if u.team == CONSTS.playerTeam then
             resources.spendGold(u.upkeep)
         end
     end

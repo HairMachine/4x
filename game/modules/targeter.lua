@@ -81,7 +81,7 @@ end
 local function setBuildMap(buildData)
     map = {}
     for k, l in pairs(locations.get()) do
-        if l.team == 1 then
+        if l.team == CONSTS.playerTeam then
             local bdata = locations.getData()[buildData.key]
             for xt = l.x - 1, l.x + 1 do
                 for yt = l.y - 1, l.y + 1 do
@@ -125,7 +125,7 @@ end
 local function setRecallMap()
     map = {}
     for k, u in pairs(units.get()) do
-        if u.team == 1 and u.class ~= "Hero" then
+        if u.team == CONSTS.playerTeam and u.class ~= "Hero" then
             table.insert(map, {x = u.x,  y = u.y})
         end
     end

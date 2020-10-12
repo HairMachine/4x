@@ -173,7 +173,7 @@ local function remove()
     for i = #units, 1, -1 do
         if units[i].hp <= 0 then
             -- Spawn a new unit from this unit's parent
-            if units[i].parent ~= nil and units[i].team == 2 then
+            if units[i].parent ~= nil and units[i].team == CONSTS.enemyTeam then
                 table.insert(respawning, {data = units[i].parent, timer = 5})
             end
             animation.clear(units[i].animation)
