@@ -25,13 +25,44 @@ local buttons = {}
 
 local firstShown = false
 
+local function InfoPopup(title, description)
+    buttons.info_popup = {x = 300, y = 200, width = 300, height = 300, visible = 1, text = title.."\n\n"..description, children = {
+        {x = 450, y = 400, height = 32, width = 100, visible = 1, text = "OK", action = function() 
+            buttons.info_popup = nil
+        end}
+    }}
+end
+
 local function SelectHero(k, e)
     targeter.setUnit(k)
     targeter.setMoveMap(e.x, e.y, e.speed)
     targeter.callback = function(x, y)
         local unitToMove = units.get()[targeter.getUnit()]
-        units.move(unitToMove, x, y)
-        worldmap.explore(x, y, 2)
+        if worldmap.map[y][x].tile == "ruins" then
+            local roll = love.math.random(1, 6)
+            if roll <= 3 then
+                local gp = love.math.random(100, 200)
+                InfoPopup("Explored Ruins!", "Found "..gp.." gold!")
+                resources.spendGold(-gp)
+            elseif roll <= 6 then
+                items.generate()
+                local dropped = items.getDropped()
+                local itemText = ""
+                for k, i in pairs(dropped) do
+                    itemText = itemText.."Found "..i.name.."!"
+                    items.addToInventory(i)
+                    items.removeFromDropped(k)
+                end
+                InfoPopup("Ruins Explored!", itemText)
+            end
+            worldmap.map[y][x] = worldmap.makeTile("grass", worldmap.map[y][x].align)
+            locations.tileAlignmentChange()
+            targeter.clear()
+            e.moved = 1
+        else
+            units.move(unitToMove, x, y)
+            worldmap.explore(x, y, 2)
+        end
         targeter.clear()
         for k, e in pairs(units.get()) do
             if e.type == "hero" and e.moved == 0 then
@@ -40,9 +71,6 @@ local function SelectHero(k, e)
             end
         end
     end
-    buttons.explore.visible = 1
-    buttons.explore.unit = e
-    buttons.explore.unitKey = k
     buttons.found_city.visible = 1
     buttons.found_city.unit = e
     buttons.found_city.unitKey = k
@@ -55,16 +83,7 @@ local function SelectNextHero()
             return
         end
     end
-    buttons.explore.visible = 0
     buttons.found_city.visible = 0
-end
-
-local function InfoPopup(title, description)
-    buttons.info_popup = {x = 300, y = 200, width = 300, height = 300, visible = 1, text = title.."\n\n"..description, children = {
-        {x = 450, y = 400, height = 32, width = 100, visible = 1, text = "OK", action = function() 
-            buttons.info_popup = nil
-        end}
-    }}
 end
 
 local function EndTurn()
@@ -349,36 +368,6 @@ local function show()
                 locations.add("hamlet", x, y, 1)
                 locations.tileAlignmentChange()
                 targeter.clear()
-            end
-        end},
-        explore =  {x = ACTIONSTARTX, y = 224, width = 100, height = 32, text = "Explore", visible = 0, action = function(event)
-            if event.unit.moved == 1 then
-                return
-            end
-            targeter.setUnit(event.unitKey)
-            targeter.setExploreMap(event.unit.x, event.unit.y, 1)
-            targeter.callback = function(x, y)
-                local roll = love.math.random(1, 6)
-                if roll <= 3 then
-                    local gp = love.math.random(100, 200)
-                    InfoPopup("Explored Runis!", "Found "..gp.." gold!")
-                    resources.spendGold(-gp)
-                elseif roll <= 6 then
-                    items.generate()
-                    local dropped = items.getDropped()
-                    local itemText = ""
-                    for k, i in pairs(dropped) do
-                        itemText = itemText.."Found "..i.name.."!"
-                        items.addToInventory(i)
-                        items.removeFromDropped(k)
-                    end
-                    InfoPopup("Ruins Explored!", itemText)
-                end
-                worldmap.map[y][x] = worldmap.makeTile("grass", worldmap.map[y][x].align)
-                locations.tileAlignmentChange()
-                targeter.clear()
-                event.unit.moved = 1
-                SelectNextHero()
             end
         end},
         end_phase = {x = ACTIONSTARTX, y = 500, width = 100, height = 32, text = "End Turn", visible = 1, action = function()

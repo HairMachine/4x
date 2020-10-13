@@ -36,7 +36,7 @@ local data = {
     },
     hero = {
         name = "Hero", tile = "hero", speed = 1, attack = 5, hp = 10, team = 1, moved = 0, class = "Hero", range = 0, production = 0, upkeep = 0,
-        allowedTiles = {"grass", "ore", "crystal", "forest", "tundra"}
+        allowedTiles = {"grass", "ore", "crystal", "forest", "tundra", "ruins"}
     }
 }
 
