@@ -132,7 +132,7 @@ end
 local function setUnitMap(team)
     map = {}
     for k, u in pairs(units.get()) do
-        if (team == nil or u.team == team) then
+        if (team == nil or u.team == team) and worldmap.map[u.y][u.x].align ~= CONSTS.unexploredTile then
             table.insert(map, {x = u.x, y = u.y})
         end
     end
