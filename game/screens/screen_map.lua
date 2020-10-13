@@ -311,10 +311,10 @@ end
 
 local function show()
     buttons = {
-        inventory = {x = ACTIONSTARTX, y = 32, width = 100, height = 32, text = "Items", visible = 1, action = function() 
+        inventory = {x = ACTIONSTARTX, y = 32, width = 100, height = 32, text = "Items", visible = 1, action = function()
             ScreenSwitch("inventory")
         end},
-        cast_spell = {x = ACTIONSTARTX, y = 64, width = 100, height = 32, text = "Cast Spell", visible = 1, action = function() 
+        cast_spell = {x = ACTIONSTARTX, y = 64, width = 100, height = 32, text = "Cast Spell", visible = 1, action = function()
             ScreenSwitch("cast")
         end},
         build = {x = ACTIONSTARTX, y = 96, width = 100, height = 32, text = "Build", visible = 1, action = function()
@@ -460,6 +460,12 @@ local function draw()
         for x = 1, worldmap.MAPSIZEX do
             if camera.isInView(x * tsize, y * tsize) and worldmap.map[y][x].align ~= CONSTS.unexploredTile then
                 love.graphics.draw(tiles[worldmap.map[y][x].tile], camera.adjustX(x * tsize), camera.adjustY(y * tsize), 0, 2)
+                if worldmap.map[y][x].food and worldmap.map[y][x].food > 0 then
+                    love.graphics.print(worldmap.map[y][x].food, x * tsize + 16, y * tsize + 16)
+                end
+                if worldmap.map[y][x].population and worldmap.map[y][x].population > 0 then
+                    love.graphics.print(worldmap.map[y][x].population, x * tsize + 16, y * tsize)
+                end
             end
         end
     end
