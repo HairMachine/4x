@@ -14,7 +14,6 @@ local cpSpent = 0
 local data = {
     none = {name = "", key = "", castCost = 0, researchCost = 0, action = function() end},
     lightning_bolt = {name = "Lighting Bolt", key = "lightning_bolt", castCost = 25, researchCost = 100, action = function()
-        targeter.setType("spell")
         targeter.setUnitMap(2)
         targeter.callback = function(x, y)
             for k, u in pairs(units.get()) do

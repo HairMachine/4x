@@ -4,7 +4,6 @@ local worldmap = require 'modules/worldmap'
 
 local map = {}
 local unit = 0
-local type = ""
 local callback = function() end
 
 local function getMap()
@@ -31,7 +30,6 @@ local function setSpellMap()
             end
         end
     end
-    type = "spell"
 end
 
 local function setFoundingMap(x, y, radius)
@@ -145,14 +143,6 @@ local function clear()
     unit = -1
 end
 
-local function getType()
-    return type
-end
-
-local function setType(t)
-    type = t
-end
-
 local function getUnit()
     return unit
 end
@@ -175,8 +165,6 @@ return {
     setUnitMap = setUnitMap,
     clear = clear,
     callback = callback,
-    getType = getType,
-    setType = setType,
     getUnit = getUnit,
     setUnit = setUnit
 }

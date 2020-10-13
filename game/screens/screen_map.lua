@@ -23,10 +23,23 @@ local darkPower = 0
 
 local buttons = {}
 
+local firstShown = false
+
 local function SelectHero(k, e)
     targeter.setUnit(k)
-    targeter.setType("move")
     targeter.setMoveMap(e.x, e.y, e.speed)
+    targeter.callback = function(x, y)
+        local unitToMove = units.get()[targeter.getUnit()]
+        units.move(unitToMove, x, y)
+        worldmap.explore(x, y, 2)
+        targeter.clear()
+        for k, e in pairs(units.get()) do
+            if e.type == "hero" and e.moved == 0 then
+                SelectHero(k, e)
+                return
+            end
+        end
+    end
     buttons.explore.visible = 1
     buttons.explore.unit = e
     buttons.explore.unitKey = k
@@ -42,6 +55,8 @@ local function SelectNextHero()
             return
         end
     end
+    buttons.explore.visible = 0
+    buttons.found_city.visible = 0
 end
 
 local function InfoPopup(title, description)
@@ -247,7 +262,6 @@ local function EndTurn()
         local built = production.getFinishedBuilding()
         if built then
             if built.type == "location" then
-                targeter.setType("spell")
                 targeter.setBuildMap(built)
                 targeter.callback = function(x, y)
                     locations.add(built.key, x, y, 1)
@@ -256,7 +270,6 @@ local function EndTurn()
                     targeter.clear()
                 end
             else
-                targeter.setType("spell")
                 targeter.setBuildUnitMap(built)
                 targeter.callback = function(x, y)
                     local place = locations.atPos(x, y)
@@ -314,7 +327,6 @@ local function show()
         end},
         recall = {x = ACTIONSTARTX, y = 160, width = 100, height = 32, text = "Recall", visible = 1, action = function()
             targeter.setRecallMap()
-            targeter.setType("spell")
             targeter.callback = function(x, y)
                 local u = units.atPos(x, y)
                 for k, l in pairs(locations.get()) do
@@ -333,7 +345,6 @@ local function show()
             end
             targeter.setUnit(event.unitKey)
             targeter.setFoundingMap(event.unit.x, event.unit.y, 1)
-            targeter.setType("spell")
             targeter.callback = function(x, y)
                 locations.add("hamlet", x, y, 1)
                 locations.tileAlignmentChange()
@@ -346,7 +357,6 @@ local function show()
             end
             targeter.setUnit(event.unitKey)
             targeter.setExploreMap(event.unit.x, event.unit.y, 1)
-            targeter.setType("spell")
             targeter.callback = function(x, y)
                 local roll = love.math.random(1, 6)
                 if roll <= 3 then
@@ -375,6 +385,13 @@ local function show()
             EndTurn()
         end}
     }
+
+    -- If there's a targeter with a unit set, make sure it's properly selected
+    if targeter.getUnit() > 0 or firstShown == false then
+        SelectNextHero()
+    end
+
+    firstShown = true
 end
 
 local function update()
@@ -430,18 +447,9 @@ local function mousepressed(x, y, button, istouch, presses)
     for k, e in pairs(targeter.getMap()) do
         if e.x > 0 and e.x <= worldmap.MAPSIZEX and e.y > 0 and e.y <= worldmap.MAPSIZEY then
             if e.x == tilex and e.y == tiley then
-                if targeter.getType() == "move" and targeter.getUnit() >= 0 then
-                    local unitToMove = units.get()[targeter.getUnit()]
-                    units.move(unitToMove, tilex, tiley)
-                    worldmap.explore(tilex, tiley, 2)
-                    targeter.clear()
-                    SelectNextHero()
-                    return
-                elseif targeter.getType() == "spell" then
-                    targeter.callback(tilex, tiley)
-                    SelectNextHero()
-                    return
-                end
+                targeter.callback(tilex, tiley)
+                SelectNextHero()
+                return
             end
         end
     end
