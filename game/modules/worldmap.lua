@@ -113,6 +113,13 @@ local function getTotalPopulation()
     return pop
 end
 
+local function getTilePopulation(x, y)
+    if map[y] and map[y][x] and map[y][x].population then
+        return map[y][x].population
+    end
+    return -1
+end
+
 local function explore(x, y, range)
     for yt = y - range, y + range do
         for xt = x - range, x + range do
@@ -132,5 +139,6 @@ return {
     generate = generate,
     makeTile = makeTile,
     getTotalPopulation = getTotalPopulation,
+    getTilePopulation = getTilePopulation,
     explore = explore
 }

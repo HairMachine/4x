@@ -10,19 +10,20 @@ local data =  {
     dark_tower = {key = "dark_tower", class = "dungeon", name = "Dark Tower", tile = "tower", allowedTiles = {}, upkeep = 0, production = 0, hp = 100, maxHp = 100},
     tower = {key = "tower", class = "town_centre", name = "Wizard's Tower", tile = "tower", allowedTiles = {}, upkeep = 0, production = 0, hp = 10, maxHp = 10, align = 2},
     barracks = {key = "barracks", class = "barracks", name = "Barracks", tile = "city", allowedTiles = {"grass"}, upkeep = 10, production = 500, hp = 5, maxHp = 5, maxUnits = 6},
-    mine = {key = "mine", class = "utility", name = "Gold Mine", tile = "city", allowedTiles = {"ore"}, upkeep = -50, production = 500, hp = 2, maxHp = 2},
+    mine = {key = "mine", class = "utility", name = "Gold Mine", tile = "city", allowedTiles = {"ore"}, upkeep = 10, production = 500, hp = 2, maxHp = 2},
     node = {key = "node", class = "utility", name = "Magical Node", tile = "city", allowedTiles = {"crystal"}, upkeep = 20, production = 500, hp = 2, maxHp = 2},
     sylvan_glade = {key = "sylvan_glade", class = "utility", name = "Sylvan Glade", tile = "city", allowedTiles = {"forest"}, upkeep = 10, production = 500, hp = 5, maxHp = 5},
     shipyard = {key = "shipyard", class = "barracks", name = "Shipyard", tile = "city", allowedTiles = {"water"}, upkeep = 10, production = 500, hp = 5, maxHp = 5},
     farm = {key = "farm",  class = "utility", name = "Farm", tile = "city", allowedTiles = {"grass"}, upkeep = 10, production = 500, hp = 5, maxHp = 5},
     hamlet = {key = "hamlet", class = "utility", name = "Settlement", tile = "city", allowedTiles = {}, upkeep = 50, production = 0, hp = 10, maxHp = 10, align = 3},
     housing = {key = "housing", class = "housing", name = "Housing", tile = "city", allowedTiles = {"grass"}, upkeep = 10, production = 200, hp = 8, maxHp = 8},
-    road = {key = "road", class = "utility", name = "Road", tile = "city", allowedTiles = {"grass", "forest", "mountain", "tundra"}, upkeep = 2, production = 50, hp = 3, maxHp = 3, align = 1}
+    road = {key = "road", class = "utility", name = "Road", tile = "city", allowedTiles = {"grass", "forest", "mountain", "tundra"}, upkeep = 2, production = 50, hp = 3, maxHp = 3, align = 1},
+    factory = {key = "factory", class = "utility", name = "Factory", tile = "city", allowedTiles = {"grass", "forest", "tundra"}, upkeep = 10, production = 500, hp = 5, maxHp = 5}
 }
 
 local currentBuildingTile = {tile = "grass", x = 1, y = 1}
 
-local function _farmBuilt(loc)
+local function _builtFarm(loc)
     for y = loc.y - 1, loc.y + 1 do
         for x = loc.x - 1, loc.x + 1 do
             if worldmap.map[y] and worldmap.map[y][x] then
@@ -46,7 +47,7 @@ local function add(type, x, y, team)
     table.insert(locations, loc)
     -- special building effects
     if loc.key == "farm" then
-        _farmBuilt(loc)
+        _builtFarm(loc)
     end
 end
 
@@ -208,6 +209,19 @@ local function growSettlement(x, y)
             locAt.tile = "tower" -- uh... new tile needed!
         elseif locAt.tile == "tower" and tile.population < 5 then
             locAt.tile = "city"
+        end
+        -- Population spreads out over a certain range so it can do work
+        -- Within a certain range of this settlement, population decreases by 1 each tile.
+        -- So if locAt.population == 1, there is no spread. If locAt.population == 2, all surrounding tiles have pop 1.
+        -- If locAt.population == 3, all tiles surrounding have population 1, and all tiles around them have population 1. And so on.
+        local range = cell.population - 1
+        for yt = y - range, y + range do
+            for xt = x - range, x + range do
+                if worldmap.getTilePopulation(xt, yt) ~= -1 then
+                    local popToSet = cell.population - math.max(math.abs(yt - y), math.abs(xt - x))
+                    worldmap.map[yt][xt].population = popToSet
+                end
+            end
         end
     end
 end

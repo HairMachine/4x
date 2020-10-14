@@ -78,5 +78,5 @@ return {
     plot = plot,
     advancePlot = advancePlot,
     choosePlot = choosePlot,
-    getPower = getPower
+    getPower = getPower,
 }

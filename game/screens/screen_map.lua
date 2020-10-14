@@ -19,8 +19,6 @@ local ACTIONSIZEY = 32
 
 local tsize = 32
 
-local darkPower = 0
-
 local buttons = {}
 
 local firstShown = false
@@ -114,8 +112,6 @@ local function EndTurn()
             resources.spendGold(u.upkeep)
         end
     end
-    -- Taxes
-    resources.spendGold(-math.floor(worldmap.getTotalPopulation() * 2))
     -- Move minions (+ pathfinding)
     for k, e in pairs(units.get()) do
         local target = {name = "None"}
@@ -219,10 +215,12 @@ local function EndTurn()
     -- Perform BUILDING EFFECTS
     commands.new(function(params)
         for k, l in pairs(locations.get()) do
-            if l.key == "node" or l.key == "tower" then
+            if l.key == "node" then
+                spells.addMP(worldmap.getTilePopulation(l.x, l.y))
+            elseif l.key == "tower" then
                 spells.addMP(1)
-            elseif l.key == "dark_fortress" then
-                darkPower = darkPower + 1
+            elseif l.key == "mine" then
+                resources.spendGold(-worldmap.getTilePopulation(l.x, l.y) * 20)
             end
         end
         return true

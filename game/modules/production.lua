@@ -6,13 +6,11 @@ local production = 0
 local inProgress = {}
 
 local function setProductionValue()
-    production = 100
+    production = 50
     for k, l in pairs(locations.get()) do
         -- TODO: Add production values of buildings according to whatever formula
-    end
-    for yt = 1, worldmap.MAPSIZEY do
-        for xt = 1, worldmap.MAPSIZEX do
-            production = production + worldmap.map[yt][xt].population * 10
+        if l.key == "factory" then
+            production = production + worldmap.getTilePopulation(l.x, l.y) * 10
         end
     end
 end
