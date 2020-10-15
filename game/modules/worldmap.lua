@@ -26,6 +26,7 @@ local function makeTile(type, align)
     newTile.revenue = 0
     newTile.unrest = 0
     newTile.population = 0
+    newTile.workers = 0
     return newTile
 end
 
@@ -113,11 +114,11 @@ local function getTotalPopulation()
     return pop
 end
 
-local function getTilePopulation(x, y)
-    if map[y] and map[y][x] and map[y][x].population then
-        return map[y][x].population
+local function getTileWorkers(x, y)
+    if map[y] and map[y][x] and map[y][x].workers then
+        return map[y][x].workers
     end
-    return -1
+    return 0
 end
 
 local function explore(x, y, range)
@@ -139,6 +140,6 @@ return {
     generate = generate,
     makeTile = makeTile,
     getTotalPopulation = getTotalPopulation,
-    getTilePopulation = getTilePopulation,
+    getTileWorkers = getTileWorkers,
     explore = explore
 }

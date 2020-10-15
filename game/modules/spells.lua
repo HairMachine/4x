@@ -37,9 +37,11 @@ local data = {
         targeter.callback = function(x, y)
             local food = worldmap.map[y][x].food
             local pop = worldmap.map[y][x].population
+            local workers = worldmap.map[y][x].workers
             worldmap.map[y][x] = worldmap.makeTile("grass", worldmap.map[y][x].align)
             worldmap.map[y][x].food = food
             worldmap.map[y][x].population = pop
+            worldmap.map[y][x].workers = workers
             targeter.clear()
         end
     end}

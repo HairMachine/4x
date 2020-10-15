@@ -1,4 +1,4 @@
-local goldOwned = 100
+local goldOwned = 1000
 local commandPoints = 1
 
 local function getAvailableGold()

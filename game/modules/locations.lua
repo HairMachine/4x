@@ -197,29 +197,40 @@ local function tileAlignmentChange()
     end
 end
 
-local function growSettlement(x, y)
-    local cell = worldmap.map[y][x]
-    local locAt = atPos(x, y)
-    if locAt.class == "housing" and cell.food and cell.food >= 1 then
-        local tile = worldmap.map[y][x]
-        tile.food = tile.food - 1
-        tile.population = tile.population + 1
-        -- Change the tile! TODO: 3 separate states - huts for < 5, nice houses for < 10, tower blocks for > 10
-        if locAt.tile == "city" and tile.population >= 5 then
-            locAt.tile = "tower" -- uh... new tile needed!
-        elseif locAt.tile == "tower" and tile.population < 5 then
-            locAt.tile = "city"
+local function growSettlement()
+    -- Reset population to 0 so we have a clean slate
+    for y = 1, worldmap.MAPSIZEY do
+        for x = 1, worldmap.MAPSIZEX do
+            worldmap.map[y][x].workers = 0
         end
-        -- Population spreads out over a certain range so it can do work
-        -- Within a certain range of this settlement, population decreases by 1 each tile.
-        -- So if locAt.population == 1, there is no spread. If locAt.population == 2, all surrounding tiles have pop 1.
-        -- If locAt.population == 3, all tiles surrounding have population 1, and all tiles around them have population 1. And so on.
-        local range = cell.population - 1
-        for yt = y - range, y + range do
-            for xt = x - range, x + range do
-                if worldmap.getTilePopulation(xt, yt) ~= -1 then
-                    local popToSet = cell.population - math.max(math.abs(yt - y), math.abs(xt - x))
-                    worldmap.map[yt][xt].population = popToSet
+    end
+    -- Find all the housing and apply its population effets
+    for k, locAt in pairs(locations) do
+        local tile = worldmap.map[locAt.y][locAt.x]
+        if locAt.class == "housing" then
+            if tile.food and tile.food >= 1 then
+                tile.food = tile.food - 1
+                tile.population = tile.population + 1
+                -- Change the tile! TODO: 3 separate states - huts for < 5, nice houses for < 10, tower blocks for > 10
+                if locAt.tile == "city" and tile.population >= 5 then
+                    locAt.tile = "tower" -- uh... new tile needed!
+                elseif locAt.tile == "tower" and tile.population < 5 then
+                    locAt.tile = "city"
+                end
+            end
+            -- Population spreads out over a certain range so it can do work
+            -- Within a certain range of this settlement, population decreases by 1 each tile.
+            -- So if locAt.population == 1, there is no spread. If locAt.population == 2, all surrounding tiles have pop 1.
+            -- If locAt.population == 3, all tiles surrounding have population 1, and all tiles around them have population 1. And so on.
+            local range = tile.population - 1
+            for yt = locAt.y - range, locAt.y + range do
+                for xt = locAt.x - range, locAt.x + range do
+                    if yt > 0 and yt <= worldmap.MAPSIZEY and xt > 0 and xt <= worldmap.MAPSIZEX then
+                        if atPos(xt, yt).class ~= "housing" then
+                            local workersToAdd = tile.population - math.max(math.abs(yt - locAt.y), math.abs(xt - locAt.x))
+                            worldmap.map[yt][xt].workers = worldmap.map[yt][xt].workers + workersToAdd
+                        end
+                    end
                 end
             end
         end

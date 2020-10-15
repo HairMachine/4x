@@ -90,11 +90,7 @@ local function EndTurn()
         e.moved = 0
     end
     -- Population growth
-    for y, row in pairs(worldmap.map) do
-        for x, cell in pairs(row) do
-            locations.growSettlement(x, y)
-        end
-    end
+    locations.growSettlement()
     -- Upkeep costs, cooldowns
     for k, l in pairs(locations.get()) do
         if l.team == CONSTS.playerTeam then
@@ -216,11 +212,11 @@ local function EndTurn()
     commands.new(function(params)
         for k, l in pairs(locations.get()) do
             if l.key == "node" then
-                spells.addMP(worldmap.getTilePopulation(l.x, l.y))
+                spells.addMP(worldmap.getTileWorkers(l.x, l.y))
             elseif l.key == "tower" then
                 spells.addMP(1)
             elseif l.key == "mine" then
-                resources.spendGold(-worldmap.getTilePopulation(l.x, l.y) * 20)
+                resources.spendGold(-worldmap.getTileWorkers(l.x, l.y) * 20)
             end
         end
         return true
@@ -450,8 +446,8 @@ local function draw()
                 if worldmap.map[y][x].food and worldmap.map[y][x].food > 0 then
                     love.graphics.print(worldmap.map[y][x].food, x * tsize + 16, y * tsize + 16)
                 end
-                if worldmap.map[y][x].population and worldmap.map[y][x].population > 0 then
-                    love.graphics.print(worldmap.map[y][x].population, x * tsize + 16, y * tsize)
+                if worldmap.map[y][x].workers and worldmap.map[y][x].workers > 0 then
+                    love.graphics.print(worldmap.map[y][x].workers, x * tsize + 16, y * tsize)
                 end
             end
         end

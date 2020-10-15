@@ -10,7 +10,7 @@ local function setProductionValue()
     for k, l in pairs(locations.get()) do
         -- TODO: Add production values of buildings according to whatever formula
         if l.key == "factory" then
-            production = production + worldmap.getTilePopulation(l.x, l.y) * 10
+            production = production + worldmap.getTileWorkers(l.x, l.y) * 10
         end
     end
 end
