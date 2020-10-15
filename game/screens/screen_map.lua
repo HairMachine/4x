@@ -60,6 +60,14 @@ local function SelectHero(k, e)
         else
             units.move(unitToMove, x, y)
             worldmap.explore(x, y, 2)
+            -- Create animations for any units which might not have them - these will be ones that have just been revealed
+            for k, e in pairs(units.get()) do
+                if worldmap.map[e.y][e.x].tile ~= CONSTS.unexploredTile then
+                    if not e.animation then
+                        units.setIdleAnimation(e)
+                    end
+                end
+            end
         end
         targeter.clear()
         for k, e in pairs(units.get()) do
@@ -159,7 +167,7 @@ local function EndTurn()
                     -- Units don't block candidate tile selection, but units can't walk into them
                     if units.atPos(candidateTiles[1].x, candidateTiles[1].y).name == "None" then
                         units.move(e, candidateTiles[1].x, candidateTiles[1].y)
-                    end
+                    end                    
                 end
             end
         end
