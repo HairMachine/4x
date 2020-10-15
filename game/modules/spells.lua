@@ -35,7 +35,11 @@ local data = {
         targeter.setUnit(-1)
         targeter.setSpellMap()
         targeter.callback = function(x, y)
+            local food = worldmap.map[y][x].food
+            local pop = worldmap.map[y][x].population
             worldmap.map[y][x] = worldmap.makeTile("grass", worldmap.map[y][x].align)
+            worldmap.map[y][x].food = food
+            worldmap.map[y][x].population = pop
             targeter.clear()
         end
     end}
