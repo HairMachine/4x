@@ -452,10 +452,10 @@ local function draw()
             if camera.isInView(x * tsize, y * tsize) and worldmap.map[y][x].align ~= CONSTS.unexploredTile then
                 love.graphics.draw(tiles[worldmap.map[y][x].tile], camera.adjustX(x * tsize), camera.adjustY(y * tsize), 0, 2)
                 if worldmap.map[y][x].food and worldmap.map[y][x].food > 0 then
-                    love.graphics.print(worldmap.map[y][x].food, x * tsize + 16, y * tsize + 16)
+                    love.graphics.print(worldmap.map[y][x].food, camera.adjustX(x * tsize + 16), camera.adjustY(y * tsize + 16))
                 end
                 if worldmap.map[y][x].workers and worldmap.map[y][x].workers > 0 then
-                    love.graphics.print(worldmap.map[y][x].workers, x * tsize + 16, y * tsize)
+                    love.graphics.print(worldmap.map[y][x].workers, camera.adjustX(x * tsize + 16), camera.adjustY(y * tsize))
                 end
             end
         end
