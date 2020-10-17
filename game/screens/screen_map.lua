@@ -83,7 +83,10 @@ local function EndTurn()
     rules.trigger('CooldownRecalledUnits')
     rules.trigger('AiUnitMoves')
     rules.trigger('Combat')
-    rules.trigger('RespawnUnits')
+    
+    commands.new(function(params)
+        rules.trigger('RespawnUnits')
+    end, {})
 
     commands.new(function(params)
         result = rules.trigger('CheckEndConditions')
@@ -132,19 +135,16 @@ local function EndTurn()
         return true
     end, {})
 
-    -- Start turn
     commands.new(function(params)
         SelectNextHero()
         return true
     end, {})
 
-    -- Cooldown spells
     commands.new(function(params)
         rules.trigger('TickSpellCooldown')
         return true
     end, {})
 
-    -- Buildings
     commands.new(function(params)
         rules.trigger('Build')
         return true

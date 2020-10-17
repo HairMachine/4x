@@ -373,20 +373,18 @@ local rules = {
             return true
         end,
         trigger = function(params)
-            commands.new(function(params) 
-                respawning = units.getRespawning()
-                for k = #respawning, 1, -1 do
-                    local i = respawning[k]
-                    i.timer = i.timer - 1
-                    if i.timer <= 0 then
-                        if units.atPos(i.data.x, i.data.y).name == "None" then
-                            units.spawnByLocType(i.data)
-                            units.respawned(k)
-                        end
+            respawning = units.getRespawning()
+            for k = #respawning, 1, -1 do
+                local i = respawning[k]
+                i.timer = i.timer - 1
+                if i.timer <= 0 then
+                    if units.atPos(i.data.x, i.data.y).name == "None" then
+                        units.spawnByLocType(i.data)
+                        units.respawned(k)
                     end
                 end
-                return true
-            end, {})
+            end
+            return true
         end
     },
 
