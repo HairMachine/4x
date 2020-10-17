@@ -81,11 +81,12 @@ local function EndTurn()
     rules.trigger('GrowSettlement')
     rules.trigger('PayUpkeepCosts')
     rules.trigger('CooldownRecalledUnits')
-    rules.trigger('AiUnitMoves')
-    rules.trigger('Combat')
-    
+    rules.trigger('MoveAiUnits')
+    rules.trigger('Fight')
+
     commands.new(function(params)
         rules.trigger('RespawnUnits')
+        return true
     end, {})
 
     commands.new(function(params)
@@ -99,6 +100,7 @@ local function EndTurn()
     end, {})
     
     -- Show items
+    -- TODO: Wtf to do with this, there's something wrong about having this here but I'm not 100% sure what
     commands.new(function(params)
         local dropped = items.getDropped()
         local itemText = ""

@@ -235,7 +235,7 @@ local rules = {
         end
     },
 
-    AiUnitMoves = {
+    MoveAiUnits = {
         check = function()
             return true
         end,
@@ -299,7 +299,7 @@ local rules = {
     },
 
     -- All units attack buildings or other units
-    Combat = {
+    Fight = {
         check = function(params)
             return true
         end,
