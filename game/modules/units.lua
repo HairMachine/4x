@@ -280,8 +280,11 @@ end
 local function getDistBetween(fx, fy, tx, ty)
     local distx = math.abs(fx - tx)
     local disty = math.abs(fy - ty)
-    if distx >= disty then tdist = distx else tdist = disty end
-    return tdist
+    if distx >= disty then
+        return distx
+    else
+        return disty
+    end
 end
 
 local function getClosestBuilding(unit)
@@ -304,13 +307,7 @@ local function getClosestBuildingWithinRange(unit, range)
     local found = {name = "None"}
     for k, u in pairs(locations.get()) do
         if u.team ~= unit.team then
-            local tx = unit.x
-            local ty = unit.y
-            if unit.parent.x and unit.parent.y then
-                tx = unit.parent.x
-                ty = unit.parent.y
-            end
-            if math.abs(u.x - tx) <= range and math.abs(u.y - ty) <= range then
+            if math.abs(u.x - unit.x) <= range and math.abs(u.y - unit.y) <= range then
                 local tdist = getDistBetween(unit.x, unit.y, u.x, u.y)
                 if tdist < mindist then
                     mindist = tdist
@@ -327,13 +324,7 @@ local function getClosestUnitWithinRange(unit, range)
     local found = {name = "None"}
     for k, u in pairs(units) do
         if u.team ~= unit.team then
-            local tx = unit.x
-            local ty = unit.y
-            if unit.parent.x and unit.parent.y then
-                tx = unit.parent.x
-                ty = unit.parent.y
-            end
-            if math.abs(u.x - tx) <= range and math.abs(u.y - ty) <= range then
+            if math.abs(u.x - unit.x) <= range and math.abs(u.y - unit.y) <= range then
                 local tdist = getDistBetween(unit.x, unit.y, u.x, u.y)
                 if tdist < mindist then
                     mindist = tdist
