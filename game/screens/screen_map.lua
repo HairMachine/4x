@@ -77,7 +77,10 @@ end
 local function EndTurn()
     targeter.clear()
 
-    rules.trigger('ResetUnitMoves')
+    for k, e in pairs(units.get()) do
+        e.moved = 0
+    end
+    
     rules.trigger('GrowSettlement')
     rules.trigger('PayUpkeepCosts')
     rules.trigger('CooldownRecalledUnits')

@@ -107,18 +107,6 @@ local rules = {
         end
     },
 
-    -- Refresh all action points for units.
-    ResetUnitMoves = {
-        check = function(params)
-            return true
-        end,
-        trigger = function(params)
-            for k, e in pairs(units.get()) do
-                e.moved = 0
-            end
-        end
-    },
-
     Build = {
         check = function(params)
             return true
