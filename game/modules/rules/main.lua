@@ -339,7 +339,11 @@ local rules = {
             targeter.setUnit(-1)
             targeter.setDeployMap(params.unit)
             targeter.callback = function(x, y)
-                units.add(params.unit, x, y, {key = params.loc_key, x = params.loc.x, y = params.loc.y})
+                local newunit = units.add(params.unit, x, y, {key = params.loc_key, x = params.loc.x, y = params.loc.y})
+                -- Set level modifiers
+                newunit.attack = newunit.attack + resources.getUnitLevel()
+                newunit.hp = newunit.hp + resources.getUnitLevel() * 2
+                newunit.maxHp = newunit.hp
                 table.remove(params.loc.units, params.unit_key)
                 targeter.clear()
             end
@@ -366,13 +370,30 @@ local rules = {
             for k, e in pairs(units.get()) do
                 local target = {name = "None"}
                 if e.class == "Sieger" then
-                    target = units.getClosestBuildingWithinRange(e, e.range)
+                    local mindist = 9001
+                    for k, u in pairs(locations.get()) do
+                        if u.team ~= e.team then
+                            if math.abs(u.x - e.x) <= e.range and math.abs(u.y - e.y) <= e.range then
+                                local tdist = units.getDistBetween(e.x, e.y, u.x, u.y)
+                                if tdist < mindist then
+                                    mindist = tdist
+                                    target = u
+                                end
+                            end
+                        end
+                    end
                 elseif e.class == "Skirmisher" or e.class == "Defender" then
-                    target = units.getClosestUnitWithinRange(e, e.range)
-                    if target.name == "None" and (target.x ~= e.parent.x or target.y ~= e.parent.y) then
-                        target.name = "Home"
-                        target.x = e.parent.x
-                        target.y = e.parent.y
+                    local mindist = 9001
+                    for k, u in pairs(units.get()) do
+                        if u.team ~= e.team then
+                            if math.abs(u.x - e.x) <= e.range and math.abs(u.y - e.y) <= e.range then
+                                local tdist = units.getDistBetween(e.x, e.y, u.x, u.y)
+                                if tdist < mindist then
+                                    mindist = tdist
+                                    target = u
+                                end
+                            end
+                        end
                     end
                 end
                 if target.name ~= "None" and (target.x ~= e.x or target.y ~= e.y) then
@@ -505,7 +526,16 @@ local rules = {
                 i.timer = i.timer - 1
                 if i.timer <= 0 then
                     if units.atPos(i.data.x, i.data.y).name == "None" then
-                        units.spawnByLocType(i.data)
+                        local parent = i.data
+                        for k, l in pairs(locations.get()) do
+                            if l.key == parent.type and l.x == parent.x and l.y == parent.y then
+                                if parent.type == "cave" then
+                                    units.add("grunter", parent.x, parent.y, parent)
+                                elseif parent.type == "fortress" then
+                                    units.add("doom_guard", parent.x, parent.y, parent)
+                                end
+                            end
+                        end
                         units.respawned(k)
                     end
                 end

@@ -1,8 +1,5 @@
 local animation = require 'modules/services/animation'
 local commands = require 'modules/services/commands'
-local locations = require 'modules/components/locations'
-local resources = require 'modules/components/resources'
-local items = require 'modules/components/items'
 local worldmap = require 'modules/components/worldmap'
 
 local data = {
@@ -116,47 +113,11 @@ local function add(t, x, y, parent)
     if newunit.type == "hero" then
         newunit.slots = {weapon = {name = ""}, armour = {name = ""}, utility = {name = ""}}
     end
-    -- Set level modifiers
-    newunit.attack = newunit.attack + resources.getUnitLevel()
-    newunit.hp = newunit.hp + resources.getUnitLevel() * 2
     newunit.maxHp = newunit.hp
     table.insert(units, newunit)
     -- Create animation data
     setIdleAnimation(newunit)
-end
-
-local function spawnByLocType(parent)
-    for k, l in pairs(locations.get()) do
-        if l.key == parent.type and l.x == parent.x and l.y == parent.y then
-            if parent.type == "cave" then
-                add("grunter", parent.x, parent.y, parent)
-            elseif parent.type == "fortress" then
-                add("doom_guard", parent.x, parent.y, parent)
-            elseif parent.type == "barracks" then
-                add("soldier", parent.x, parent.y, parent)
-            elseif parent.type == "sapper_camp" then
-                add("sapper", parent.x, parent.y, parent)
-            elseif parent.type == "outpost" then
-                add("guard", parent.x, parent.y, parent)
-            elseif parent.type == "tower" then
-                add("hero", parent.x, parent.y, {})
-            elseif parent.type == "sylvan_glade" then
-                add("elf", parent.x, parent.y, parent)
-            elseif parent.type == "warglade" then
-                add("elf_skirmisher", parent.x, parent.y, parent)
-            elseif parent.type == "dwarf_fortress" then
-                add("dwarf", parent.x, parent.y, parent)
-            elseif parent.type == "dwarf_workshop" then
-                add("dwarf_sapper", parent.x, parent.y, parent)
-            elseif parent.type == "sage_guild" then
-                add("sage", parent.x, parent.y, parent)
-            elseif parent.type == "barbarian_village" then
-                add("barbarian", parent.x, parent.y, parent)
-            elseif parent.type == "raider_camp" then
-                add("barbarian_sacker", parent.x, parent.y, parent)
-            end
-        end
-    end
+    return newunit
 end
 
 local function remove()
@@ -220,70 +181,6 @@ local function getDistBetween(fx, fy, tx, ty)
     end
 end
 
-local function getClosestBuilding(unit)
-    local mindist = 9001
-    local found = {name = "None"}
-    for k, u in pairs(locations.get()) do
-        if u.team ~= unit.team then
-            local tdist = getDistBetween(unit.x, unit.y, u.x, u.y)
-            if tdist < mindist then
-                mindist = tdist
-                found = u
-            end
-        end
-    end
-    return found
-end
-
-local function getClosestBuildingWithinRange(unit, range)
-    local mindist = 9001
-    local found = {name = "None"}
-    for k, u in pairs(locations.get()) do
-        if u.team ~= unit.team then
-            if math.abs(u.x - unit.x) <= range and math.abs(u.y - unit.y) <= range then
-                local tdist = getDistBetween(unit.x, unit.y, u.x, u.y)
-                if tdist < mindist then
-                    mindist = tdist
-                    found = u
-                end
-            end
-        end
-    end
-    return found
-end
-
-local function getClosestUnitWithinRange(unit, range)
-    local mindist = 9001
-    local found = {name = "None"}
-    for k, u in pairs(units) do
-        if u.team ~= unit.team then
-            if math.abs(u.x - unit.x) <= range and math.abs(u.y - unit.y) <= range then
-                local tdist = getDistBetween(unit.x, unit.y, u.x, u.y)
-                if tdist < mindist then
-                    mindist = tdist
-                    found = u
-                end
-            end
-        end
-    end
-    return found
-end
-
-local function getClosestUnit(unit)
-    local mindist = 9001
-    local found = {name = "None"}
-    for k, u in pairs(units) do
-        if u.team ~= unit.team then
-            local tdist = getDistBetween(unit.x, unit.y, u.x, u.y)
-            if tdist < mindist then
-                mindist = tdist
-                found = u
-            end
-        end
-    end
-    return found
-end
-
 local function tileIsAllowed(unit, tile)
     for k, e in pairs(unit.allowedTiles) do
         if e == tile then return true end
@@ -307,11 +204,6 @@ return {
     remove = remove,
     atPos = atPos,
     removeAtPos = removeAtPos,
-    getClosestBuilding = getClosestBuilding,
-    getClosestUnit = getClosestUnit,
-    getClosestBuildingWithinRange = getClosestBuildingWithinRange,
-    getClosestUnitWithinRange = getClosestUnitWithinRange,
-    spawnByLocType = spawnByLocType,
     tileIsAllowed = tileIsAllowed,
     setIdleAnimation = setIdleAnimation,
     move = move,
