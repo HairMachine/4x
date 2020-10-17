@@ -204,6 +204,69 @@ local rules = {
         end
     },
 
+    AiUnitMoves = {
+        check = function()
+            return true
+        end,
+        trigger = function()
+            for k, e in pairs(units.get()) do
+                local target = {name = "None"}
+                if e.class == "Sieger" then
+                    target = units.getClosestBuildingWithinRange(e, e.range)
+                elseif e.class == "Skirmisher" or e.class == "Defender" then
+                    target = units.getClosestUnitWithinRange(e, e.range)
+                    if target.name == "None" and (target.x ~= e.parent.x or target.y ~= e.parent.y) then
+                        target.name = "Home"
+                        target.x = e.parent.x
+                        target.y = e.parent.y
+                    end
+                end
+                if target.name ~= "None" and (target.x ~= e.x or target.y ~= e.y) then
+                    for i = 1, e.speed do
+                        -- Take distance of all tiles adjacent to the moving unit, store in table
+                        local candidateTiles = {}
+                        for x = e.x - 1, e.x + 1 do
+                            for y = e.y - 1, e.y + 1 do
+                                table.insert(candidateTiles, {
+                                    x = x, 
+                                    y = y, 
+                                    dist = units.getDistBetween(x, y, target.x, target.y)
+                                })
+                            end
+                        end
+                        -- Sort by distance
+                        table.sort(candidateTiles, function(left, right)
+                            return left.dist < right.dist
+                        end)
+                        -- Discard the last three
+                        for i = 1, 3 do
+                            table.remove(candidateTiles, #candidateTiles)
+                        end
+                        -- Discard any that are blocked
+                        for j = #candidateTiles, 1, -1 do
+                            local newx = candidateTiles[j].x
+                            local newy = candidateTiles[j].y
+                            if not (newx > 0 and newx <= worldmap.MAPSIZEX and newy > 0 and newy <= worldmap.MAPSIZEY) then
+                                table.remove(candidateTiles, j)
+                            elseif not units.tileIsAllowed(e, worldmap.map[newy][newx].tile) then
+                                table.remove(candidateTiles, j)
+                            elseif locations.atPos(newx, newy).name ~= "None" and locations.atPos(newx, newy).team ~= e.team then
+                                table.remove(candidateTiles, j)
+                            end
+                        end
+                        -- Choose the first as the target tile
+                        if candidateTiles[1] then
+                            -- Units don't block candidate tile selection, but units can't walk into them
+                            if units.atPos(candidateTiles[1].x, candidateTiles[1].y).name == "None" then
+                                units.move(e, candidateTiles[1].x, candidateTiles[1].y)
+                            end                    
+                        end
+                    end
+                end
+            end
+        end
+    },
+
     -- All units attack buildings or other units
     Combat = {
         check = function(params)
