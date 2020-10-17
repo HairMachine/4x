@@ -42,6 +42,7 @@ local function SelectHero(k, e)
         local params = {unitToMove = units.get()[targeter.getUnit()], x = x, y = y}
         if rules.check('HeroExploreLocation', params) then
             local result = rules.trigger('HeroExploreLocation', params)
+            rules.trigger('TileAlignmentChange')
             InfoPopup(result.title, result.body)
         elseif rules.check('HeroMove', params) then
             rules.trigger('HeroMove', params)
@@ -152,6 +153,7 @@ local function EndTurn()
 
     commands.new(function(params)
         rules.trigger('Build')
+        rules.trigger('TileAlignmentChange')
         return true
     end, {})
 end
@@ -159,6 +161,8 @@ end
 local function load()
     camera.setSize(720, 532)
     rules.trigger('SetupBoard')
+    rules.trigger('TileAlignmentChange')
+    rules.trigger('SetupStartingUnits')
 end
 
 local function show()
