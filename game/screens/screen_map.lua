@@ -146,27 +146,7 @@ local function EndTurn()
 
     -- Buildings
     commands.new(function(params)
-        production.progressBuilding()
-        local built = production.getFinishedBuilding()
-        if built then
-            if built.type == "location" then
-                targeter.setBuildMap(built)
-                targeter.callback = function(x, y)
-                    locations.add(built.key, x, y, 1)
-                    production.removeBuilding()
-                    locations.tileAlignmentChange()
-                    targeter.clear()
-                end
-            else
-                targeter.setBuildUnitMap(built)
-                targeter.callback = function(x, y)
-                    local place = locations.atPos(x, y)
-                    table.insert(place.units, {unit = built.key, cooldown = 0})
-                    production.removeBuilding()
-                    targeter.clear()
-                end
-            end
-        end
+        rules.trigger('Build')
         return true
     end, {})
 end

@@ -7,6 +7,8 @@ local commands = require 'modules/commands'
 local animation = require 'modules/animation'
 local spells = require 'modules/spells'
 local dark_power = require 'modules/dark_power'
+local production = require 'modules/production'
+local targeter = require 'modules/targeter'
 
 local rules = {
     
@@ -83,6 +85,35 @@ local rules = {
         trigger = function(params)
             for k, e in pairs(units.get()) do
                 e.moved = 0
+            end
+        end
+    },
+
+    Build = {
+        check = function(params)
+            return true
+        end,
+        trigger = function(params)
+            production.progressBuilding()
+            local built = production.getFinishedBuilding()
+            if built then
+                if built.type == "location" then
+                    targeter.setBuildMap(built)
+                    targeter.callback = function(x, y)
+                        locations.add(built.key, x, y, 1)
+                        production.removeBuilding()
+                        locations.tileAlignmentChange()
+                        targeter.clear()
+                    end
+                else
+                    targeter.setBuildUnitMap(built)
+                    targeter.callback = function(x, y)
+                        local place = locations.atPos(x, y)
+                        table.insert(place.units, {unit = built.key, cooldown = 0})
+                        production.removeBuilding()
+                        targeter.clear()
+                    end
+                end
             end
         end
     },
