@@ -11,6 +11,36 @@ local production = require 'modules/production'
 local targeter = require 'modules/targeter'
 
 local rules = {
+
+    -- Set up the starting board state
+    SetupBoard = {
+        check = function()
+            return true
+        end,
+        trigger = function()
+             -- Generate map
+            worldmap.generate()
+
+            -- Wizard's tower always first
+            locations.add("tower", 2, 2, 1)
+            
+            -- The DARK TOWER!
+            worldmap.map[worldmap.MAPSIZEY - 1][worldmap.MAPSIZEX - 1] = worldmap.makeTile("grass", 99)
+            worldmap.map[worldmap.MAPSIZEY - 2][worldmap.MAPSIZEX - 1] = worldmap.makeTile("grass", 99)
+            worldmap.map[worldmap.MAPSIZEY - 1][worldmap.MAPSIZEX - 2] = worldmap.makeTile("grass", 99)
+            locations.add("dark_tower", worldmap.MAPSIZEX - 1, worldmap.MAPSIZEY - 1, 2)
+            units.add("doom_guard", worldmap.MAPSIZEX - 1, worldmap.MAPSIZEY - 2, {x = worldmap.MAPSIZEX - 1, y = worldmap.MAPSIZEY - 2, "null"})
+            units.add("doom_guard", worldmap.MAPSIZEX - 2, worldmap.MAPSIZEY - 2, {x = worldmap.MAPSIZEX - 2, y = worldmap.MAPSIZEY - 2, "null"})
+            units.add("doom_guard", worldmap.MAPSIZEX - 2, worldmap.MAPSIZEY - 1, {x = worldmap.MAPSIZEX - 2, y = worldmap.MAPSIZEY - 1, "null"})
+            
+            -- Set tile alignments
+            locations.tileAlignmentChange()
+
+            -- Starting units
+            units.add("hero", 2, 2)
+            worldmap.explore(2, 2, 2)
+        end
+    },
     
     -- Hero moves on the world map, and reveals unexplored tiles as they go.
     HeroMove = {
