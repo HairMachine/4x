@@ -40,8 +40,8 @@ local function SelectHero(k, e)
     targeter.setMoveMap(e.x, e.y, e.speed)
     targeter.callback = function(x, y)
         local params = {unitToMove = units.get()[targeter.getUnit()], x = x, y = y}
-        if rules.check('HeroExplore', params) then
-            local result = rules.trigger('HeroExplore', params)
+        if rules.check('HeroExploreLocation', params) then
+            local result = rules.trigger('HeroExploreLocation', params)
             InfoPopup(result.title, result.body)
         elseif rules.check('HeroMove', params) then
             rules.trigger('HeroMove', params)
@@ -80,7 +80,7 @@ local function EndTurn()
         e.moved = 0
     end
     -- Population growth
-    locations.growSettlement()
+    rules.trigger('GrowSettlement')
     -- Upkeep costs, cooldowns
     for k, l in pairs(locations.get()) do
         if l.team == CONSTS.playerTeam then
