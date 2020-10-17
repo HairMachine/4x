@@ -414,7 +414,7 @@ local rules = {
         end
     },
 
-    -- The Dark Power increases and creates new plots
+    -- The Dark Power increases and creates fiendish new plots!
     DarkPowerActs = {
         trigger = function()
             for k, l in pairs(locations.get()) do
@@ -424,18 +424,42 @@ local rules = {
                     dark_power.increasePower(1)
                 end
             end
-            local plot = dark_power.getCurrentPlot()
-            if dark_power.getPower() >= plot.target then
-                if plot.name == "Cave" then
-                    locations.add("cave", plot.x, plot.y, 2)
-                    units.add("grunter", plot.x, plot.y, {type = "cave", x = plot.x, y = plot.y})
-                elseif plot.name == "Dark Temple" then
-                    locations.add("dark_temple", plot.x, plot.y, 2)
-                elseif plot.name == "Fortress" then
-                    locations.add("fortress", plot.x, plot.y, 2)
-                    units.add("doom_guard", plot.x, plot.y, {type = "fortress", x = plot.x, y = plot.y})
+            if dark_power.getPower() >= dark_power.plot.target then
+                if dark_power.plot.name == "Cave" then
+                    locations.add("cave", dark_power.plot.x, dark_power.plot.y, 2)
+                    units.add("grunter", dark_power.plot.x, dark_power.plot.y, {type = "cave", x = dark_power.plot.x, y = dark_power.plot.y})
+                elseif dark_power.plot.name == "Dark Temple" then
+                    locations.add("dark_temple", dark_power.plot.x, dark_power.plot.y, 2)
+                elseif dark_power.plot.name == "Fortress" then
+                    locations.add("fortress", dark_power.plot.x, dark_power.plot.y, 2)
+                    units.add("doom_guard", dark_power.plot.x, dark_power.plot.y, {type = "fortress", x = dark_power.plot.x, y = dark_power.plot.y})
                 end
-                dark_power.choosePlot()
+                -- Select a new plot
+                local r = love.math.random(1, 100)
+                if r < 50 then
+                    dark_power.plot.name = "Cave"
+                    dark_power.plot.target = 40
+                elseif r < 80 then
+                    dark_power.plot.name = "Dark Temple"
+                    dark_power.plot.target = 50
+                else
+                    dark_power.plot.name = "Fortress"
+                    dark_power.plot.target = 40
+                end
+                local caveLocs = {}
+                for y = 1, worldmap.MAPSIZEY do
+                    for x = 1, worldmap.MAPSIZEX do
+                        if worldmap.map[y][x].align ~= CONSTS.lightTile and locations.atPos(x, y).name == "None" then
+                            table.insert(caveLocs, {x = x, y = y})
+                        end
+                    end
+                end
+                if #caveLocs > 0 then
+                    -- Chose a random one
+                    local loc = caveLocs[love.math.random(1, #caveLocs)]
+                    dark_power.plot.x = loc.x
+                    dark_power.plot.y = loc.y
+                end
             end
         end
     },
