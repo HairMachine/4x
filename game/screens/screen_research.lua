@@ -17,7 +17,7 @@ local function show()
     for k, s in pairs(spells.researchable) do
         local spellBtn = {
             x = 0, y = (k - 1) * 32, width = 300, height = 32, text = spells.data[s].name, spell = s, visible = 1, action = function(event)
-                rules.trigger('StartSpellResearch', {spell: event.spell})
+                rules.trigger('StartSpellResearch', {spell = event.spell})
                 for k, b in pairs(buttons) do
                     if b.spell then
                         b.text = spells.data[b.spell].name
