@@ -18,7 +18,8 @@ local data =  {
     hamlet = {key = "hamlet", class = "utility", name = "Settlement", tile = "city", allowedTiles = {}, upkeep = 50, production = 0, hp = 10, maxHp = 10, align = 3},
     housing = {key = "housing", class = "housing", name = "Housing", tile = "city", allowedTiles = {"grass"}, upkeep = 10, production = 200, hp = 8, maxHp = 8},
     road = {key = "road", class = "road", name = "Road", tile = "city", allowedTiles = {"grass", "forest", "mountain", "tundra"}, upkeep = 2, production = 50, hp = 3, maxHp = 3, align = 1},
-    factory = {key = "factory", class = "utility", name = "Factory", tile = "city", allowedTiles = {"grass", "forest", "tundra"}, upkeep = 10, production = 500, hp = 5, maxHp = 5}
+    factory = {key = "factory", class = "utility", name = "Factory", tile = "city", allowedTiles = {"grass", "forest", "tundra"}, upkeep = 10, production = 500, hp = 5, maxHp = 5},
+    academy = {key = "academy", class = "utility", name = "Academy", tile = "city", allowedTiles = {"grass"}, upkeep = 40, production = 2000, hp = 10, maxHp = 10}
 }
 
 local currentBuildingTile = {tile = "grass", x = 1, y = 1}
@@ -48,6 +49,8 @@ local function add(type, x, y, team)
     -- special building effects
     if loc.key == "farm" then
         _builtFarm(loc)
+    elseif loc.key == "academy" then
+        resources.changeUnitLevel(1)
     end
 end
 
@@ -83,6 +86,8 @@ local function remove()
             -- special building effects
             if locations[i].key == "hq" then
                 resources.spendCommandPoints(1)
+            elseif locations[i].key == "academy" then
+                resources.changeUnitLevel(-1)
             end
             table.remove(locations, i)
         end
