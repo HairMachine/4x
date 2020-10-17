@@ -26,12 +26,11 @@ local function show()
         if not spells.data[s].cooldown then
             buttons["spell_"..k].text = spells.data[s].name
             buttons["spell_"..k].action = function(event)
-                if s == "summon_hero" and resources.getCommandPoints() < 1 then
-                    buttons.error_box.text = "You need at least one command point available to cast this spell again!"
+                local message = rules.trigger(spells.cast(s))
+                if message then
+                    buttons.error_box.text = message
                     buttons.error_box.visible = 1
-                    return
                 end
-                rules.trigger(spells.cast(s))
                 ScreenSwitch("map")
             end
         else
