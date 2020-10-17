@@ -174,6 +174,13 @@ local function EndTurn()
     end
     -- Perform BATTLES!
     units.fight()
+    -- Remove dead
+    commands.new(function(params) 
+        locations.remove()
+        units.remove()
+        units.respawnTimer()
+        return true
+    end, {})
     -- Check on win conditions!
     commands.new(function(params)
         if locations.get()[2].hp <= 0 then
@@ -189,9 +196,7 @@ local function EndTurn()
             if u.class == "Hero" then herocount = herocount + 1 end
         end
         if herocount == 0 then
-            if resources.getCommandPoints() <= 0 then
-                ScreenSwitch("lose")
-            end
+            ScreenSwitch("lose")
         end
         return true
     end, {})
@@ -207,13 +212,6 @@ local function EndTurn()
             end
             InfoPopup("Monsters dropped items!", itemText)
         end
-        return true
-    end, {})
-    -- Remove dead
-    commands.new(function(params) 
-        locations.remove()
-        units.remove()
-        units.respawnTimer()
         return true
     end, {})
     -- Perform BUILDING EFFECTS
