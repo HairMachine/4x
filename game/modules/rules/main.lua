@@ -427,6 +427,12 @@ local rules = {
         end
     },
 
+    StartSpellResearch = {
+        trigger = function(params)
+            spells.startLearning(params.spell)
+        end
+    }
+
     AdvanceSpellResearch = {
         trigger = function()
             spells.research(0)
