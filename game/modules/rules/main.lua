@@ -5,6 +5,8 @@ local resources = require 'modules/resources'
 local items = require 'modules/items'
 local commands = require 'modules/commands'
 local animation = require 'modules/animation'
+local spells = require 'modules/spells'
+local dark_power = require 'modules/dark_power'
 
 local rules = {
     
@@ -137,7 +139,7 @@ local rules = {
     },
 
     -- Unit and location upkeep costs per turn
-    UpkeepCosts = {
+    PayUpkeepCosts = {
         check = function(params)
             return true
         end,
@@ -161,7 +163,7 @@ local rules = {
     },
 
     -- Tick cooldowns for recalled units in barracks
-    RecalledUnitCooldowns = {
+    CooldownRecalledUnits = {
         check = function(params)
             return true
         end,
@@ -178,6 +180,7 @@ local rules = {
         end
     },
 
+    -- All units attack buildings or other units
     Combat = {
         check = function(params)
             return true
@@ -266,6 +269,95 @@ local rules = {
                 end
                 return true
             end, {})
+        end
+    },
+
+    -- All buildings apply their each-turn effects
+    BuildingTurnEffects = {
+        check = function()
+            return true
+        end,
+        trigger = function()
+            for k, l in pairs(locations.get()) do
+                if l.key == "node" then
+                    spells.addMP(worldmap.getTileWorkers(l.x, l.y))
+                elseif l.key == "tower" then
+                    spells.addMP(1)
+                elseif l.key == "mine" then
+                    resources.spendGold(-worldmap.getTileWorkers(l.x, l.y) * 20)
+                end
+            end
+        end
+    },
+
+    -- The Dark Power increases and creates new plots
+    DarkPowerActs = {
+        check = function()
+            return true
+        end,
+        trigger = function()
+            for k, l in pairs(locations.get()) do
+                if l.key == "dark_tower" then
+                    dark_power.increasePower(5)
+                elseif l.key == "dark_temple" then
+                    dark_power.increasePower(1)
+                end
+            end
+            local plot = dark_power.getCurrentPlot()
+            if dark_power.getPower() >= plot.target then
+                if plot.name == "Cave" then
+                    locations.add("cave", plot.x, plot.y, 2)
+                    units.add("grunter", plot.x, plot.y, {type = "cave", x = plot.x, y = plot.y})
+                elseif plot.name == "Dark Temple" then
+                    locations.add("dark_temple", plot.x, plot.y, 2)
+                elseif plot.name == "Fortress" then
+                    locations.add("fortress", plot.x, plot.y, 2)
+                    units.add("doom_guard", plot.x, plot.y, {type = "fortress", x = plot.x, y = plot.y})
+                end
+                dark_power.choosePlot()
+            end
+        end
+    },
+
+    AdvanceSpellResearch = {
+        check = function()
+            return true
+        end,
+        trigger = function()
+            local researchBonus = 0
+            for k, e in pairs(units.get()) do
+                if e.type == "sage" then
+                    researchBonus = researchBonus + 1
+                end
+            end
+            spells.research(researchBonus)
+            if spells.getLearning() == "none" and #spells.researchable > 0 then
+                return true
+            end
+            return false
+        end
+    },
+
+    -- End game conditions, win or loss
+    CheckEndConditions = {
+        check = function()
+            return true
+        end,
+        trigger = function()
+            if locations.get()[2].hp <= 0 then
+                return "win"
+            end
+            if locations.get()[1].hp <= 0 then
+                return "lose"
+            end
+            local herocount = 0
+            for k, u in pairs(units.get()) do
+                if u.class == "Hero" then herocount = herocount + 1 end
+            end
+            if herocount == 0 then
+                return "lose"
+            end
+            return "continue"
         end
     }
 

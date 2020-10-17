@@ -20,6 +20,7 @@ end
 
 local function choosePlot()
     resetPlot()
+    power = 0
     local r = love.math.random(1, 100)
     if r < 50 then
         plot.name = "Cave"
@@ -47,36 +48,22 @@ local function choosePlot()
     end
 end
 
-local function advancePlot()
-    for k, l in pairs(locations.get()) do
-        if l.key == "dark_tower" then
-            power = power + 5
-        elseif l.key == "dark_temple" then
-            power = power + 1
-        end
-    end
-    if power >= plot.target then
-        if plot.name == "Cave" then
-            locations.add("cave", plot.x, plot.y, 2)
-            units.add("grunter", plot.x, plot.y, {type = "cave", x = plot.x, y = plot.y})
-        elseif plot.name == "Dark Temple" then
-            locations.add("dark_temple", plot.x, plot.y, 2)
-        elseif plot.name == "Fortress" then
-            locations.add("fortress", plot.x, plot.y, 2)
-            units.add("doom_guard", plot.x, plot.y, {type = "fortress", x = plot.x, y = plot.y})
-        end
-        power = 0
-        choosePlot()
-    end
+local function getCurrentPlot()
+    return plot
 end
 
 local function getPower()
     return power
 end
 
+local function increasePower()
+    power = power + 1
+end
+
 return {
     plot = plot,
-    advancePlot = advancePlot,
     choosePlot = choosePlot,
+    getCurrentPlot = getCurrentPlot,
     getPower = getPower,
+    increasePower = increasePower
 }

@@ -79,8 +79,8 @@ local function EndTurn()
 
     rules.trigger('ResetUnitMoves')
     rules.trigger('GrowSettlement')
-    rules.trigger('UpkeepCosts')
-    rules.trigger('RecalledUnitCooldowns')
+    rules.trigger('PayUpkeepCosts')
+    rules.trigger('CooldownRecalledUnits')
     
     -- Move minions (+ pathfinding)
     for k, e in pairs(units.get()) do
@@ -141,26 +141,17 @@ local function EndTurn()
 
     rules.trigger('Combat')
     rules.trigger('RespawnUnits')
-    
-    -- Check on win conditions!
+
     commands.new(function(params)
-        if locations.get()[2].hp <= 0 then
+        result = rules.trigger('CheckEndConditions')
+        if result == "win" then
             ScreenSwitch("win")
-            return true
-        end
-        if locations.get()[1].hp <= 0 then
-            ScreenSwitch("lose")
-            return true
-        end
-        local herocount = 0
-        for k, u in pairs(units.get()) do
-            if u.class == "Hero" then herocount = herocount + 1 end
-        end
-        if herocount == 0 then
+        elseif result == "lose" then
             ScreenSwitch("lose")
         end
         return true
     end, {})
+    
     -- Show items
     commands.new(function(params)
         local dropped = items.getDropped()
@@ -175,34 +166,21 @@ local function EndTurn()
         end
         return true
     end, {})
-    -- Perform BUILDING EFFECTS
+
     commands.new(function(params)
-        for k, l in pairs(locations.get()) do
-            if l.key == "node" then
-                spells.addMP(worldmap.getTileWorkers(l.x, l.y))
-            elseif l.key == "tower" then
-                spells.addMP(1)
-            elseif l.key == "mine" then
-                resources.spendGold(-worldmap.getTileWorkers(l.x, l.y) * 20)
-            end
-        end
+        rules.trigger('BuildingTurnEffects')
         return true
     end, {})
+
     -- MAKE MORE CAVES
     commands.new(function(params) 
-        dark_power.advancePlot()
+        rules.trigger('DarkPowerActs')
         return true
     end, {})
+
     -- Research spells
     commands.new(function(params)
-        local researchBonus = 0
-        for k, e in pairs(units.get()) do
-            if e.type == "sage" then
-                researchBonus = researchBonus + 1
-            end
-        end
-        spells.research(researchBonus)
-        if spells.getLearning() == "none" and #spells.researchable > 0 then
+        if rules.trigger('AdvanceSpellResearch') then
             ScreenSwitch("research")
         end
         return true
