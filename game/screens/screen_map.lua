@@ -76,7 +76,7 @@ end
 
 local function EndTurn()
     targeter.clear()
-    
+
     rules.trigger('ResetUnitMoves')
     rules.trigger('GrowSettlement')
     rules.trigger('UpkeepCosts')
@@ -138,15 +138,10 @@ local function EndTurn()
             end
         end
     end
-    -- Perform BATTLES!
-    units.fight()
-    -- Remove dead
-    commands.new(function(params) 
-        locations.remove()
-        units.remove()
-        units.respawnTimer()
-        return true
-    end, {})
+
+    rules.trigger('Combat')
+    rules.trigger('RespawnUnits')
+    
     -- Check on win conditions!
     commands.new(function(params)
         if locations.get()[2].hp <= 0 then

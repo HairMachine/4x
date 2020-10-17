@@ -3,6 +3,8 @@ local worldmap = require 'modules/worldmap'
 local locations = require 'modules/locations'
 local resources = require 'modules/resources'
 local items = require 'modules/items'
+local commands = require 'modules/commands'
+local animation = require 'modules/animation'
 
 local rules = {
     
@@ -173,6 +175,97 @@ local rules = {
                     end
                 end
             end
+        end
+    },
+
+    Combat = {
+        check = function(params)
+            return true
+        end,
+        trigger = function(params)
+            for k, atk in pairs(units.get()) do
+                local siegelist = {}
+                for k2, def in pairs(locations.get()) do
+                    if def.team ~= atk.team and def.x >= atk.x - 1 and def.x <= atk.x + 1 and def.y >= atk.y - 1 and def.y <= atk.y + 1 then
+                        table.insert(siegelist, def)
+                    end
+                end
+                if #siegelist > 0 then
+                    local sieged = siegelist[love.math.random(1, #siegelist)]
+                    local bonus = items.getEffects(atk.items, "demolishing")
+                    sieged.hp = sieged.hp - (atk.attack + bonus)
+                    commands.new(function(params)
+                        if params.started == false then
+                            units.setAttackAnimation(params.unit, params.x, params.y)
+                            params.started = true
+                        end
+                        if animation.get(params.unit.animation) == nil then
+                            units.setIdleAnimation(params.unit)
+                            return true
+                        end
+                        return false
+                    end, {unit = atk, started = false, x = sieged.x, y = sieged.y})
+                else
+                    local atklist = {}
+                    for k2, def in pairs(units.get()) do
+                        if def.team ~= atk.team and def.x >= atk.x - 1 and def.x <= atk.x + 1 and def.y >= atk.y - 1 and def.y <= atk.y + 1 then
+                            table.insert(atklist, def)
+                        end
+                    end
+                    if #atklist > 0 then
+                        local attacked = atklist[love.math.random(1, #atklist)]
+                        local damage = (atk.attack + items.getEffects(atk.items, "slaying")) - items.getEffects(attacked.items, "defence")
+                        if damage < 0 then damage = 0 end
+                        attacked.hp = attacked.hp - damage
+                        commands.new(function(params)
+                            if params.started == false then
+                                units.setAttackAnimation(params.unit, params.x, params.y)
+                                params.started = true
+                            end
+                            if animation.get(params.unit.animation) == nil then
+                                units.setIdleAnimation(params.unit)
+                                return true
+                            end
+                            return false
+                        end, {unit = atk, started = false, x = attacked.x, y = attacked.y})
+                        -- TODO: Apply any special attacking effects that this unit might have
+                        if attacked.hp <= 0 and (atk.class == "Skirmisher" or atk.class == "Hero") then
+                            if love.math.random(1, 3) == 3 then
+                                items.generate()
+                            end
+                        end
+                    end
+                end
+            end
+            -- Remove all the dead units and locations after a fight
+            commands.new(function(params) 
+                locations.remove()
+                units.remove()
+                return true
+            end, {})
+        end
+    },
+
+    -- Tick down and respawn any units that need to respawn
+    RespawnUnits = {
+        check = function(params)
+            return true
+        end,
+        trigger = function(params)
+            commands.new(function(params) 
+                respawning = units.getRespawning()
+                for k = #respawning, 1, -1 do
+                    local i = respawning[k]
+                    i.timer = i.timer - 1
+                    if i.timer <= 0 then
+                        if units.atPos(i.data.x, i.data.y).name == "None" then
+                            units.spawnByLocType(i.data)
+                            units.respawned(k)
+                        end
+                    end
+                end
+                return true
+            end, {})
         end
     }
 

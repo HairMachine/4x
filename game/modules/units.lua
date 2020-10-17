@@ -191,63 +191,6 @@ local function move(unit, x, y)
     end, {unit = unit, started = false, x = x, y = y})
 end
 
-local function fight()
-    for k, atk in pairs(units) do
-        local siegelist = {}
-        for k2, def in pairs(locations.get()) do
-            if def.team ~= atk.team and def.x >= atk.x - 1 and def.x <= atk.x + 1 and def.y >= atk.y - 1 and def.y <= atk.y + 1 then
-                table.insert(siegelist, def)
-            end
-        end
-        if #siegelist > 0 then
-            local sieged = siegelist[love.math.random(1, #siegelist)]
-            local bonus = items.getEffects(atk.items, "demolishing")
-            sieged.hp = sieged.hp - (atk.attack + bonus)
-            commands.new(function(params)
-                if params.started == false then
-                    setAttackAnimation(params.unit, params.x, params.y)
-                    params.started = true
-                end
-                if animation.get(params.unit.animation) == nil then
-                    setIdleAnimation(params.unit)
-                    return true
-                end
-                return false
-            end, {unit = atk, started = false, x = sieged.x, y = sieged.y})
-        else
-            local atklist = {}
-            for k2, def in pairs(units) do
-                if def.team ~= atk.team and def.x >= atk.x - 1 and def.x <= atk.x + 1 and def.y >= atk.y - 1 and def.y <= atk.y + 1 then
-                    table.insert(atklist, def)
-                end
-            end
-            if #atklist > 0 then
-                local attacked = atklist[love.math.random(1, #atklist)]
-                local damage = (atk.attack + items.getEffects(atk.items, "slaying")) - items.getEffects(attacked.items, "defence")
-                if damage < 0 then damage = 0 end
-                attacked.hp = attacked.hp - damage
-                commands.new(function(params)
-                    if params.started == false then
-                        setAttackAnimation(params.unit, params.x, params.y)
-                        params.started = true
-                    end
-                    if animation.get(params.unit.animation) == nil then
-                        setIdleAnimation(params.unit)
-                        return true
-                    end
-                    return false
-                end, {unit = atk, started = false, x = attacked.x, y = attacked.y})
-                -- TODO: Apply any special attacking effects that this unit might have
-                if attacked.hp <= 0 and (atk.class == "Skirmisher" or atk.class == "Hero") then
-                    if love.math.random(1, 3) == 3 then
-                        items.generate()
-                    end
-                end
-            end
-        end
-    end
-end
-
 local function atPos(x, y)
     for k, u in pairs(units) do
         if u.x == x and u.y == y then
@@ -348,18 +291,14 @@ local function tileIsAllowed(unit, tile)
     return false
 end
 
-local function respawnTimer()
-    for k = #respawning, 1, -1 do
-        local i = respawning[k]
-        i.timer = i.timer - 1
-        if i.timer <= 0 then
-            if atPos(i.data.x, i.data.y).name == "None" then
-                spawnByLocType(i.data)
-                table.remove(respawning, k)
-            end
-        end
-    end
+local function getRespawning()
+    return respawning
 end
+
+local function respawned(k)
+    table.remove(respawning, k)
+end
+
 
 return {
     get = get,
@@ -376,7 +315,9 @@ return {
     tileIsAllowed = tileIsAllowed,
     setIdleAnimation = setIdleAnimation,
     move = move,
-    fight = fight,
     getDistBetween = getDistBetween,
-    respawnTimer = respawnTimer
+    getRespawning = getRespawning,
+    respawned = respawned,
+    setAttackAnimation = setAttackAnimation,
+    setIdleAnimation = setIdleAnimation
 }
