@@ -44,14 +44,6 @@ local function getData()
     return data
 end
 
-local function setCurrentBuildingTile(x, y, tile)
-    currentBuildingTile = {tile = tile, x = x, y = y} 
-end
-
-local function getCurrentBuildingTile()
-    return currentBuildingTile
-end
-
 local function getAllowedBuildings()
     local sublist = {}
     for k, l in pairs(data) do
@@ -96,8 +88,6 @@ return {
     add = add,
     get = get,
     getData = getData,
-    setCurrentBuildingTile = setCurrentBuildingTile,
-    getCurrentBuildingTile = getCurrentBuildingTile,
     getAllowedBuildings = getAllowedBuildings,
     remove = remove,
     atPos = atPos,
