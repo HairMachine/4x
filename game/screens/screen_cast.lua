@@ -1,6 +1,7 @@
 local ui = require 'modules/ui_manager'
 local spells = require 'modules/spells'
 local resources = require 'modules/resources'
+local rules = require 'modules/rules/main'
 
 local buttons = {}
 
@@ -30,7 +31,7 @@ local function show()
                     buttons.error_box.visible = 1
                     return
                 end
-                spells.cast(s)
+                rules.trigger(spells.cast(s))
                 ScreenSwitch("map")
             end
         else

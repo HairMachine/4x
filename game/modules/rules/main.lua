@@ -107,6 +107,7 @@ local rules = {
         end
     },
 
+    -- Advance buildings and create a place unit targeter if ready
     Build = {
         check = function(params)
             return true
@@ -458,13 +459,7 @@ local rules = {
             return true
         end,
         trigger = function()
-            local researchBonus = 0
-            for k, e in pairs(units.get()) do
-                if e.type == "sage" then
-                    researchBonus = researchBonus + 1
-                end
-            end
-            spells.research(researchBonus)
+            spells.research(0)
             if spells.getLearning() == "none" and #spells.researchable > 0 then
                 return true
             end
@@ -478,6 +473,56 @@ local rules = {
         end,
         trigger = function()
             spells.cooldown()
+        end
+    },
+
+    CastLightningBolt = {
+        check = function()
+            return true
+        end,
+        trigger = function()
+            targeter.setUnit(-1)
+            targeter.setUnitMap(2)
+            targeter.callback = function(x, y)
+                for k, u in pairs(units.get()) do
+                    if x == u.x and y == u.y then
+                        u.hp = u.hp - 10
+                    end
+                end
+                units.remove()
+                targeter.clear()
+            end
+        end
+    },
+
+    CastSummonHero = {
+        check = function()
+            return true
+        end,
+        trigger = function()
+            targeter.setUnit(-1)
+            units.add("hero", locations.get()[1].x, locations.get()[1].y, {})
+            resources.spendCommandPoints(1)
+        end
+    },
+
+    CastTerraform = {
+        check = function()
+            return true
+        end,
+        trigger = function()
+            targeter.setUnit(-1)
+            targeter.setSpellMap()
+            targeter.callback = function(x, y)
+                local food = worldmap.map[y][x].food
+                local pop = worldmap.map[y][x].population
+                local workers = worldmap.map[y][x].workers
+                worldmap.map[y][x] = worldmap.makeTile("grass", worldmap.map[y][x].align)
+                worldmap.map[y][x].food = food
+                worldmap.map[y][x].population = pop
+                worldmap.map[y][x].workers = workers
+                targeter.clear()
+            end
         end
     },
 
