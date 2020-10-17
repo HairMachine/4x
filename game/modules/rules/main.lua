@@ -14,9 +14,6 @@ local rules = {
 
     -- Set up the starting board state
     SetupBoard = {
-        check = function()
-            return true
-        end,
         trigger = function()
              -- Generate map
             worldmap.generate()
@@ -85,9 +82,6 @@ local rules = {
 
     -- Tick up the hero's regeneration counter, and regenerate health if it's time to do so
     HeroHealthRegen = {
-        check = function()
-            return true
-        end,
         trigger = function()
             for k, u in pairs(units.get()) do
                 if u.class == "Hero" then
@@ -109,9 +103,6 @@ local rules = {
 
     -- Advance buildings and create a place unit targeter if ready
     Build = {
-        check = function(params)
-            return true
-        end,
         trigger = function(params)
             production.progressBuilding()
             local built = production.getFinishedBuilding()
@@ -139,9 +130,6 @@ local rules = {
 
     -- Settlements grow in population.
     GrowSettlement = {
-        check = function(params)
-            return true
-        end,
         trigger = function(params)
             -- Reset population to 0 so we have a clean slate
             for y = 1, worldmap.MAPSIZEY do
@@ -214,9 +202,6 @@ local rules = {
 
     -- Unit and location upkeep costs per turn
     PayUpkeepCosts = {
-        check = function(params)
-            return true
-        end,
         trigger = function(params)
             for k, l in pairs(locations.get()) do
                 if l.team == CONSTS.playerTeam then
@@ -238,9 +223,6 @@ local rules = {
 
     -- Tick cooldowns for recalled units in barracks
     CooldownRecalledUnits = {
-        check = function(params)
-            return true
-        end,
         trigger = function(params)
             for k, l in pairs(locations.get()) do
                 if l.maxUnits then
@@ -255,9 +237,6 @@ local rules = {
     },
 
     MoveAiUnits = {
-        check = function()
-            return true
-        end,
         trigger = function()
             for k, e in pairs(units.get()) do
                 local target = {name = "None"}
@@ -319,9 +298,6 @@ local rules = {
 
     -- All units attack buildings or other units
     Fight = {
-        check = function(params)
-            return true
-        end,
         trigger = function(params)
             for k, atk in pairs(units.get()) do
                 local siegelist = {}
@@ -388,9 +364,6 @@ local rules = {
 
     -- Tick down and respawn any units that need to respawn
     RespawnUnits = {
-        check = function(params)
-            return true
-        end,
         trigger = function(params)
             respawning = units.getRespawning()
             for k = #respawning, 1, -1 do
@@ -408,9 +381,6 @@ local rules = {
     },
 
     StartBuilding = {
-        check = function(params)
-            return true
-        end,
         trigger = function(params)
             production.beginBuilding(params)
         end
@@ -418,9 +388,6 @@ local rules = {
 
     -- All buildings apply their each-turn effects
     BuildingTurnEffects = {
-        check = function()
-            return true
-        end,
         trigger = function()
             for k, l in pairs(locations.get()) do
                 if l.key == "node" then
@@ -436,9 +403,6 @@ local rules = {
 
     -- The Dark Power increases and creates new plots
     DarkPowerActs = {
-        check = function()
-            return true
-        end,
         trigger = function()
             for k, l in pairs(locations.get()) do
                 if l.key == "dark_tower" then
@@ -464,9 +428,6 @@ local rules = {
     },
 
     AdvanceSpellResearch = {
-        check = function()
-            return true
-        end,
         trigger = function()
             spells.research(0)
             if spells.getLearning() == "none" and #spells.researchable > 0 then
@@ -477,18 +438,12 @@ local rules = {
     },
 
     TickSpellCooldown = {
-        check = function()
-            return true
-        end,
         trigger = function()
             spells.cooldown()
         end
     },
 
     CastLightningBolt = {
-        check = function()
-            return true
-        end,
         trigger = function()
             targeter.setUnit(-1)
             targeter.setUnitMap(2)
@@ -505,9 +460,6 @@ local rules = {
     },
 
     CastSummonHero = {
-        check = function()
-            return true
-        end,
         trigger = function()
             if resources.getCommandPoints() < 1 then
                 return "You need at least one command point available to cast this spell again!" 
@@ -519,9 +471,6 @@ local rules = {
     },
 
     CastTerraform = {
-        check = function()
-            return true
-        end,
         trigger = function()
             targeter.setUnit(-1)
             targeter.setSpellMap()
@@ -540,9 +489,6 @@ local rules = {
 
     -- End game conditions, win or loss
     CheckEndConditions = {
-        check = function()
-            return true
-        end,
         trigger = function()
             if locations.get()[2].hp <= 0 then
                 return "win"
@@ -565,14 +511,16 @@ local rules = {
 
 local function check(ruleName, params)
     assert(rules[ruleName] ~= nil, "Tried to check nonexistent rule: "..ruleName)
-    assert(rules[ruleName].check ~= nil, "check function not implemented on rule: "..ruleName)
+    if rules[ruleName].check == nil then
+        return true
+    end
     return rules[ruleName].check(params)
 end
 
 local function trigger(ruleName, params)
     assert(rules[ruleName] ~= nil, "Tried to trigger nonexistent rule: "..ruleName)
     assert(rules[ruleName].trigger ~= nil, "trigger function not implemented on rule: "..ruleName)
-    if rules[ruleName].check(params) then
+    if check(ruleName, params) then
         return rules[ruleName].trigger(params)
     end
 end
