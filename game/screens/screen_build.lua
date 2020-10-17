@@ -4,6 +4,7 @@ local units = require 'modules/units'
 local resources = require 'modules/resources'
 local targeter = require 'modules/targeter'
 local production = require 'modules/production'
+local rules = require 'modules/rules/main'
 
 local buttons = {}
 
@@ -22,7 +23,7 @@ local function show()
             x = 0, y = (k-1) * 32, width = 300, height = 32, 
             text = l.name.." (Prd: "..l.production..", Upk: "..l.upkeep..")", 
             visible = 1, loc = l, action = function(event)
-                production.beginBuilding({name = l.name, cost = l.production, type = "location", key = l.key}) 
+                rules.trigger('StartBuilding', {name = l.name, cost = l.production, type = "location", key = l.key})
                 ScreenSwitch("map")
             end
         }
@@ -35,7 +36,7 @@ local function show()
                     x = 315, y = i * 32, width = 300, height = 32,
                     text = u.name.." (Prd: "..u.production..", Upk: "..u.upkeep..")",
                     visible = 1, unit = u, action = function(event)
-                        production.beginBuilding({name = u.name, cost = u.production, type = "unit", key = k})
+                        rules.trigger('StartBuilding', {name = u.name, cost = u.production, type = "unit", key = k})
                         ScreenSwitch("map")
                     end
                 }

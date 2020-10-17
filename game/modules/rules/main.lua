@@ -407,6 +407,15 @@ local rules = {
         end
     },
 
+    StartBuilding = {
+        check = function(params)
+            return true
+        end,
+        trigger = function(params)
+            production.beginBuilding(params)
+        end
+    },
+
     -- All buildings apply their each-turn effects
     BuildingTurnEffects = {
         check = function()
@@ -500,6 +509,9 @@ local rules = {
             return true
         end,
         trigger = function()
+            if resources.getCommandPoints() < 1 then
+                return "You need at least one command point available to cast this spell again!" 
+            end
             targeter.setUnit(-1)
             units.add("hero", locations.get()[1].x, locations.get()[1].y, {})
             resources.spendCommandPoints(1)
