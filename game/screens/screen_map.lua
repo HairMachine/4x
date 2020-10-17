@@ -12,6 +12,7 @@ local dark_power = require 'modules/dark_power'
 local items = require 'modules/items'
 local camera = require 'modules/camera'
 local production = require 'modules/production'
+local rules = require 'modules/rules/main'
 
 local ACTIONSTARTX = 760
 local ACTIONSIZEX = 64
@@ -32,40 +33,24 @@ local function InfoPopup(title, description)
 end
 
 local function SelectHero(k, e)
+    buttons.found_city.visible = 1
+    buttons.found_city.unit = e
+    buttons.found_city.unitKey = k
     targeter.setUnit(k)
     targeter.setMoveMap(e.x, e.y, e.speed)
     targeter.callback = function(x, y)
-        local unitToMove = units.get()[targeter.getUnit()]
-        if worldmap.map[y][x].tile == "ruins" then
-            local roll = love.math.random(1, 6)
-            if roll <= 3 then
-                local gp = love.math.random(100, 200)
-                InfoPopup("Explored Ruins!", "Found "..gp.." gold!")
-                resources.spendGold(-gp)
-            elseif roll <= 6 then
-                items.generate()
-                local dropped = items.getDropped()
-                local itemText = ""
-                for k, i in pairs(dropped) do
-                    itemText = itemText.."Found "..i.name.."!"
-                    items.addToInventory(i)
-                    items.removeFromDropped(k)
-                end
-                InfoPopup("Ruins Explored!", itemText)
-            end
-            worldmap.map[y][x] = worldmap.makeTile("grass", worldmap.map[y][x].align)
-            locations.tileAlignmentChange()
-            targeter.clear()
-            e.moved = 1
-        else
-            units.move(unitToMove, x, y)
-            worldmap.explore(x, y, 2)
-            -- Create animations for any units which might not have them - these will be ones that have just been revealed
-            for k, e in pairs(units.get()) do
-                if worldmap.map[e.y][e.x].tile ~= CONSTS.unexploredTile then
-                    if not e.animation then
-                        units.setIdleAnimation(e)
-                    end
+        local params = {unitToMove = units.get()[targeter.getUnit()], x = x, y = y}
+        if rules.check('HeroExplore', params) then
+            local result = rules.trigger('HeroExplore', params)
+            InfoPopup(result.title, result.body)
+        elseif rules.check('HeroMove', params) then
+            rules.trigger('HeroMove', params)
+        end
+        -- Create animations for any units which might not have them - these will be ones that have just been revealed
+        for k, e in pairs(units.get()) do
+            if worldmap.map[e.y][e.x].tile ~= CONSTS.unexploredTile then
+                if not e.animation then
+                    units.setIdleAnimation(e)
                 end
             end
         end
@@ -77,9 +62,6 @@ local function SelectHero(k, e)
             end
         end
     end
-    buttons.found_city.visible = 1
-    buttons.found_city.unit = e
-    buttons.found_city.unitKey = k
 end
 
 local function SelectNextHero()
