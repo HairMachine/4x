@@ -47,6 +47,18 @@ local rules = {
         end
     },
 
+    -- Refresh all action points for units.
+    ResetUnitMoves = {
+        check = function(params)
+            return true
+        end,
+        trigger = function(params)
+            for k, e in pairs(units.get()) do
+                e.moved = 0
+            end
+        end
+    },
+
     -- Settlements grow in population.
     GrowSettlement = {
         check = function(params)
@@ -115,6 +127,48 @@ local rules = {
                                     end
                                 end
                             end
+                        end
+                    end
+                end
+            end
+        end
+    },
+
+    -- Unit and location upkeep costs per turn
+    UpkeepCosts = {
+        check = function(params)
+            return true
+        end,
+        trigger = function(params)
+            for k, l in pairs(locations.get()) do
+                if l.team == CONSTS.playerTeam then
+                    resources.spendGold(l.upkeep)
+                    if l.maxUnits then
+                        for k2, u in pairs(l.units) do
+                            resources.spendGold(math.floor(units.getData()[u.unit].upkeep / 2))
+                        end
+                    end
+                end
+            end
+            for k, u in pairs(units.get()) do
+                if u.team == CONSTS.playerTeam then
+                    resources.spendGold(u.upkeep)
+                end
+            end
+        end
+    },
+
+    -- Tick cooldowns for recalled units in barracks
+    RecalledUnitCooldowns = {
+        check = function(params)
+            return true
+        end,
+        trigger = function(params)
+            for k, l in pairs(locations.get()) do
+                if l.maxUnits then
+                    for k2, u in pairs(l.units) do
+                        if u.cooldown > 0 then
+                            u.cooldown = u.cooldown - 1
                         end
                     end
                 end

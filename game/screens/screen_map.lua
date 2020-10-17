@@ -76,28 +76,12 @@ end
 
 local function EndTurn()
     targeter.clear()
-    for k, e in pairs(units.get()) do
-        e.moved = 0
-    end
-    -- Population growth
+    
+    rules.trigger('ResetUnitMoves')
     rules.trigger('GrowSettlement')
-    -- Upkeep costs, cooldowns
-    for k, l in pairs(locations.get()) do
-        if l.team == CONSTS.playerTeam then
-            resources.spendGold(l.upkeep)
-            if l.maxUnits then
-                for k2, u in pairs(l.units) do
-                    u.cooldown = u.cooldown - 1
-                    resources.spendGold(math.floor(units.getData()[u.unit].upkeep / 2))
-                end
-            end
-        end
-    end
-    for k, u in pairs(units.get()) do
-        if u.team == CONSTS.playerTeam then
-            resources.spendGold(u.upkeep)
-        end
-    end
+    rules.trigger('UpkeepCosts')
+    rules.trigger('RecalledUnitCooldowns')
+    
     -- Move minions (+ pathfinding)
     for k, e in pairs(units.get()) do
         local target = {name = "None"}
