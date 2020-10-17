@@ -514,6 +514,7 @@ local rules = {
         end
     },
 
+    -- Start building
     StartBuilding = {
         trigger = function(params)
             production.beginBuilding(params)

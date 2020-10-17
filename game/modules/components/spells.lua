@@ -1,5 +1,3 @@
-local targeter = require 'modules/services/targeter'
-
 local mp = 25
 local rp = 5
 local sp = 5
