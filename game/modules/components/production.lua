@@ -1,27 +1,16 @@
-local worldmap = require('modules/components/worldmap')
-local locations = require('modules/components/locations')
-
-local production = 0
+local production = 50
 
 local inProgress = {}
 
-local function setProductionValue()
-    production = 50
-    for k, l in pairs(locations.get()) do
-        -- TODO: Add production values of buildings according to whatever formula
-        if l.key == "factory" then
-            production = production + worldmap.getTileWorkers(l.x, l.y) * 10
-        end
-    end
+local function setProductionValue(val)
+    production = val
 end
 
 local function getProductionValue()
-    setProductionValue()
     return production
 end
 
 local function turnsToBuild(cost)
-    setProductionValue()
     return math.floor(cost / production)
 end
 
@@ -36,8 +25,6 @@ local function progressBuilding()
     if not inProgress.name then
         return
     end
-    -- Split the production value between the number of things being built
-    setProductionValue()
     inProgress.progress = inProgress.progress + production
 end
 

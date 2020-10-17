@@ -523,6 +523,7 @@ local rules = {
     -- All buildings apply their each-turn effects
     BuildingTurnEffects = {
         trigger = function()
+            local prodVal = 50
             for k, l in pairs(locations.get()) do
                 if l.key == "node" then
                     spells.addMP(worldmap.getTileWorkers(l.x, l.y))
@@ -530,8 +531,11 @@ local rules = {
                     spells.addMP(1)
                 elseif l.key == "mine" then
                     resources.spendGold(-worldmap.getTileWorkers(l.x, l.y) * 20)
+                elseif l.key == "factory" then
+                    prodVal = prodVal + worldmap.getTileWorkers(l.x, l.y) * 10
                 end
             end
+            production.setProductionValue(prodVal)
         end
     },
 
