@@ -222,7 +222,7 @@ local function growSettlement()
             -- Within a certain range of this settlement, population decreases by 1 each tile.
             -- So if locAt.population == 1, there is no spread. If locAt.population == 2, all surrounding tiles have pop 1.
             -- If locAt.population == 3, all tiles surrounding have population 1, and all tiles around them have population 1. And so on.
-            local range = tile.population - 1
+            local range = 2
             for yt = locAt.y - range, locAt.y + range do
                 for xt = locAt.x - range, locAt.x + range do
                     if yt > 0 and yt <= worldmap.MAPSIZEY and xt > 0 and xt <= worldmap.MAPSIZEX then
