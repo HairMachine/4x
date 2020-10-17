@@ -1,5 +1,4 @@
 local locations = require 'modules/locations'
-local units = require 'modules/units'
 local worldmap = require 'modules/worldmap'
 
 local power = 0

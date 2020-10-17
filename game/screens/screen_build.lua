@@ -1,8 +1,6 @@
 local locations = require 'modules/locations'
 local ui = require 'modules/ui_manager'
 local units = require 'modules/units'
-local resources = require 'modules/resources'
-local targeter = require 'modules/targeter'
 local production = require 'modules/production'
 local rules = require 'modules/rules/main'
 
