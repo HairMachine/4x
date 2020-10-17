@@ -1,6 +1,7 @@
 local ui = require 'modules/ui_manager'
 local units = require 'modules/units'
 local items = require 'modules/items'
+local rules = require 'modules/rules/main'
 
 local buttons = {}
 
@@ -29,12 +30,8 @@ local function show()
     end
     for k, i in pairs(items.getInventory()) do
         buttons["item_"..k] = {x = 400, y = (k+1)*32, width = 300, height = 32, text = i.name.." ("..i.slot..")", visible = 1, item = i, key = k, action = function(event)
-            if units.get()[currentHero].slots[event.item.slot].name ~= "" then
-                items.addToInventory(event.item)
-            end
-            units.get()[currentHero].slots[event.item.slot] = i
-            items.removeFromInventory(event.key)
-            buttons["item_"..k] = nil
+            rules.trigger('EquipItem', {currentHero = currentHero, item = event.item, key = event.key})
+            buttons["item_"..k].visible = 0
         end}
     end
 end

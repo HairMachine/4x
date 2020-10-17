@@ -511,6 +511,17 @@ local rules = {
             end
             return "continue"
         end
+    },
+
+    -- Equip an item
+    EquipItem = {
+        trigger = function(params)
+            if units.get()[params.currentHero].slots[params.item.slot].name ~= "" then
+                items.addToInventory(params.item)
+            end
+            units.get()[params.currentHero].slots[params.item.slot] = params.item
+            items.removeFromInventory(params.key)
+        end
     }
 
 }
