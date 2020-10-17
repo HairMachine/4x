@@ -51,6 +51,30 @@ local rules = {
         end
     },
 
+    -- Tick up the hero's regeneration counter, and regenerate health if it's time to do so
+    HeroHealthRegen = {
+        check = function()
+            return true
+        end,
+        trigger = function()
+            for k, u in pairs(units.get()) do
+                if u.class == "Hero" then
+                    if u.hp < u.maxHp then
+                        if u.regen == nil then
+                            u.regen = 0
+                        else
+                            u.regen = u.regen + 1
+                        end
+                        if u.regen >= 5 then
+                            u.hp = u.hp +  1
+                            u.regen = 0
+                        end
+                    end
+                end
+            end
+        end
+    },
+
     -- Refresh all action points for units.
     ResetUnitMoves = {
         check = function(params)
@@ -335,6 +359,15 @@ local rules = {
                 return true
             end
             return false
+        end
+    },
+
+    TickSpellCooldown = {
+        check = function()
+            return true
+        end,
+        trigger = function()
+            spells.cooldown()
         end
     },
 

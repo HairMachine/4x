@@ -172,48 +172,35 @@ local function EndTurn()
         return true
     end, {})
 
-    -- MAKE MORE CAVES
     commands.new(function(params) 
         rules.trigger('DarkPowerActs')
         return true
     end, {})
 
-    -- Research spells
     commands.new(function(params)
         if rules.trigger('AdvanceSpellResearch') then
             ScreenSwitch("research")
         end
         return true
     end, {})
-    -- Regenerate health
+
     commands.new(function(params)
-        for k, u in pairs(units.get()) do
-            if u.class == "Hero" then
-                if u.hp < u.maxHp then
-                    if u.regen == nil then
-                        u.regen = 0
-                    else
-                        u.regen = u.regen + 1
-                    end
-                    if u.regen >= 5 then
-                        u.hp = u.hp +  1
-                        u.regen = 0
-                    end
-                end
-            end
-        end
+        rules.trigger('HeroHealthRegen')
         return true
     end, {})
+
     -- Start turn
     commands.new(function(params)
         SelectNextHero()
         return true
     end, {})
+
     -- Cooldown spells
     commands.new(function(params)
-        spells.cooldown()
+        rules.trigger('TickSpellCooldown')
         return true
     end, {})
+
     -- Buildings
     commands.new(function(params)
         production.progressBuilding()
