@@ -17,7 +17,7 @@ local data =  {
     farm = {key = "farm",  class = "utility", name = "Farm", tile = "city", allowedTiles = {"grass"}, upkeep = 10, production = 500, hp = 5, maxHp = 5},
     hamlet = {key = "hamlet", class = "utility", name = "Settlement", tile = "city", allowedTiles = {}, upkeep = 50, production = 0, hp = 10, maxHp = 10, align = 3},
     housing = {key = "housing", class = "housing", name = "Housing", tile = "city", allowedTiles = {"grass"}, upkeep = 10, production = 200, hp = 8, maxHp = 8},
-    road = {key = "road", class = "utility", name = "Road", tile = "city", allowedTiles = {"grass", "forest", "mountain", "tundra"}, upkeep = 2, production = 50, hp = 3, maxHp = 3, align = 1},
+    road = {key = "road", class = "road", name = "Road", tile = "city", allowedTiles = {"grass", "forest", "mountain", "tundra"}, upkeep = 2, production = 50, hp = 3, maxHp = 3, align = 1},
     factory = {key = "factory", class = "utility", name = "Factory", tile = "city", allowedTiles = {"grass", "forest", "tundra"}, upkeep = 10, production = 500, hp = 5, maxHp = 5}
 }
 
@@ -229,6 +229,35 @@ local function growSettlement()
                         if atPos(xt, yt).class ~= "housing" then
                             local workersToAdd = tile.population - math.max(math.abs(yt - locAt.y), math.abs(xt - locAt.x))
                             worldmap.map[yt][xt].workers = worldmap.map[yt][xt].workers + workersToAdd
+                        end
+                    end
+                end
+            end
+        end
+    end
+    -- Set population values transmitted by roads
+    local changed = true
+    while changed == true do
+        changed = false
+        for k, l in pairs(locations) do
+            if l.class == "road" then
+                local highestPop = worldmap.map[l.y][l.x].workers
+                for y2 = l.y-1, l.y+1 do
+                    for x2 = l.x-1, l.x+1 do
+                        if y2 > 0 and y2 <= worldmap.MAPSIZEY and x2 > 0 and x2 <= worldmap.MAPSIZEX then
+                            if worldmap.map[y2][x2].workers > highestPop then
+                                highestPop = worldmap.map[y2][x2].workers
+                            end
+                        end
+                    end
+                end
+                for y3 = l.y-1, l.y+1 do
+                    for x3 = l.x-1, l.x+1 do
+                        if y3 > 0 and y3 <= worldmap.MAPSIZEY and x3 > 0 and x3 <= worldmap.MAPSIZEX then
+                            if highestPop > worldmap.map[y3][x3].workers + 1 then
+                                worldmap.map[y3][x3].workers = highestPop - 1
+                                changed = true
+                            end
                         end
                     end
                 end
