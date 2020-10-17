@@ -1,5 +1,5 @@
-local resources = require 'modules/resources'
-local worldmap = require 'modules/worldmap'
+local resources = require 'modules/components/resources'
+local worldmap = require 'modules/components/worldmap'
 
 local locations = {}
 

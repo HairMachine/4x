@@ -1,5 +1,5 @@
-local worldmap = require('modules/worldmap')
-local locations = require('modules/locations')
+local worldmap = require('modules/components/worldmap')
+local locations = require('modules/components/locations')
 
 local production = 0
 

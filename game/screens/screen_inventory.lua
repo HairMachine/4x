@@ -1,6 +1,6 @@
-local ui = require 'modules/ui_manager'
-local units = require 'modules/units'
-local items = require 'modules/items'
+local ui = require 'modules/services/ui_manager'
+local units = require 'modules/components/units'
+local items = require 'modules/components/items'
 local rules = require 'modules/rules/main'
 
 local buttons = {}

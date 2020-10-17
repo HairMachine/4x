@@ -1,4 +1,4 @@
-local ui = require 'modules/ui_manager'
+local ui = require 'modules/services/ui_manager'
 
 local buttons = {
     cancel = {x = 600, y = 100, width = 100, height = 50, text = "Cancel", visible = 1, action = function()

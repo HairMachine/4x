@@ -1,7 +1,7 @@
-local locations = require 'modules/locations'
-local ui = require 'modules/ui_manager'
-local units = require 'modules/units'
-local production = require 'modules/production'
+local ui = require 'modules/services/ui_manager'
+local locations = require 'modules/components/locations'
+local units = require 'modules/components/units'
+local production = require 'modules/components/production'
 local rules = require 'modules/rules/main'
 
 local buttons = {}

@@ -1,6 +1,5 @@
-local ui = require 'modules/ui_manager'
-local spells = require 'modules/spells'
-local resources = require 'modules/resources'
+local ui = require 'modules/services/ui_manager'
+local spells = require 'modules/components/spells'
 local rules = require 'modules/rules/main'
 
 local buttons = {}

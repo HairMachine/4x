@@ -1,5 +1,5 @@
-local tiles = require 'modules/tiledata'
-local camera = require 'modules/camera'
+local tiles = require 'modules/services/tiledata'
+local camera = require 'modules/services/camera'
 
 local animations = {}
 

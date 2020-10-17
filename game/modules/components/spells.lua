@@ -1,8 +1,4 @@
-local worldmap = require 'modules/worldmap'
-local units = require 'modules/units'
-local locations = require 'modules/locations'
-local targeter = require 'modules/targeter'
-local resources = require 'modules/resources'
+local targeter = require 'modules/services/targeter'
 
 local mp = 25
 local rp = 5

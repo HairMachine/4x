@@ -1,7 +1,7 @@
-local ui = require 'modules/ui_manager'
-local locations = require 'modules/locations'
-local targeter = require 'modules/targeter'
-local units = require 'modules/units'
+local ui = require 'modules/services/ui_manager'
+local locations = require 'modules/components/locations'
+local targeter = require 'modules/services/targeter'
+local units = require 'modules/components/units'
 
 local buttons = {}
 

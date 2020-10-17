@@ -1,6 +1,6 @@
-local units = require 'modules/units'
-local locations = require 'modules/locations'
-local worldmap = require 'modules/worldmap'
+local units = require 'modules/components/units'
+local locations = require 'modules/components/locations'
+local worldmap = require 'modules/components/worldmap'
 
 local map = {}
 local unit = 0

@@ -1,9 +1,9 @@
-local locations = require 'modules/locations'
-local animation = require 'modules/animation'
-local commands = require 'modules/commands'
-local resources = require 'modules/resources'
-local items = require 'modules/items'
-local worldmap = require 'modules/worldmap'
+local animation = require 'modules/services/animation'
+local commands = require 'modules/services/commands'
+local locations = require 'modules/components/locations'
+local resources = require 'modules/components/resources'
+local items = require 'modules/components/items'
+local worldmap = require 'modules/components/worldmap'
 
 local data = {
     grunter = {
