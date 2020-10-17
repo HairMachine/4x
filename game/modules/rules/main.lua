@@ -221,6 +221,19 @@ local rules = {
         end
     },
 
+    -- Deploy a unit within range of a barracks
+    DeployUnit = {
+        trigger = function(params)
+            targeter.setUnit(-1)
+            targeter.setDeployMap(params.unit)
+            targeter.callback = function(x, y)
+                units.add(params.unit, x, y, {key = params.loc_key, x = params.loc.x, y = params.loc.y})
+                table.remove(params.loc.units, params.unit_key)
+                targeter.clear()
+            end
+        end
+    },
+
     -- Tick cooldowns for recalled units in barracks
     CooldownRecalledUnits = {
         trigger = function(params)

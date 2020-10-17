@@ -1,7 +1,7 @@
 local ui = require 'modules/services/ui_manager'
 local locations = require 'modules/components/locations'
-local targeter = require 'modules/services/targeter'
 local units = require 'modules/components/units'
+local rules = require 'modules/rules/main'
 
 local buttons = {}
 
@@ -22,13 +22,7 @@ local function show()
                 if u.cooldown <= 0 then
                     buttons['unit_'..k..'_'..k2] = {
                         x = 0, y = ypos, width = 300, height = 32, text = units.getData()[u.unit].name, visible = 1, action = function()
-                            targeter.setUnit(-1)
-                            targeter.setDeployMap(u.unit)
-                            targeter.callback = function(x, y)
-                                units.add(u.unit, x, y, {key = l.key, x = l.x, y = l.y})
-                                table.remove(l.units, k2)
-                                targeter.clear()
-                            end
+                            rules.trigger('DeployUnit', {unit_key = k2, unit = u.unit, loc_key = k, loc = l})
                             ScreenSwitch("map")
                         end
                     }
