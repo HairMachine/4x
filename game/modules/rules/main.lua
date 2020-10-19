@@ -18,26 +18,16 @@ local rules = {
         trigger = function()
              -- Generate map
             worldmap.generate()
-
             -- Wizard's tower always first
-            locations.add("tower", 2, 2, 1)
-            
-            -- The DARK TOWER!
-            worldmap.map[worldmap.MAPSIZEY - 1][worldmap.MAPSIZEX - 1] = worldmap.makeTile("grass", 99)
-            worldmap.map[worldmap.MAPSIZEY - 2][worldmap.MAPSIZEX - 1] = worldmap.makeTile("grass", 99)
-            worldmap.map[worldmap.MAPSIZEY - 1][worldmap.MAPSIZEX - 2] = worldmap.makeTile("grass", 99)
-            locations.add("dark_tower", worldmap.MAPSIZEX - 1, worldmap.MAPSIZEY - 1, 2)
-            units.add("doom_guard", worldmap.MAPSIZEX - 1, worldmap.MAPSIZEY - 2, {x = worldmap.MAPSIZEX - 1, y = worldmap.MAPSIZEY - 2, "null"})
-            units.add("doom_guard", worldmap.MAPSIZEX - 2, worldmap.MAPSIZEY - 2, {x = worldmap.MAPSIZEX - 2, y = worldmap.MAPSIZEY - 2, "null"})
-            units.add("doom_guard", worldmap.MAPSIZEX - 2, worldmap.MAPSIZEY - 1, {x = worldmap.MAPSIZEX - 2, y = worldmap.MAPSIZEY - 1, "null"})
+            locations.add("tower", math.floor(worldmap.MAPSIZEX / 2), math.floor(worldmap.MAPSIZEY / 2), 1)
         end
     },
 
     SetupStartingUnits = {
         trigger = function()
             -- Starting units
-            units.add("hero", 2, 2)
-            worldmap.explore(2, 2, 2)
+            units.add("hero", math.floor(worldmap.MAPSIZEX / 2), math.floor(worldmap.MAPSIZEY / 2))
+            worldmap.explore(math.floor(worldmap.MAPSIZEX / 2), math.floor(worldmap.MAPSIZEY / 2), 2)
         end
     },
 
@@ -608,10 +598,9 @@ local rules = {
     -- The Dark Power increases and creates fiendish new plots!
     DarkPowerActs = {
         trigger = function()
+            dark_power.increasePower(5)
             for k, l in pairs(locations.get()) do
-                if l.key == "dark_tower" then
-                    dark_power.increasePower(5)
-                elseif l.key == "dark_temple" then
+               if l.key == "dark_temple" then
                     dark_power.increasePower(1)
                 end
             end
@@ -685,9 +674,13 @@ local rules = {
                 for k, u in pairs(units.get()) do
                     if x == u.x and y == u.y then
                         u.hp = u.hp - 10
+                        if u.hp <= 0 then
+                            animation.clear(u.animation)
+                        end
                     end
                 end
                 units.remove()
+
                 targeter.clear()
             end
         end
@@ -725,7 +718,15 @@ local rules = {
     -- End game conditions, win or loss
     CheckEndConditions = {
         trigger = function()
-            if locations.get()[2].hp <= 0 then
+            local tally = 0
+            for y = 1, worldmap.MAPSIZEY do
+                for x  = 1, worldmap.MAPSIZEX do
+                    if worldmap.map[y][x].align == CONSTS.lightTile then
+                        tally = tally + 1
+                    end
+                end
+            end
+            if tally >= 80 then
                 return "win"
             end
             if locations.get()[1].hp <= 0 then

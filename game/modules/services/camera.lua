@@ -12,6 +12,11 @@ local function setSize(w, h)
     height = h
 end
 
+local function setPos(x, y)
+    xpos = x
+    ypos = y
+end
+
 local function move(x, y)
     xpos = xpos + x
     ypos = ypos + y
@@ -38,6 +43,7 @@ end
 return {
     get = get,
     setSize = setSize,
+    setPos = setPos,
     move = move,
     adjustX = adjustX,
     adjustY = adjustY,

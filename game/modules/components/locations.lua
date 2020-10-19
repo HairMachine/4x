@@ -55,6 +55,10 @@ local function getAllowedBuildings()
 end
 
 local function remove(i)
+    -- Home base never gets removed!
+    if i == 1 then
+        return
+    end
     table.remove(locations, i)
 end
 

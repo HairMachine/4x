@@ -30,16 +30,12 @@ local function makeTile(type, align)
     return newTile
 end
 
-local function makeArea()
+local function _field()
     local area = {}
     for y = 1, 5 do
         area[y] = {}
         for x = 1, 5  do
-            if x == 1 or x == 5 then
-                area[y][x] = "water"
-            else
-                area[y][x] = "grass"
-            end
+            area[y][x] = "grass"
         end
     end
     for c = 1, 5 do
@@ -49,6 +45,27 @@ local function makeArea()
         area[love.math.random(2, 4)][love.math.random(2, 4)] = "forest"
     end
     return area
+end
+
+local function _lake()
+    local area = {}
+    for y = 1, 5 do
+        area[y] = {}
+        for x = 1, 5  do
+            area[y][x] = "water"
+        end
+    end
+    return area
+end
+
+
+local function makeArea()
+    local roll = love.math.random(1, 5)
+    if roll == 1 then
+        return _lake()
+    else
+        return _field()
+    end
 end
 
 local function generate()
