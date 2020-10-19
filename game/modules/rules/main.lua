@@ -520,7 +520,9 @@ local rules = {
                                 params.started = true
                             end
                             if animation.get(params.unit.animation) == nil then
-                                units.setIdleAnimation(params.unit)
+                                if params.unit.hp > 0 then
+                                    units.setIdleAnimation(params.unit)
+                                end
                                 return true
                             end
                             return false
@@ -535,20 +537,18 @@ local rules = {
                 end
             end
             -- Remove all the dead units and locations after a fight
-            commands.new(function(params) 
-                for i = #locations.get(), 1, -1 do
-                    if locations.get()[i].hp <= 0 then
-                        if locations.get()[i].key == "hq" then
-                            resources.spendCommandPoints(1)
-                        elseif locations.get()[i].key == "academy" then
-                            resources.changeUnitLevel(-1)
-                        end
-                        locations.remove(i)
+            for i = #locations.get(), 1, -1 do
+                if locations.get()[i].hp <= 0 then
+                    if locations.get()[i].key == "hq" then
+                        resources.spendCommandPoints(1)
+                    elseif locations.get()[i].key == "academy" then
+                        resources.changeUnitLevel(-1)
                     end
+                    locations.remove(i)
+                    -- TODO: Add some kind of explosion animation
                 end
-                units.remove()
-                return true
-            end, {})
+            end
+            units.remove()
         end
     },
 

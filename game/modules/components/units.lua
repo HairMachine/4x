@@ -118,7 +118,6 @@ local function remove()
             if units[i].parent ~= nil and units[i].team == CONSTS.enemyTeam then
                 table.insert(respawning, {data = units[i].parent, timer = 5})
             end
-            animation.clear(units[i].animation)
             table.remove(units, i)
         end
     end

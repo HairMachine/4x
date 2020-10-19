@@ -66,81 +66,43 @@ local function EndTurn()
     for k, e in pairs(units.get()) do
         e.moved = 0
     end
-    
-    rules.trigger('GrowSettlement')
-    rules.trigger('PayUpkeepCosts')
-    rules.trigger('CooldownRecalledUnits')
+
     rules.trigger('MoveAiUnits')
     rules.trigger('Fight')
 
-    commands.new(function(params)
-        rules.trigger('RespawnUnits')
-        return true
-    end, {})
+    result = rules.trigger('CheckEndConditions')
+    if result == "win" then
+        ScreenSwitch("win")
+    elseif result == "lose" then
+        ScreenSwitch("lose")
+    end
 
-    commands.new(function(params)
-        result = rules.trigger('CheckEndConditions')
-        if result == "win" then
-            ScreenSwitch("win")
-        elseif result == "lose" then
-            ScreenSwitch("lose")
+    -- Something wrong with this somewhere
+    local dropped = items.getDropped()
+    local itemText = ""
+    if (#dropped > 0) then
+        for k, i in pairs(dropped) do
+            itemText = itemText.."Found "..i.name.."!\n"
+            items.addToInventory(i)
+            items.removeFromDropped(k)
         end
-        return true
-    end, {})
-    
-    -- Show items
-    -- TODO: Wtf to do with this, there's something wrong about having this here but I'm not 100% sure what
-    commands.new(function(params)
-        local dropped = items.getDropped()
-        local itemText = ""
-        if (#dropped > 0) then
-            for k, i in pairs(dropped) do
-                itemText = itemText.."Found "..i.name.."!\n"
-                items.addToInventory(i)
-                items.removeFromDropped(k)
-            end
-            InfoPopup("Monsters dropped items!", itemText)
-        end
-        return true
-    end, {})
+        InfoPopup("Monsters dropped items!", itemText)
+    end
 
-    commands.new(function(params)
-        rules.trigger('BuildingTurnEffects')
-        return true
-    end, {})
-
-    commands.new(function(params) 
-        rules.trigger('DarkPowerActs')
-        return true
-    end, {})
-
-    commands.new(function(params)
-        if rules.trigger('AdvanceSpellResearch') then
-            ScreenSwitch("research")
-        end
-        return true
-    end, {})
-
-    commands.new(function(params)
-        rules.trigger('HeroHealthRegen')
-        return true
-    end, {})
-
-    commands.new(function(params)
-        SelectNextHero()
-        return true
-    end, {})
-
-    commands.new(function(params)
-        rules.trigger('TickSpellCooldown')
-        return true
-    end, {})
-
-    commands.new(function(params)
-        rules.trigger('Build')
-        rules.trigger('TileAlignmentChange')
-        return true
-    end, {})
+    rules.trigger('GrowSettlement')
+    rules.trigger('PayUpkeepCosts')
+    rules.trigger('CooldownRecalledUnits')
+    rules.trigger('RespawnUnits')
+    rules.trigger('BuildingTurnEffects')
+    rules.trigger('DarkPowerActs')
+    if rules.trigger('AdvanceSpellResearch') then
+        ScreenSwitch("research")
+    end
+    rules.trigger('HeroHealthRegen')
+    rules.trigger('TickSpellCooldown')
+    SelectNextHero()
+    rules.trigger('Build')
+    rules.trigger('TileAlignmentChange')
 end
 
 local function load()
