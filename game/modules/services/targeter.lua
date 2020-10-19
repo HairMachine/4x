@@ -1,7 +1,3 @@
-local units = require 'modules/components/units'
-local locations = require 'modules/components/locations'
-local worldmap = require 'modules/components/worldmap'
-
 local map = {}
 local unit = 0
 local callback = function() end
