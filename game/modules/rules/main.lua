@@ -9,6 +9,7 @@ local items = require 'modules/components/items'
 local spells = require 'modules/components/spells'
 local dark_power = require 'modules/components/dark_power'
 local production = require 'modules/components/production'
+local helper = require 'modules/rules/helper'
 
 local rules = {
 
@@ -141,44 +142,49 @@ local rules = {
             end
         end
     },
-    
-    -- Hero moves on the world map, and reveals unexplored tiles as they go.
-    HeroMove = {
-        check = function(params)
-            return params.unitToMove.moved == 0 and worldmap.map[params.y][params.x].tile ~= "ruins"
-        end,
-        trigger = function(params)
-            units.move(params.unitToMove, params.x, params.y)
-            worldmap.explore(params.x, params.y, 2)
-        end
-    },
 
-    -- Hero explores a location and randomly generates an encounter.
-    HeroExploreLocation = {
-        check = function(params)
-            return params.unitToMove.moved == 0 and worldmap.map[params.y][params.x].tile == "ruins"
-        end,
-        trigger = function(params)
-            local roll = love.math.random(1, 6)
-            local result = nil
-            if roll <= 3 then
-                local gp = love.math.random(100, 200)
-                resources.spendGold(-gp)
-                result = {title = "Ruins Explored!", body = "Found "..gp.." gold!"}
-            elseif roll <= 6 then
-                items.generate()
-                local dropped = items.getDropped()
-                local itemText = ""
-                for k, i in pairs(dropped) do
-                    itemText = itemText.."Found "..i.name.."!"
-                    items.addToInventory(i)
-                    items.removeFromDropped(k)
+    -- Hero moves around the map and explores ruins
+    HeroMove = {
+        trigger = function(params, resolve)
+            targeter.setUnit(params.k)
+            targeter.setMap(helper.heroMoveTargets(params.u.x, params.u.y, params.k))
+            targeter.callback = function(x, y)
+                local result = nil
+                local unitToMove = params.u
+                if unitToMove.moved == 0 and worldmap.map[y][x].tile == "ruins" then
+                    local roll = love.math.random(1, 6)
+                    if roll <= 3 then
+                        local gp = love.math.random(100, 200)
+                        resources.spendGold(-gp)
+                        result = {title = "Ruins Explored!", body = "Found "..gp.." gold!"}
+                    elseif roll <= 6 then
+                        items.generate()
+                        local dropped = items.getDropped()
+                        local itemText = ""
+                        for k, i in pairs(dropped) do
+                            itemText = itemText.."Found "..i.name.."!"
+                            items.addToInventory(i)
+                            items.removeFromDropped(k)
+                        end
+                        result = {title = "Ruins Explored!", body = itemText}
+                    end
+                    worldmap.map[y][x] = worldmap.makeTile("grass", worldmap.map[y][x].align)
+                    unitToMove.moved = 1
+                elseif unitToMove.moved == 0 and worldmap.map[y][x].tile ~= "ruins" then
+                    units.move(unitToMove, x, y)
+                    worldmap.explore(x, y, 2)
                 end
-                result = {title = "Ruins Explored!", body = itemText}
+                -- Create animations for any units which might not have them - these will be ones that have just been revealed
+                for k, e in pairs(units.get()) do
+                    if worldmap.map[e.y][e.x].tile ~= CONSTS.unexploredTile then
+                        if not e.animation then
+                            units.setIdleAnimation(e)
+                        end
+                    end
+                end
+                targeter.clear()
+                resolve(result)
             end
-            worldmap.map[params.y][params.x] = worldmap.makeTile("grass", worldmap.map[params.y][params.x].align)
-            params.unitToMove.moved = 1
-            return result
         end
     },
 
@@ -203,6 +209,18 @@ local rules = {
         end
     },
 
+    FoundCity = {
+        trigger = function(params)
+            targeter.setUnit(params.unitKey)
+            targeter.setMap(helper.foundingTargets(params.unit.x, params.unit.y))
+            targeter.callback = function(x, y)
+                locations.add("hamlet", x, y, 1)
+                locations.tileAlignmentChange()
+                targeter.clear()
+            end
+        end
+    },
+
     -- Advance buildings and create a place unit targeter if ready
     Build = {
         trigger = function(params)
@@ -210,7 +228,7 @@ local rules = {
             local built = production.getFinishedBuilding()
             if built then
                 if built.type == "location" then
-                    targeter.setBuildMap(built)
+                    targeter.setMap(helper.buildTargets(built))
                     targeter.callback = function(x, y)
                         local loc = locations.add(built.key, x, y, 1)
                         if loc.key == "farm" then
@@ -228,7 +246,7 @@ local rules = {
                         targeter.clear()
                     end
                 else
-                    targeter.setBuildUnitMap(built)
+                    targeter.setMap(helper.buildUnitTargets())
                     targeter.callback = function(x, y)
                         local place = locations.atPos(x, y)
                         table.insert(place.units, {unit = built.key, cooldown = 0})
@@ -337,7 +355,7 @@ local rules = {
     DeployUnit = {
         trigger = function(params)
             targeter.setUnit(-1)
-            targeter.setDeployMap(params.unit)
+            targeter.setMap(helper.deployTargets(params.unit))
             targeter.callback = function(x, y)
                 local newunit = units.add(params.unit, x, y, {key = params.loc_key, x = params.loc.x, y = params.loc.y})
                 -- Set level modifiers
@@ -345,6 +363,23 @@ local rules = {
                 newunit.hp = newunit.hp + resources.getUnitLevel() * 2
                 newunit.maxHp = newunit.hp
                 table.remove(params.loc.units, params.unit_key)
+                targeter.clear()
+            end
+        end
+    },
+
+    RecallUnits = {
+        trigger = function(params)
+            targeter.setMap(helper.recallTargets())
+            targeter.callback = function(x, y)
+                local u = units.atPos(x, y)
+                for k, l in pairs(locations.get()) do
+                    if l.x == u.parent.x and l.y == u.parent.y then
+                        table.insert(l.units, {unit = u.type, cooldown = 5})
+                        break
+                    end
+                end
+                units.removeAtPos(x, y)
                 targeter.clear()
             end
         end
@@ -645,7 +680,7 @@ local rules = {
     CastLightningBolt = {
         trigger = function()
             targeter.setUnit(-1)
-            targeter.setUnitMap(2)
+            targeter.setMap(helper.enemyUnitTargets())
             targeter.callback = function(x, y)
                 for k, u in pairs(units.get()) do
                     if x == u.x and y == u.y then
@@ -672,7 +707,7 @@ local rules = {
     CastTerraform = {
         trigger = function()
             targeter.setUnit(-1)
-            targeter.setSpellMap()
+            targeter.setMap(helper.visibleTileTargets())
             targeter.callback = function(x, y)
                 local food = worldmap.map[y][x].food
                 local pop = worldmap.map[y][x].population
@@ -727,11 +762,11 @@ local function check(ruleName, params)
     return rules[ruleName].check(params)
 end
 
-local function trigger(ruleName, params)
+local function trigger(ruleName, params, resolve)
     assert(rules[ruleName] ~= nil, "Tried to trigger nonexistent rule: "..ruleName)
     assert(rules[ruleName].trigger ~= nil, "trigger function not implemented on rule: "..ruleName)
     if check(ruleName, params) then
-        return rules[ruleName].trigger(params)
+        return rules[ruleName].trigger(params, resolve)
     end
 end
 

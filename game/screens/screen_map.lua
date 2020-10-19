@@ -36,33 +36,18 @@ local function SelectHero(k, e)
     buttons.found_city.visible = 1
     buttons.found_city.unit = e
     buttons.found_city.unitKey = k
-    targeter.setUnit(k)
-    targeter.setMoveMap(e.x, e.y, e.speed)
-    targeter.callback = function(x, y)
-        local params = {unitToMove = units.get()[targeter.getUnit()], x = x, y = y}
-        if rules.check('HeroExploreLocation', params) then
-            local result = rules.trigger('HeroExploreLocation', params)
-            rules.trigger('TileAlignmentChange')
+    rules.trigger('HeroMove', {k = k, u = e}, function(result)
+        if result then
             InfoPopup(result.title, result.body)
-        elseif rules.check('HeroMove', params) then
-            rules.trigger('HeroMove', params)
         end
-        -- Create animations for any units which might not have them - these will be ones that have just been revealed
-        for k, e in pairs(units.get()) do
-            if worldmap.map[e.y][e.x].tile ~= CONSTS.unexploredTile then
-                if not e.animation then
-                    units.setIdleAnimation(e)
-                end
-            end
-        end
-        targeter.clear()
-        for k, e in pairs(units.get()) do
-            if e.type == "hero" and e.moved == 0 then
-                SelectHero(k, e)
+        for k, e2 in pairs(units.get()) do
+            if e2.type == "hero" and e2.moved == 0 then
+                SelectHero(k, e2)
                 return
             end
         end
-    end
+    end)
+    
 end
 
 local function SelectNextHero()
@@ -182,30 +167,13 @@ local function show()
             ScreenSwitch("deploy")
         end},
         recall = {x = ACTIONSTARTX, y = 160, width = 100, height = 32, text = "Recall", visible = 1, action = function()
-            targeter.setRecallMap()
-            targeter.callback = function(x, y)
-                local u = units.atPos(x, y)
-                for k, l in pairs(locations.get()) do
-                    if l.x == u.parent.x and l.y == u.parent.y then
-                        table.insert(l.units, {unit = u.type, cooldown = 5})
-                        break
-                    end
-                end
-                units.removeAtPos(x, y)
-                targeter.clear()
-            end
+            rules.trigger('RecallUnits')
         end},
         found_city = {x = ACTIONSTARTX, y = 192, width = 100, height = 32, text = "Found City", visible = 0, action = function(event)
             if event.unit.moved == 1 then
                 return
             end
-            targeter.setUnit(event.unitKey)
-            targeter.setFoundingMap(event.unit.x, event.unit.y, 1)
-            targeter.callback = function(x, y)
-                locations.add("hamlet", x, y, 1)
-                locations.tileAlignmentChange()
-                targeter.clear()
-            end
+            rules.trigger('FoundCity', {unitKey = event.unitKey, unit = event.unit})
         end},
         end_phase = {x = ACTIONSTARTX, y = 500, width = 100, height = 32, text = "End Turn", visible = 1, action = function()
             EndTurn()
