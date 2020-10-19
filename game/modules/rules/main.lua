@@ -699,6 +699,7 @@ local rules = {
                 return "You need at least one command point available to cast this spell again!" 
             end
             targeter.setUnit(-1)
+            targeter.setMap(helper.visibleTileTargets())
             units.add("hero", locations.get()[1].x, locations.get()[1].y, {})
             resources.spendCommandPoints(1)
         end
