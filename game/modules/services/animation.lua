@@ -1,6 +1,3 @@
-local tiles = require 'modules/services/tiledata'
-local camera = require 'modules/services/camera'
-
 local animations = {}
 
 local function generateKey()
@@ -15,14 +12,6 @@ local function add(loop, frames)
     local key = generateKey()
     animations[key] = {loop = loop, frames = frames, frame = 1, maxFrame = #frames}
     return key
-end
-
-local function draw()
-    for k, a in pairs(animations) do
-        if camera.isInView(a.frames[a.frame].x, a.frames[a.frame].y) then
-            love.graphics.draw(tiles[a.frames[a.frame].tile], camera.adjustX(a.frames[a.frame].x), camera.adjustY(a.frames[a.frame].y), 0, 2)
-        end
-    end
 end
 
 local function play()
@@ -50,7 +39,11 @@ local function play()
 end
 
 local function get(key)
-    return animations[key]
+    if key == nil then
+        return animations
+    else
+        return animations[key]
+    end
 end
 
 local function clear(key)
@@ -60,7 +53,6 @@ end
 return {
     add = add,
     play = play,
-    draw = draw,
     get = get,
     clear = clear
 }

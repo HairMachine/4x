@@ -281,7 +281,15 @@ local function draw()
     end
     love.graphics.setColor(1, 1, 1, 1)
 
-    animation.draw()
+    -- Animated elements!
+    for k, a in pairs(animation.get()) do
+        local cframe = a.frames[a.frame]
+        if camera.isInView(cframe.x, cframe.y) then
+            if worldmap.map[math.ceil(cframe.y / tsize)][math.floor(cframe.x / tsize)].align ~= CONSTS.unexploredTile then
+                love.graphics.draw(tiles[a.frames[a.frame].tile], camera.adjustX(a.frames[a.frame].x), camera.adjustY(a.frames[a.frame].y), 0, 2)
+            end
+        end
+    end
 
     -- Health bars
     love.graphics.setColor(0, 1, 0, 1)
