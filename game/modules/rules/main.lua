@@ -596,7 +596,7 @@ local rules = {
     -- The Dark Power increases and creates fiendish new plots!
     DarkPowerActs = {
         trigger = function()
-            dark_power.increasePower(10)
+            dark_power.increasePower(5)
             for k, l in pairs(locations.get()) do
                if l.key == "dark_temple" then
                     dark_power.increasePower(1)
@@ -617,13 +617,13 @@ local rules = {
                 local r = love.math.random(1, 100)
                 if r < 50 then
                     dark_power.plot.name = "Cave"
-                    dark_power.plot.target = 40
+                    dark_power.plot.target = 20
                 elseif r < 80 then
                     dark_power.plot.name = "Dark Temple"
-                    dark_power.plot.target = 50
+                    dark_power.plot.target = 25
                 else
                     dark_power.plot.name = "Fortress"
-                    dark_power.plot.target = 40
+                    dark_power.plot.target = 20
                 end
                 -- Get allowed cave positions
                 local caveLocs = {}
