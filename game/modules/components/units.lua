@@ -85,6 +85,19 @@ local function setAttackAnimation(unit, newx, newy)
     unit.animation = animation.add(false, animationData)
 end
 
+local function killUnit(k)
+    local u = units[k]
+    commands.new(function()
+        animation.clear(u.animation)
+        animation.add(false, {
+            {tile = u.tile, x = u.x * 32, y =  u.y * 32, tics = 15},
+            {tile = u.tile, x = u.x * 32, y =  u.y * 32 - 50, tics = 40}
+        })
+        table.remove(units, k)
+        return true
+    end, {unit = u})
+end
+
 local function add(t, x, y, parent)
     local newunit = {}
     for k, p in pairs(data[t]) do
@@ -118,7 +131,7 @@ local function remove()
             if units[i].parent ~= nil and units[i].team == CONSTS.enemyTeam then
                 table.insert(respawning, {data = units[i].parent, timer = 5})
             end
-            table.remove(units, i)
+            killUnit(i)
         end
     end
 end
@@ -154,8 +167,7 @@ end
 local function removeAtPos(x, y)
     for k, u in pairs(units) do
         if u.x == x and u.y == y then
-            animation.clear(units[k].animation)
-            table.remove(units, k)
+            killUnit(k)
             return
         end
     end

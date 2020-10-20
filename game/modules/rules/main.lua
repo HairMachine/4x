@@ -510,9 +510,7 @@ local rules = {
                                 params.started = true
                             end
                             if animation.get(params.unit.animation) == nil then
-                                if params.unit.hp > 0 then
-                                    units.setIdleAnimation(params.unit)
-                                end
+                                units.setIdleAnimation(params.unit)
                                 return true
                             end
                             return false
@@ -676,13 +674,9 @@ local rules = {
                 for k, u in pairs(units.get()) do
                     if x == u.x and y == u.y then
                         u.hp = u.hp - 10
-                        if u.hp <= 0 then
-                            animation.clear(u.animation)
-                        end
                     end
                 end
                 units.remove()
-
                 targeter.clear()
             end
         end
