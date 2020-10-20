@@ -45,7 +45,6 @@ local function get(key)
 end
 
 local function clear(key)
-    print("clearing animation", key)
     animations[key] = nil
 end
 
