@@ -25,9 +25,30 @@ local rules = {
 
     SetupStartingUnits = {
         trigger = function()
+            local startxpos = math.floor(worldmap.MAPSIZEX / 2)
+            local startypos = math.floor(worldmap.MAPSIZEY / 2)
+
             -- Starting units
-            units.add("hero", math.floor(worldmap.MAPSIZEX / 2), math.floor(worldmap.MAPSIZEY / 2))
-            worldmap.explore(math.floor(worldmap.MAPSIZEX / 2), math.floor(worldmap.MAPSIZEY / 2), 2)
+            units.add("hero", startxpos, startypos)
+            worldmap.explore(startxpos, startypos, 2)
+
+            -- add a billion enemies
+            local i = 0
+            while i < 50 do
+                local xpos = love.math.random(1, worldmap.MAPSIZEX)
+                local ypos = love.math.random(1, worldmap.MAPSIZEY)
+                if xpos < startxpos - 6 or xpos > startxpos + 6 then
+                    local roll = love.math.random(1, 3)
+                    if roll <= 2 then
+                        locations.add("cave", xpos, ypos, 2)
+                        units.add("grunter", xpos, ypos, {type = "cave", x = xpos, y = ypos})
+                    else
+                        locations.add("fortress", xpos, ypos, 2)
+                        units.add("doom_guard", xpos, ypos, {type = "fortress", x = xpos, y = ypos})
+                    end
+                    i = i + 1
+                end
+            end
         end
     },
 
@@ -596,12 +617,15 @@ local rules = {
     -- The Dark Power increases and creates fiendish new plots!
     DarkPowerActs = {
         trigger = function()
-            dark_power.increasePower(5)
+            -- temp (?) disabled
+
+            --[[dark_power.increasePower(5)
             for k, l in pairs(locations.get()) do
                if l.key == "dark_temple" then
                     dark_power.increasePower(1)
                 end
             end
+
             if dark_power.getPower() >= dark_power.plot.target then
                 if dark_power.plot.name == "Cave" then
                     locations.add("cave", dark_power.plot.x, dark_power.plot.y, 2)
@@ -640,7 +664,7 @@ local rules = {
                     dark_power.plot.x = loc.x
                     dark_power.plot.y = loc.y
                 end
-            end
+            end]]
         end
     },
 

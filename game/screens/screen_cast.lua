@@ -25,12 +25,15 @@ local function show()
         if not spells.data[s].cooldown then
             buttons["spell_"..k].text = spells.data[s].name
             buttons["spell_"..k].action = function(event)
-                local message = rules.trigger(spells.cast(s))
-                if message then
-                    buttons.error_box.text = message
-                    buttons.error_box.visible = 1
+                local spellToCast = spells.cast(event.spell)
+                if spellToCast then
+                    local message = rules.trigger(spellToCast)
+                    if message then
+                        buttons.error_box.text = message
+                        buttons.error_box.visible = 1
+                    end
+                    ScreenSwitch("map")
                 end
-                ScreenSwitch("map")
             end
         else
             buttons["spell_"..k].text = spells.data[s].name.." ("..spells.data[s].cooldown.." left to recharge)"

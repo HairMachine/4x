@@ -3,11 +3,11 @@ local commands = require 'modules/services/commands'
 
 local data = {
     grunter = {
-        name = "Grunters", tile = "monster", speed = 1, attack = 1, hp = 5, team = 2, moved = 0, class = "Sieger", range = 10, production = 0, upkeep = 0,
+        name = "Grunters", tile = "monster", speed = 1, attack = 1, hp = 5, team = 2, moved = 0, class = "Skirmisher", range = 4, production = 0, upkeep = 0,
         allowedTiles = {"grass", "ore", "crystal", "forest", "tundra"}
     },
     doom_guard = {
-        name = "Doom Guards", tile = "monster", speed  = 1, attack = 2, team = 2, hp = 10, moved = 0, class = "Defender", range = 6, production = 0, upkeep = 0,
+        name = "Doom Guards", tile = "monster", speed  = 1, attack = 2, team = 2, hp = 10, moved = 0, class = "Defender", range = 3, production = 0, upkeep = 0,
         allowedTiles = {"grass", "ore", "crystal", "forest", "tundra"}
     },
     hero = {

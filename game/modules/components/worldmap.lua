@@ -103,16 +103,17 @@ local function generate()
     end
 
     local til = "ore"
-    for y = 0, math.floor(MAPSIZEY / 3) - 1  do
-        for x = 0,  math.floor(MAPSIZEX / 3) - 1 do
-            local xoffs = love.math.random(0, 2)
-            local yoffs = love.math.random(0, 2)
+    local space = 4
+    for y = 0, math.floor(MAPSIZEY / space) - 1  do
+        for x = 0,  math.floor(MAPSIZEX / space) - 1 do
+            local xoffs = love.math.random(0, space-1)
+            local yoffs = love.math.random(0, space-1)
             -- Annoying hack to stop gold appearing on the tower tile - will have to be improved
             if (xoffs == 0 and yoffs == 0 and x == 0 and y == 0) then
                 xoffs = xoffs + 1
             end
-            local yp = y * 3 + yoffs + 2
-            local xp = x * 3 + xoffs + 2
+            local yp = y * space + yoffs + space-1
+            local xp = x * space + xoffs + space-1
             if xp <= MAPSIZEX and yp <= MAPSIZEY then
                 map[yp][xp] = makeTile(til, 99)
             end
