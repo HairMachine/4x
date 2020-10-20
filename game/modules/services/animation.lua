@@ -8,10 +8,8 @@ local function generateKey()
     return key
 end
 
-local function add(loop, frames)
-    local key = generateKey()
+local function add(key, loop, frames)
     animations[key] = {loop = loop, frames = frames, frame = 1, maxFrame = #frames}
-    return key
 end
 
 local function play()
@@ -47,10 +45,12 @@ local function get(key)
 end
 
 local function clear(key)
+    print("clearing animation", key)
     animations[key] = nil
 end
 
 return {
+    generateKey = generateKey,
     add = add,
     play = play,
     get = get,

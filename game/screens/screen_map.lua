@@ -88,7 +88,6 @@ local function EndTurn()
         end
         InfoPopup("Monsters dropped items!", itemText)
     end
-
     rules.trigger('GrowSettlement')
     rules.trigger('PayUpkeepCosts')
     rules.trigger('CooldownRecalledUnits')

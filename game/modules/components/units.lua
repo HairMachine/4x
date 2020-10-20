@@ -37,19 +37,13 @@ local function getData()
 end
 
 local function setIdleAnimation(unit)
-    if unit.animation then
-        animation.clear(unit.animation)
-    end
-    unit.animation = animation.add(true, {
+    animation.add(unit.animation, true, {
         {tile = unit.tile, x = unit.x * 32, y =  unit.y * 32, tics = 15},
         {tile = unit.tile, x = unit.x * 32, y =  unit.y * 32 - 5, tics = 15}
     })
 end
 
 local function setMoveAnimation(unit, oldx, newx, oldy, newy)
-    if unit.animation then
-        animation.clear(unit.animation)
-    end
     local animationData = {}
     local xdiff = 0
     local ydiff = 0
@@ -60,13 +54,10 @@ local function setMoveAnimation(unit, oldx, newx, oldy, newy)
         ydiff = ydiff + yanim
         table.insert(animationData, {tile = unit.tile, x = oldx * 32 + xdiff, y =  oldy * 32 + ydiff, tics = 2})
     end
-    unit.animation = animation.add(false, animationData)
+    animation.add(unit.animation, false, animationData)
 end
 
 local function setAttackAnimation(unit, newx, newy)
-    if unit.animation then
-        animation.clear(unit.animation)
-    end
     local animationData = {}
     local xdiff = 0
     local ydiff = 0
@@ -82,20 +73,18 @@ local function setAttackAnimation(unit, newx, newy)
         ydiff = ydiff - yanim
         table.insert(animationData, {tile = unit.tile, x = unit.x * 32 + xdiff, y =  unit.y * 32 + ydiff, tics = 2})
     end
-    unit.animation = animation.add(false, animationData)
+    animation.add(unit.animation, false, animationData)
 end
 
 local function killUnit(k)
-    local u = units[k]
-    commands.new(function()
-        animation.clear(u.animation)
-        animation.add(false, {
-            {tile = u.tile, x = u.x * 32, y =  u.y * 32, tics = 15},
-            {tile = u.tile, x = u.x * 32, y =  u.y * 32 - 50, tics = 40}
+    commands.new(function(params)
+        animation.add(params.u.animation, false, {
+            {tile = params.u.tile, x = params.u.x * 32, y =  params.u.y * 32, tics = 15},
+            {tile = params.u.tile, x = params.u.x * 32, y =  params.u.y * 32 - 50, tics = 40}
         })
-        table.remove(units, k)
         return true
-    end, {unit = u})
+    end, {u = units[k]})
+    table.remove(units, k)
 end
 
 local function add(t, x, y, parent)
@@ -120,6 +109,7 @@ local function add(t, x, y, parent)
     newunit.maxHp = newunit.hp
     table.insert(units, newunit)
     -- Create animation data
+    newunit.animation = animation.generateKey()
     setIdleAnimation(newunit)
     return newunit
 end
@@ -132,6 +122,16 @@ local function remove()
                 table.insert(respawning, {data = units[i].parent, timer = 5})
             end
             killUnit(i)
+        end
+    end
+end
+
+local function removeAtPos(x, y)
+    for k, u in pairs(units) do
+        if u.x == x and u.y == y then
+            animation.clear(u.animation)
+            table.remove(units, k)
+            return
         end
     end
 end
@@ -162,15 +162,6 @@ local function atPos(x, y)
         end
     end
     return {name = "None"}
-end
-
-local function removeAtPos(x, y)
-    for k, u in pairs(units) do
-        if u.x == x and u.y == y then
-            killUnit(k)
-            return
-        end
-    end
 end
 
 local function getDistBetween(fx, fy, tx, ty)
@@ -213,5 +204,4 @@ return {
     getRespawning = getRespawning,
     respawned = respawned,
     setAttackAnimation = setAttackAnimation,
-    setIdleAnimation = setIdleAnimation
 }

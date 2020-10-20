@@ -596,7 +596,7 @@ local rules = {
     -- The Dark Power increases and creates fiendish new plots!
     DarkPowerActs = {
         trigger = function()
-            dark_power.increasePower(5)
+            dark_power.increasePower(50)
             for k, l in pairs(locations.get()) do
                if l.key == "dark_temple" then
                     dark_power.increasePower(1)
