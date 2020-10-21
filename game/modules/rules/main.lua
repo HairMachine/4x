@@ -16,6 +16,8 @@ local rules = {
     -- Set up the starting board state
     SetupBoard = {
         trigger = function()
+            spells.setup()
+            spells.chooseResearchOptions()
              -- Generate map
             worldmap.generate()
             -- Wizard's tower always first
@@ -677,7 +679,7 @@ local rules = {
     AdvanceSpellResearch = {
         trigger = function()
             spells.research(0)
-            if spells.getLearning() == "none" and #spells.researchable > 0 then
+            if spells.getLearning() == "none" and #spells.researchOptions > 0 then
                 return true
             end
             return false
@@ -687,6 +689,11 @@ local rules = {
     TickSpellCooldown = {
         trigger = function()
             spells.cooldown()
+        end
+    },
+
+    CastUnimplemented = {
+        trigger = function()
         end
     },
 
@@ -730,6 +737,24 @@ local rules = {
                 worldmap.map[y][x].food = food
                 worldmap.map[y][x].population = pop
                 worldmap.map[y][x].workers = workers
+                targeter.clear()
+            end
+        end
+    },
+
+    CastAuraOfCommand = {
+        trigger = function()
+            resources.spendCommandPoints(-1)
+        end
+    },
+
+    CastHealing = {
+        trigger = function()
+            targeter.setUnit(-1)
+            targeter.setMap(helper.friendlyUnitTargets())
+            targeter.callback = function(x, y)
+                local u = units.atPos(x, y)
+                u.hp = u.maxHp
                 targeter.clear()
             end
         end

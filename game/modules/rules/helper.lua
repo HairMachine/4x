@@ -5,7 +5,17 @@ local locations = require 'modules/components/locations'
 local function enemyUnitTargets()
     local map = {}
     for k, u in pairs(units.get()) do
-        if (team == nil or u.team == team) and worldmap.map[u.y][u.x].align ~= CONSTS.unexploredTile then
+        if u.team == CONSTS.enemyTeam and worldmap.map[u.y][u.x].align ~= CONSTS.unexploredTile then
+            table.insert(map, {x = u.x, y = u.y})
+        end
+    end
+    return map
+end
+
+local function friendlyUnitTargets()
+    local map = {}
+    for k, u in pairs(units.get()) do
+        if u.team == CONSTS.playerTeam and worldmap.map[u.y][u.x].align ~= CONSTS.unexploredTile then
             table.insert(map, {x = u.x, y = u.y})
         end
     end
@@ -117,6 +127,7 @@ end
 
 return {
     enemyUnitTargets = enemyUnitTargets,
+    friendlyUnitTargets = friendlyUnitTargets,
     visibleTileTargets = visibleTileTargets,
     foundingTargets = foundingTargets,
     heroMoveTargets = heroMoveTargets,
