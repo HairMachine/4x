@@ -33,6 +33,14 @@ local data = {
     skeleton = {
         name = "Skeleton", tile = "army", speed = 1, attack = 1, hp = 10, team = 1, moved = 0, class = "Skirmisher", range = 5, production = 0, upkeep = 0,
         allowedTiles = {"grass", "ore", "crystal", "forest", "tundra"}
+    },
+    orb_of_destruction = {
+        name = "Orb of Destruction", tile = "army", speed = 1, attack = 9001, hp = 1, team = 1, moved = 0, class = "Sieger", range = 100, production = 0, upkeep = 0,
+        allowedTiles = {"grass", "ore", "crystal", "forest", "tundra", "water", "mountain"}
+    },
+    obelisk_of_power = {
+        name = "Obelisk of Power", tile = "tower", speed = 0, attack = 5, hp = 20, team = 1, moved = 0, class = "Defender", range = 0, production = 0, upkeep = 0,
+        allowedTiles = {}
     }
 }
 

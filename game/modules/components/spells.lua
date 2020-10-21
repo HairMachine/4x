@@ -1,6 +1,6 @@
 local mp = 5000
 local rp = 5
-local sp = 5
+local sp = 200
 local learning = "none"
 local rpSpent = 0
 local cpSpent = 0
@@ -22,10 +22,12 @@ local data = {
     summon_skeleton = {name = "Summon Skeleton", key = "summon_skeleton", castCost = 25, rule = "CastSummonSkeleton"},
     haste = {name = "Haste", key = "haste", castCost = 20, rule = "CastHaste"},
     repair = {name = "Repair", key = "repair", castCost = 20, rule = "CastRepair"},
-    totem_of_control = {name = "Totem of Control", key = "totem_of_control", castCost = 300, rule = "CastTotemOfControl"}
+    totem_of_control = {name = "Totem of Control", key = "totem_of_control", castCost = 300, rule = "CastTotemOfControl"},
+    orb_of_destruction = {name = "Orb of Destruction", key = "orb_of_destruction", castCost = 40, rule = "CastOrbOfDestruction"},
+    obelisk_of_power = {name = "Obelisk of Power", key = "obelisk_of_power", castCost = 100, rule = "CastObeliskOfPower"}
 }
 
-local known = {"totem_of_control", "repair"}
+local known = {"obelisk_of_power"}
 local RESEARCHNUM = 3
 
 local researchable = {}

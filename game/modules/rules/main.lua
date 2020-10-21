@@ -760,6 +760,28 @@ local rules = {
         end
     },
 
+    CastOrbOfDestruction = {
+        trigger = function()
+            targeter.setUnit(-1)
+            targeter.setMap(helper.visibleTileTargets())
+            targeter.callback = function(x, y)
+                units.add("orb_of_destruction", x, y, {})
+                targeter.clear()
+            end
+        end
+    },
+
+    CastObeliskOfPower = {
+        trigger = function()
+            targeter.setUnit(-1)
+            targeter.setMap(helper.visibleTileTargets())
+            targeter.callback = function(x, y)
+                units.add("obelisk_of_power", x, y, {})
+                targeter.clear()
+            end
+        end
+    },
+
     -- End game conditions, win or loss
     CheckEndConditions = {
         trigger = function()
