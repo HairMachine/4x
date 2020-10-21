@@ -22,6 +22,7 @@ local rules = {
             worldmap.generate()
             -- Wizard's tower always first
             locations.add("tower", math.floor(worldmap.MAPSIZEX / 2), math.floor(worldmap.MAPSIZEY / 2), 1)
+            helper.tileAlignmentChange()
         end
     },
 
@@ -51,13 +52,6 @@ local rules = {
                     i = i + 1
                 end
             end
-        end
-    },
-
-    -- Set tile alignments based on the territory you have occupied!
-    TileAlignmentChange = {
-        trigger = function()
-            helper.tileAlignmentChange()
         end
     },
 
@@ -133,7 +127,7 @@ local rules = {
             targeter.setMap(helper.foundingTargets(params.unit.x, params.unit.y))
             targeter.callback = function(x, y)
                 locations.add("hamlet", x, y, 1)
-                locations.tileAlignmentChange()
+                helper.tileAlignmentChange()
                 targeter.clear()
             end
         end
@@ -161,6 +155,7 @@ local rules = {
                             resources.changeUnitLevel(1)
                         end
                         production.removeBuilding()
+                        helper.tileAlignmentChange()
                         targeter.clear()
                     end
                 else

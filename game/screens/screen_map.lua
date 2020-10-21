@@ -101,14 +101,12 @@ local function EndTurn()
     rules.trigger('TickSpellCooldown')
     SelectNextHero()
     rules.trigger('Build')
-    rules.trigger('TileAlignmentChange')
 end
 
 local function load()
     camera.setSize(720, 532)
     camera.setPos(math.floor(worldmap.MAPSIZEX / 2) + 250, 0)
     rules.trigger('SetupBoard')
-    rules.trigger('TileAlignmentChange')
     rules.trigger('SetupStartingUnits')
 end
 
