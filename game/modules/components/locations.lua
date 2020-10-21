@@ -16,7 +16,8 @@ local data =  {
     housing = {key = "housing", class = "housing", name = "Housing", tile = "city", allowedTiles = {"grass"}, upkeep = 10, production = 200, hp = 8, maxHp = 8},
     road = {key = "road", class = "road", name = "Road", tile = "city", allowedTiles = {"grass", "forest", "mountain", "tundra"}, upkeep = 2, production = 50, hp = 3, maxHp = 3, align = 1},
     factory = {key = "factory", class = "utility", name = "Factory", tile = "city", allowedTiles = {"grass", "forest", "tundra"}, upkeep = 10, production = 500, hp = 5, maxHp = 5},
-    academy = {key = "academy", class = "utility", name = "Academy", tile = "city", allowedTiles = {"grass"}, upkeep = 40, production = 2000, hp = 10, maxHp = 10}
+    academy = {key = "academy", class = "utility", name = "Academy", tile = "city", allowedTiles = {"grass"}, upkeep = 40, production = 2000, hp = 10, maxHp = 10},
+    totem_of_control = {key = "totem_of_control", class = "utility", name = "Totem of Control", tile = "tower", allowedTiles = {}, upkeep = 0, production = 0, hp = 20, maxHp = 20, align = 1}
 }
 
 local currentBuildingTile = {tile = "grass", x = 1, y = 1}

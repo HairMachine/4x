@@ -21,6 +21,18 @@ local data = {
     cannon = {
         name = "Cannon", tile = "army", speed = 1, attack = 4, hp = 10, team = 1, moved = 0, class = "Sieger", range = 8, production = 300, upkeep = 4,
         allowedTiles = {"grass", "ore", "crystal", "tundra"}
+    },
+    lure = {
+        name = "Lure", tile = "tower", speed = 0, attack = 0, hp = 20, team = 1, moved = 0, class = "Defender", range = 0, production = 0, upkeep = 0,
+        allowedTiles = {"grass", "ore", "crystal", "tunra", "forest", "mountain"}
+    },
+    sphere_of_annihilation = {
+        name = "Sphere of Annihilation", tile = "army", speed = 0, attack = 9001, hp = 3, team = 1, moved = 0, class = "Defender", range = 0, production = 0, upkeep = 0,
+        allowedTiles = {"grass", "ore", "crystal", "tunra", "forest", "mountain"}
+    },
+    skeleton = {
+        name = "Skeleton", tile = "army", speed = 1, attack = 1, hp = 10, team = 1, moved = 0, class = "Skirmisher", range = 5, production = 0, upkeep = 0,
+        allowedTiles = {"grass", "ore", "crystal", "forest", "tundra"}
     }
 }
 
