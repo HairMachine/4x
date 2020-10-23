@@ -143,15 +143,7 @@ local rules = {
                     targeter.setMap(helper.buildTargets(built))
                     targeter.callback = function(x, y)
                         local loc = locations.add(built.key, x, y, 1)
-                        if loc.key == "farm" then
-                            for y = loc.y - 1, loc.y + 1 do
-                                for x = loc.x - 1, loc.x + 1 do
-                                    if worldmap.map[y] and worldmap.map[y][x] then
-                                        worldmap.map[y][x].food = worldmap.map[y][x].food + worldmap.map[loc.y][loc.x].abundance
-                                    end
-                                end
-                            end
-                        elseif loc.key == "academy" then
+                        if loc.key == "academy" then
                             resources.changeUnitLevel(1)
                         end
                         production.removeBuilding()
@@ -184,8 +176,7 @@ local rules = {
             for k, locAt in pairs(locations.get()) do
                 local tile = worldmap.map[locAt.y][locAt.x]
                 if locAt.class == "housing" then
-                    if tile.food and tile.food >= 1 then
-                        tile.food = tile.food - 1
+                    if tile.population < tile.abundance then
                         tile.population = tile.population + 1
                         -- Change the tile! TODO: 3 separate states - huts for < 5, nice houses for < 10, tower blocks for > 10
                         if locAt.tile == "city" and tile.population >= 5 then
@@ -589,11 +580,6 @@ local rules = {
     TickSpellCooldown = {
         trigger = function()
             spells.cooldown()
-        end
-    },
-
-    CastUnimplemented = {
-        trigger = function()
         end
     },
 
