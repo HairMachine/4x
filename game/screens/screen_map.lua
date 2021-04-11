@@ -37,16 +37,9 @@ local function SelectHero(k, e)
     buttons.recruit.visible = 1
     buttons.found_city.unit = e
     buttons.found_city.unitKey = k
-    camera.setPos(e.x * tsize - camera.getSize().w / 2, e.y * tsize - camera.getSize().h / 2)
     rules.trigger('HeroMove', {k = k, u = e}, function(result)
         if result then
             InfoPopup(result.title, result.body)
-        end
-        for k, e2 in pairs(units.get()) do
-            if e2.type == "hero" and e2.moved == 0 then
-                SelectHero(k, e2)
-                return
-            end
         end
     end)
     
@@ -56,12 +49,12 @@ local function SelectNextHero()
     for k, e in pairs(units.get()) do
         if e.type == "hero" and e.moved == 0 then
             SelectHero(k, e)
-            return true
+            return e
         end
     end
     buttons.found_city.visible = 0
     buttons.recruit.visible = 0
-    return false
+    return nil
 end
 
 local function EndTurn()
@@ -103,8 +96,9 @@ local function EndTurn()
     end
     rules.trigger('HeroHealthRegen')
     rules.trigger('TickSpellCooldown')
-    SelectNextHero()
     rules.trigger('Build')
+    local hero = SelectNextHero()
+    return hero
 end
 
 local function load()
@@ -179,8 +173,9 @@ local function keypressed(key, scancode, isrepeat)
         end
         local anotherHero = SelectNextHero()
         if not anotherHero then
-            EndTurn()
+            anotherHero = EndTurn()
         end
+        camera.setPos(anotherHero.x * tsize - camera.getSize().w / 2, anotherHero.y * tsize - camera.getSize().h / 2)
     end
 end
 
@@ -211,7 +206,6 @@ local function mousepressed(x, y, button, istouch, presses)
         if e.x > 0 and e.x <= worldmap.MAPSIZEX and e.y > 0 and e.y <= worldmap.MAPSIZEY then
             if e.x == tilex and e.y == tiley then
                 targeter.callback(tilex, tiley)
-                SelectNextHero()
                 return
             end
         end

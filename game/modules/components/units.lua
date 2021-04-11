@@ -2,13 +2,29 @@ local animation = require 'modules/services/animation'
 local commands = require 'modules/services/commands'
 
 local data = {
-    grunter = {
-        name = "Grunters", tile = "monster", speed = 1, attack = 1, hp = 5, team = 2, moved = 0, class = "Defender", range = 2, production = 0, upkeep = 0,
+    wolf = {
+        name = "Wolves", tile = "wolf", speed = 1, attack = 1, hp = 5, team = 2, moved = 0, class = "Defender", range = 2, production = 0, upkeep = 0,
         allowedTiles = {"grass", "ore", "crystal", "forest", "tundra"}, stacks = {}, stackData = {min = 5, max = 10}
     },
-    doom_guard = {
-        name = "Doom Guards", tile = "minotaur", speed  = 1, attack = 2, team = 2, hp = 10, moved = 0, class = "Defender", range = 2, production = 0, upkeep = 0,
+    goblin = {
+        name = "Goblins", tile = "goblin", speed = 1, attack = 1, hp = 5, team = 2, moved = 0, class = "Sieger", range = 5, production = 0, upkeep = 0,
+        allowedTiles = {"grass", "ore", "crystal", "forest", "tundra"}, stacks = {}, stackData = {min = 2, max = 5}
+    },
+    kobold = {
+        name = "Kobolds", tile = "kobold", speed = 1, attack = 1, hp = 5, team = 2, moved = 0, class = "Skirmisher", range = 4, production = 0, upkeep = 0,
+        allowedTiles = {"grass", "ore", "crystal", "forest", "tundra"}, stacks = {}, stackData = {min = 2, max = 5}
+    },
+    spider = {
+        name = "Spiders", tile = "spider", speed  = 1, attack = 2, team = 2, hp = 10, moved = 0, class = "Defender", range = 2, production = 0, upkeep = 0,
         allowedTiles = {"grass", "ore", "crystal", "forest", "tundra"}, stacks = {}, stackData = {min = 5, max = 10}
+    },
+    orc = {
+        name = "Orcs", tile = "orc", speed  = 1, attack = 2, team = 2, hp = 10, moved = 0, class = "Sieger", range = 5, production = 0, upkeep = 0,
+        allowedTiles = {"grass", "ore", "crystal", "forest", "tundra"}, stacks = {}, stackData = {min = 2, max = 5}
+    },
+    gnoll = {
+        name = "Gnoll", tile = "gnoll", speed  = 1, attack = 2, team = 2, hp = 10, moved = 0, class = "Skirmisher", range = 4, production = 0, upkeep = 0,
+        allowedTiles = {"grass", "ore", "crystal", "forest", "tundra"}, stacks = {}, stackData = {min = 2, max = 5}
     },
     hero = {
         name = "Hero", tile = "hero", speed = 1, attack = 5, hp = 50, team = 1, moved = 0, class = "Hero", range = 0, production = 0, upkeep = 20,

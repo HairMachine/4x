@@ -42,12 +42,32 @@ local rules = {
                 if (xpos < startxpos - 6 or xpos > startxpos + 6 or ypos < startypos - 6 or ypos > startypos + 6) and locations.atPos(xpos, ypos).name == "None" then
                     -- Monster spawn depends on tile. TODO: spawn tables!
                     local loc = worldmap.map[ypos][xpos].tile
+                    local unit = ""
+                    local newloc = nil
                     if loc == "tundra" or loc == "grass" or loc == "ore" or loc == "crystal" then
-                        locations.add("cave", xpos, ypos, 2)
-                        units.add("grunter", xpos, ypos, {type = "cave", x = xpos, y = ypos})
+                        newloc = locations.add("cave", xpos, ypos, 2)
+                        local roll = love.math.random(1, 3)                        
+                        if roll == 1 then 
+                            unit = "wolf"
+                        elseif roll == 2 then
+                            unit = "goblin"
+                        elseif roll == 3 then
+                            unit = "kobold"
+                        end
                     elseif loc ~= "water" then
-                        locations.add("fortress", xpos, ypos, 2)
-                        units.add("doom_guard", xpos, ypos, {type = "fortress", x = xpos, y = ypos})
+                        newloc = locations.add("fortress", xpos, ypos, 2)
+                        local roll = love.math.random(1, 3)
+                        if roll == 1 then
+                            unit = "spider"
+                        elseif roll == 2 then
+                            unit = "orc"
+                        elseif roll == 3 then
+                            unit = "gnoll"
+                        end
+                    end
+                    if unit ~= "" then
+                        units.add(unit, xpos, ypos, {type = "cave", x = xpos, y = ypos})
+                        newloc.spawner = unit
                     end
                     i = i + 1
                 end
@@ -509,11 +529,7 @@ local rules = {
                         local parent = i.data
                         for k, l in pairs(locations.get()) do
                             if l.key == parent.type and l.x == parent.x and l.y == parent.y then
-                                if parent.type == "cave" then
-                                    units.add("grunter", parent.x, parent.y, parent)
-                                elseif parent.type == "fortress" then
-                                    units.add("doom_guard", parent.x, parent.y, parent)
-                                end
+                                units.add(l.spawner, parent.x, parent.y, parent)                                
                             end
                         end
                         units.respawned(k)
@@ -587,16 +603,16 @@ local rules = {
                     dark_power.increasePower(1)
                 end
             end
-
+            
             if dark_power.getPower() >= dark_power.plot.target then
                 if dark_power.plot.name == "Cave" then
-                    locations.add("cave", dark_power.plot.x, dark_power.plot.y, 2)
-                    units.add("grunter", dark_power.plot.x, dark_power.plot.y, {type = "cave", x = dark_power.plot.x, y = dark_power.plot.y})
+                    --locations.add("cave", dark_power.plot.x, dark_power.plot.y, 2)
+                    --units.add("grunter", dark_power.plot.x, dark_power.plot.y, {type = "cave", x = dark_power.plot.x, y = dark_power.plot.y})
                 elseif dark_power.plot.name == "Dark Temple" then
-                    locations.add("dark_temple", dark_power.plot.x, dark_power.plot.y, 2)
+                    --locations.add("dark_temple", dark_power.plot.x, dark_power.plot.y, 2)
                 elseif dark_power.plot.name == "Fortress" then
-                    locations.add("fortress", dark_power.plot.x, dark_power.plot.y, 2)
-                    units.add("doom_guard", dark_power.plot.x, dark_power.plot.y, {type = "fortress", x = dark_power.plot.x, y = dark_power.plot.y})
+                    --locations.add("fortress", dark_power.plot.x, dark_power.plot.y, 2)
+                    --units.add("doom_guard", dark_power.plot.x, dark_power.plot.y, {type = "fortress", x = dark_power.plot.x, y = dark_power.plot.y})
                 end
                 dark_power.resetPlot()
                 -- Select a new plot
