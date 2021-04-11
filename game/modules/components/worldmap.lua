@@ -47,11 +47,11 @@ local function _field()
             area[y][x] = "tundra"
         end
     end
-    for c = 1, 5 do
-        area[love.math.random(2, 4)][love.math.random(2, 4)] = "mountain"
-        area[love.math.random(2, 4)][love.math.random(2, 4)] = "ruins"
-        area[love.math.random(2, 4)][love.math.random(2, 4)] = "grass"
-        area[love.math.random(2, 4)][love.math.random(2, 4)] = "forest"
+    for c = 1, 2 do
+        area[love.math.random(1, 5)][love.math.random(1, 5)] = "mountain"
+        area[love.math.random(1, 5)][love.math.random(1, 5)] = "ruins"
+        area[love.math.random(1, 5)][love.math.random(1, 5)] = "grass"
+        area[love.math.random(1, 5)][love.math.random(1, 5)] = "forest"
     end
     return area
 end
