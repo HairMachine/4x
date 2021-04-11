@@ -1,15 +1,13 @@
 local data = {
-    {name = "+1 Sword", slot = "weapon", class = "sword", effects = {slaying = 1}},
-    {name = "+2 Sword", slot = "weapon", class = "sword", effects = {slaying = 2}},
-    {name = "+3 Sword", slot = "weapon", class = "sword", effects = {slaying = 3}},
-    {name = "+1 Hammer", slot = "weapon", class = "hammer", effects = {demolishing = 1}},
-    {name = "+2 Hammer", slot = "weapon", class = "hammer", effects = {demolishing = 2}},
-    {name = "+3 Hammer", slot = "weapon", class = "hammer", effects = {demolishing = 3}},
-    {name = "+1 Armour", slot = "armour", class = "heavy armour", effects = {defence = 1}},
-    {name = "+2 Armour", slot = "armour", class = "heavy armour", effects = {defence = 2}},
-    {name = "+3 Armour", slot = "armour", class = "heavy armour", effects = {defence = 3}},
-    {name = "Robe of Power", slot = "armour", class = "light armour", effects = {increaseMana = 1}},
-    {name = "Helm of Giant Strength", slot = "utility", class = "", effects = {demolishing = 5, slaying = 5}}
+    {name = "Sword of Slaying", slot = "weapon", class = "sword", effects = {slaying = 10}},
+    {name = "Vorpal Blade", slot = "weapon", class = "sword", effects = {slaying = 50}},
+    {name = "Hammer of Demolishing", slot = "weapon", class = "hammer", effects = {demolishing = 10}},
+    {name = "Leather Armour", slot = "armour", class = "heavy armour", effects = {defence = 2}},
+    {name = "Ring Mail", slot = "armour", class = "heavy armour", effects = {defence = 5}},
+    {name = "Plate Mail", slot = "armour", class = "heavy armour", effects = {defence = 10}},
+    {name = "Robe of Power", slot = "armour", class = "light armour", effects = {increaseMana = 5}},
+    {name = "Helm of Giant Strength", slot = "utility", class = "", effects = {demolishing = 5, slaying = 5}},
+    {name = "Ring of Wizardry", slot = "utility", class = "", effects = {increaseMana = 20}}
 }
 
 local inventory = {}

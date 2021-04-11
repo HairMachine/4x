@@ -40,9 +40,9 @@ local function foundingTargets(x, y)
     local map = {}
     for xt = x - 1, x + 1 do
         for yt = y - 1, y + 1 do
-            if locations.atPos(xt, yt).name == "None" and not(yt == y and xt == x) then
+            if (locations.atPos(xt, yt).name == "None" or locations.atPos(xt, yt).key == "hamlet") and not(yt == y and xt == x) then
                 if yt > 0 and yt <= worldmap.MAPSIZEY and xt > 0 and xt <= worldmap.MAPSIZEX then
-                    if worldmap.map[yt][xt].align == CONSTS.darkTile then
+                    if worldmap.map[yt][xt].align == CONSTS.darkTile or locations.atPos(xt, yt).key == "hamlet" then
                         table.insert(map, {x = xt, y = yt})
                     end
                 end
@@ -54,12 +54,13 @@ end
 
 local function heroMoveTargets(x, y, unit)
     local map = {}
-    for xt = x - 1, x + 1 do
-        for yt = y - 1, y + 1 do
+    local u = units.get()[unit]
+    for xt = x - u.speed, x + u.speed do
+        for yt = y - u.speed, y + u.speed do
             if not(yt == y and xt == x) and yt > 0 and yt <= worldmap.MAPSIZEY and xt > 0 and xt <= worldmap.MAPSIZEX then
-                if units.tileIsAllowed(units.get()[unit], worldmap.map[yt][xt].tile) and units.atPos(xt, yt).name == "None" then
+                if worldmap.map[yt][xt].align ~= CONSTS.unexploredTile and units.tileIsAllowed(u, worldmap.map[yt][xt].tile) and units.atPos(xt, yt).name == "None" then
                     local loc = locations.atPos(xt, yt)
-                    if loc.name == "None" or loc.team == units.get()[unit].team then
+                    if loc.name == "None" or loc.team == u.team then
                         table.insert(map, {x = xt, y = yt})
                     end
                 end

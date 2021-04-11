@@ -18,11 +18,8 @@ local rules = {
         trigger = function()
             spells.setup()
             spells.chooseResearchOptions()
-             -- Generate map
-            worldmap.generate()
-            -- Wizard's tower always first
-            locations.add("tower", math.floor(worldmap.MAPSIZEX / 2), math.floor(worldmap.MAPSIZEY / 2), 1)
-            helper.tileAlignmentChange()
+             -- Generate map. TODO: Randomly choose a template!
+            worldmap.load("testlvl")
         end
     },
 
@@ -32,20 +29,23 @@ local rules = {
             local startypos = math.floor(worldmap.MAPSIZEY / 2)
 
             -- Starting units
-            units.add("hero", startxpos, startypos)
-            worldmap.explore(startxpos, startypos, 2)
+            local h = units.add("hero", startxpos, startypos)
+            units.addStack(h, "soldier", 10)
+            units.addStack(h, "settlers", 100)
+            worldmap.explore(startxpos, startypos, 3)
 
-            -- add a billion enemies
+            -- add a billion enemies!
             local i = 0
-            while i < 50 do
+            while i < (worldmap.MAPSIZEX + worldmap.MAPSIZEY) * 1.8 do
                 local xpos = love.math.random(1, worldmap.MAPSIZEX)
                 local ypos = love.math.random(1, worldmap.MAPSIZEY)
-                if xpos < startxpos - 6 or xpos > startxpos + 6 then
-                    local roll = love.math.random(1, 3)
-                    if roll <= 2 then
+                if (xpos < startxpos - 6 or xpos > startxpos + 6 or ypos < startypos - 6 or ypos > startypos + 6) and locations.atPos(xpos, ypos).name == "None" then
+                    -- Monster spawn depends on tile. TODO: spawn tables!
+                    local loc = worldmap.map[ypos][xpos].tile
+                    if loc == "tundra" or loc == "grass" or loc == "ore" or loc == "crystal" then
                         locations.add("cave", xpos, ypos, 2)
                         units.add("grunter", xpos, ypos, {type = "cave", x = xpos, y = ypos})
-                    else
+                    elseif loc ~= "water" then
                         locations.add("fortress", xpos, ypos, 2)
                         units.add("doom_guard", xpos, ypos, {type = "fortress", x = xpos, y = ypos})
                     end
@@ -63,29 +63,39 @@ local rules = {
             targeter.callback = function(x, y)
                 local result = nil
                 local unitToMove = params.u
-                if unitToMove.moved == 0 and worldmap.map[y][x].tile == "ruins" then
-                    local roll = love.math.random(1, 6)
-                    if roll <= 3 then
-                        local gp = love.math.random(100, 200)
-                        resources.spendGold(-gp)
-                        result = {title = "Ruins Explored!", body = "Found "..gp.." gold!"}
-                    elseif roll <= 6 then
-                        items.generate()
-                        local dropped = items.getDropped()
-                        local itemText = ""
-                        for k, i in pairs(dropped) do
-                            itemText = itemText.."Found "..i.name.."!"
-                            items.addToInventory(i)
-                            items.removeFromDropped(k)
+                if unitToMove.moved == 0 then 
+                    -- Adventurers explore ruins
+                    if worldmap.map[y][x].tile == "ruins" then
+                        local roll = love.math.random(1, 6)
+                        if roll <= 3 then
+                            local gp = love.math.random(100, 200)
+                            resources.spendGold(-gp)
+                            result = {title = "Ruins Explored!", body = "Found "..gp.." gold!"}
+                        elseif roll <= 6 then
+                            items.generate()
+                            local dropped = items.getDropped()
+                            local itemText = ""
+                            for k, i in pairs(dropped) do
+                                itemText = itemText.."Found "..i.name.."!"
+                                items.addToInventory(i)
+                                items.removeFromDropped(k)
+                            end
+                            result = {title = "Ruins Explored!", body = itemText}
                         end
-                        result = {title = "Ruins Explored!", body = itemText}
+                        worldmap.map[y][x] = worldmap.makeTile("grass", worldmap.map[y][x].align)
                     end
-                    worldmap.map[y][x] = worldmap.makeTile("grass", worldmap.map[y][x].align)
-                    unitToMove.moved = 1
-                elseif unitToMove.moved == 0 and worldmap.map[y][x].tile ~= "ruins" then
+
+                    -- Wizards cast spells (this is not real proper code, just to test the feeling)
+                    if locations.atPos(x, y).key == "tower" then
+                        ScreenSwitch("cast")
+                    end
+
+                    -- The leader moves to the location
                     units.move(unitToMove, x, y)
-                    worldmap.explore(x, y, 2)
+                    worldmap.explore(x, y, 3)
+                    unitToMove.moved = 1
                 end
+                
                 -- Create animations for any units which might not have them - these will be ones that have just been revealed
                 for k, e in pairs(units.get()) do
                     if worldmap.map[e.y][e.x].tile ~= CONSTS.unexploredTile then
@@ -121,14 +131,58 @@ local rules = {
         end
     },
 
-    FoundCity = {
+    Settle = {
         trigger = function(params)
-            targeter.setUnit(params.unitKey)
-            targeter.setMap(helper.foundingTargets(params.unit.x, params.unit.y))
-            targeter.callback = function(x, y)
-                locations.add("hamlet", x, y, 1)
-                helper.tileAlignmentChange()
-                targeter.clear()
+            local s
+            for k, stack in pairs(params.unit.stacks) do
+                if stack.unit.type == "settlers" then
+                    targeter.setUnit(params.unitKey)
+                    targeter.setMap(helper.foundingTargets(params.unit.x, params.unit.y))
+                    targeter.callback = function(x, y)
+                        if locations.atPos(x, y).key == "hamlet" then
+                            worldmap.map[y][x].population = worldmap.map[y][x].population + params.unit.stacks[k].size
+                        else
+                            locations.add("hamlet", x, y, 1)
+                            worldmap.map[y][x].population = params.unit.stacks[k].size
+                        end
+                        helper.tileAlignmentChange()
+                        targeter.clear()
+                        table.remove(params.unit.stacks, k)
+                    end
+                    return
+                end
+            end
+        end
+    },
+
+    Recruit = {
+        trigger = function(params)
+            -- Get the closest city
+            local settlements = {}
+            for k, v in pairs(locations.get()) do
+                if v.key == "hamlet" then
+                    table.insert(settlements, v)
+                end
+            end
+            local dist = 10000
+            local selected = nil
+            for k, s in pairs(settlements) do
+                local td = math.abs(s.x - params.hero.x) + math.abs(s.y - params.hero.y)
+                if td < dist then 
+                    dist = td
+                    selected = s
+                end
+            end
+            local til = worldmap.map[selected.y][selected.x]
+            if til.population >= params.unit.pop then
+                til.population = til.population - params.unit.pop
+                resources.changeLumber(-params.unit.lumber)
+                resources.changeStone(-params.unit.stone)
+                if params.type == "hero" then
+                    units.add(params.type, selected.x, selected.y, {})
+                else
+                    units.addStack(params.hero, params.type, params.unit.pop)
+                end
             end
         end
     },
@@ -172,60 +226,41 @@ local rules = {
                     worldmap.map[y][x].workers = 0
                 end
             end
-            -- Find all the housing and apply its population effets
+            -- Increase population of towns
             for k, locAt in pairs(locations.get()) do
                 local tile = worldmap.map[locAt.y][locAt.x]
-                if locAt.class == "housing" then
-                    if tile.population < tile.abundance then
-                        tile.population = tile.population + 1
-                        -- Change the tile! TODO: 3 separate states - huts for < 5, nice houses for < 10, tower blocks for > 10
-                        if locAt.tile == "city" and tile.population >= 5 then
-                            locAt.tile = "tower" -- uh... new tile needed!
-                        elseif locAt.tile == "tower" and tile.population < 5 then
+                if locAt.class == "settlement" then
+                    -- More growth if more food. Needs a proper equation
+                    local foodBonus = 500 + math.max(250, math.floor(resources.getFood() / 100))
+                    local popGrowth = math.floor(tile.population * (foodBonus / (tile.population *  tile.population)))
+                    if popGrowth > 0 and resources.getFood() > popGrowth then
+                        tile.population = tile.population + popGrowth
+                        -- Change the tile!
+                        if tile.population >= 1000 and locAt.supplies.lumber == true and locAt.supplies.stone == true then
+                            locAt.level = 4
+                            locAt.align = 4
+                            helper.tileAlignmentChange()
+                        elseif tile.population >= 500 and locAt.supplies.lumber == true and locAt.supplies.stone == true then
+                            locAt.level = 3
+                            locAt.align = 3
                             locAt.tile = "city"
+                            helper.tileAlignmentChange()
+                        elseif tile.population >= 100 and locAt.supplies.lumber == true then
+                            locAt.level = 2
+                            locAt.align = 2
+                            locAt.tile = "tower"
+                            helper.tileAlignmentChange()
                         end
                     end
                     -- Population spreads out over a certain range so it can do work
-                    -- Within a certain range of this settlement, population decreases by 1 each tile.
-                    -- So if locAt.population == 1, there is no spread. If locAt.population == 2, all surrounding tiles have pop 1.
-                    -- If locAt.population == 3, all tiles surrounding have population 1, and all tiles around them have population 1. And so on.
-                    local range = 2
-                    for yt = locAt.y - range, locAt.y + range do
-                        for xt = locAt.x - range, locAt.x + range do
-                            if yt > 0 and yt <= worldmap.MAPSIZEY and xt > 0 and xt <= worldmap.MAPSIZEX then
-                                if locations.atPos(xt, yt).class ~= "housing" then
-                                    local workersToAdd = tile.population - math.max(math.abs(yt - locAt.y), math.abs(xt - locAt.x))
-                                    worldmap.map[yt][xt].workers = worldmap.map[yt][xt].workers + workersToAdd
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-            -- Set population values transmitted by roads
-            local changed = true
-            while changed == true do
-                changed = false
-                for k, l in pairs(locations.get()) do
-                    if l.class == "road" then
-                        local highestPop = worldmap.map[l.y][l.x].workers
-                        for y2 = l.y-1, l.y+1 do
-                            for x2 = l.x-1, l.x+1 do
-                                if y2 > 0 and y2 <= worldmap.MAPSIZEY and x2 > 0 and x2 <= worldmap.MAPSIZEX then
-                                    if worldmap.map[y2][x2].workers > highestPop then
-                                        highestPop = worldmap.map[y2][x2].workers
-                                    end
-                                end
-                            end
-                        end
-                        for y3 = l.y-1, l.y+1 do
-                            for x3 = l.x-1, l.x+1 do
-                                if y3 > 0 and y3 <= worldmap.MAPSIZEY and x3 > 0 and x3 <= worldmap.MAPSIZEX then
-                                    if highestPop > worldmap.map[y3][x3].workers + 1 then
-                                        worldmap.map[y3][x3].workers = highestPop - 1
-                                        changed = true
-                                    end
-                                end
+                    -- TODO: This spread should be based on the level of the settlement; straightforwardly, we can just add 1 to the radius per level
+                    -- attained.
+                    for yt = locAt.y - locAt.level, locAt.y + locAt.level do
+                        for xt = locAt.x - locAt.level, locAt.x + locAt.level do
+                            if yt > 0 and yt <= worldmap.MAPSIZEY and xt > 0 and xt <= worldmap.MAPSIZEX and not(xt == locAt.x and yt == locAt.y) then
+                                -- The layer is the smallest of y or x - position abs
+                                local layer = math.max(math.abs(yt - locAt.y), math.abs(xt - locAt.x))
+                                worldmap.map[yt][xt].workers = math.ceil(tile.population / (20 * layer))                              
                             end
                         end
                     end
@@ -237,67 +272,46 @@ local rules = {
     -- Unit and location upkeep costs per turn
     PayUpkeepCosts = {
         trigger = function(params)
-            for k, l in pairs(locations.get()) do
-                if l.team == CONSTS.playerTeam then
-                    resources.spendGold(l.upkeep)
-                    if l.maxUnits then
-                        for k2, u in pairs(l.units) do
-                            resources.spendGold(math.floor(units.getData()[u.unit].upkeep / 2))
-                        end
-                    end
-                end
-            end
             for k, u in pairs(units.get()) do
                 if u.team == CONSTS.playerTeam then
                     resources.spendGold(u.upkeep)
-                end
-            end
-        end
-    },
-
-    -- Deploy a unit within range of a barracks
-    DeployUnit = {
-        trigger = function(params)
-            targeter.setUnit(-1)
-            targeter.setMap(helper.deployTargets(params.unit))
-            targeter.callback = function(x, y)
-                local newunit = units.add(params.unit, x, y, {key = params.loc_key, x = params.loc.x, y = params.loc.y})
-                -- Set level modifiers
-                newunit.attack = newunit.attack + resources.getUnitLevel()
-                newunit.hp = newunit.hp + resources.getUnitLevel() * 2
-                newunit.maxHp = newunit.hp
-                table.remove(params.loc.units, params.unit_key)
-                targeter.clear()
-            end
-        end
-    },
-
-    RecallUnits = {
-        trigger = function(params)
-            targeter.setMap(helper.recallTargets())
-            targeter.callback = function(x, y)
-                local u = units.atPos(x, y)
-                for k, l in pairs(locations.get()) do
-                    if l.x == u.parent.x and l.y == u.parent.y then
-                        table.insert(l.units, {unit = u.type, cooldown = 5})
-                        break
+                    -- TODO: Some creatures don't eat food; others eat a lot more than one unit per stack!
+                    if u.stacks and #u.stacks > 0 then
+                        for k2, s in pairs(u.stacks) do
+                            -- Starvation!
+                            if resources.getFood() <= 0 then
+                                s.size = s.size - love.math.random(10, 20)
+                            else
+                                resources.changeFood(-s.size)
+                            end
+                            if s.size <= 0 then
+                                table.remove(u.stacks, k2)
+                            end
+                        end
                     end
                 end
-                units.removeAtPos(x, y)
-                targeter.clear()
             end
-        end
-    },
-
-    -- Tick cooldowns for recalled units in barracks
-    CooldownRecalledUnits = {
-        trigger = function(params)
             for k, l in pairs(locations.get()) do
-                if l.maxUnits then
-                    for k2, u in pairs(l.units) do
-                        if u.cooldown > 0 then
-                            u.cooldown = u.cooldown - 1
-                        end
+                if l.team == CONSTS.playerTeam then
+                    resources.spendGold(l.upkeep)
+                    local pop = worldmap.map[l.y][l.x].population
+                    resources.changeLumber(-(l.level - 1) * 10)
+                    resources.changeStone(-(l.level - 1) * 5)
+                    if resources.getLumber() > 0 then
+                        l.supplies.lumber = true
+                    else
+                        l.supplies.lumber = false
+                    end
+                    if resources.getStone() > 0 then
+                        l.supplies.stone = true
+                    else
+                        l.supplies.stone = false
+                    end
+                    -- Starvation!
+                    if resources.getFood() <= 0 then
+                        worldmap.map[l.y][l.x].population = pop - math.ceil(pop / 20)
+                    else
+                        resources.changeFood(-pop)
                     end
                 end
             end
@@ -391,6 +405,13 @@ local rules = {
                         table.insert(siegelist, def)
                     end
                 end
+                -- TODO: Generate attack rating
+                local atkValue = atk.attack
+                if atk.stacks and #atk.stacks > 0 then
+                    for k, stack in pairs(atk.stacks) do
+                        atkValue = atkValue + stack.unit.attack * stack.size
+                    end
+                end
                 if #siegelist > 0 then
                     local sieged = siegelist[love.math.random(1, #siegelist)]
                     local bonus = items.getEffects(atk.items, "demolishing")
@@ -415,9 +436,36 @@ local rules = {
                     end
                     if #atklist > 0 then
                         local attacked = atklist[love.math.random(1, #atklist)]
-                        local damage = (atk.attack + items.getEffects(atk.items, "slaying")) - items.getEffects(attacked.items, "defence")
+                        local damage = (atkValue + items.getEffects(atk.items, "slaying")) - items.getEffects(attacked.items, "defence")
                         if damage < 0 then damage = 0 end
-                        attacked.hp = attacked.hp - damage
+                        -- Split damage amongst the stacks
+                        if attacked.stacks and #attacked.stacks > 0 then
+                            -- Figure out the total HP of the stacks
+                            local totalhp = units.stackHp(attacked)
+                            for k, stack in pairs(attacked.stacks) do
+                                local hpshare = stack.unit.maxHp * stack.size
+                                local dmgshare = math.floor(damage * hpshare / totalhp)
+                                -- We loop until either the number killed is equal to the size of the whole stack, or there isn't enough damage
+                                -- left to kill another unit in the stack
+                                local killed = 0
+                                while dmgshare >= stack.unit.hp and killed < stack.size do
+                                    dmgshare = dmgshare - stack.unit.hp
+                                    stack.unit.hp = stack.unit.maxHp
+                                    killed = killed + 1
+                                end
+                                -- If the number killed is the same as the stack size, do the remaining damage to the leader and empty the stack.
+                                -- Otherwise, remove the killed units from the stack and reduce the unit's hp by the overflow damage.
+                                if killed == stack.size then
+                                    attacked.stacks = {}
+                                    attacked.hp = attacked.hp - dmgshare
+                                else
+                                    stack.unit.hp = stack.unit.hp - dmgshare
+                                    stack.size = stack.size - killed
+                                end
+                            end
+                        else
+                            attacked.hp = attacked.hp - atkValue
+                        end
                         commands.new(function(params)
                             if params.started == false then
                                 units.setAttackAnimation(params.unit, params.x, params.y)
@@ -441,11 +489,6 @@ local rules = {
             -- Remove all the dead units and locations after a fight
             for i = #locations.get(), 1, -1 do
                 if locations.get()[i].hp <= 0 then
-                    if locations.get()[i].key == "hq" then
-                        resources.spendCommandPoints(1)
-                    elseif locations.get()[i].key == "academy" then
-                        resources.changeUnitLevel(-1)
-                    end
                     locations.remove(i)
                     -- TODO: Add some kind of explosion animation
                 end
@@ -488,31 +531,57 @@ local rules = {
         end
     },
 
+    -- Equipped items generate their stuff
+    ItemTurnEffects = {
+        trigger = function()
+            for k, u in pairs(units.get()) do
+                if u.type == 'hero' then
+                    for k2, i in pairs(u.slots) do
+                        if i.effects then
+                            if i.effects.increaseMana then
+                                spells.addMP(i.effects.increaseMana)
+                            end
+                        end
+                    end
+                end
+            end      
+        end
+    },
+
     -- All buildings apply their each-turn effects
     BuildingTurnEffects = {
         trigger = function()
-            local prodVal = 50
+            -- TODO: Maybe find a better place for this; passive MP regen
+            spells.addMP(5)
             for k, l in pairs(locations.get()) do
-                if l.key == "node" then
-                    spells.addMP(worldmap.getTileWorkers(l.x, l.y))
-                elseif l.key == "tower" then
-                    spells.addMP(1)
-                elseif l.key == "mine" then
-                    resources.spendGold(-worldmap.getTileWorkers(l.x, l.y) * 20)
-                elseif l.key == "factory" then
-                    prodVal = prodVal + worldmap.getTileWorkers(l.x, l.y) * 10
+                if l.class == "settlement" then
+                    for yt = l.y - l.level, l.y + l.level do
+                        for xt = l.x - l.level, l.x + l.level do
+                            if yt > 0 and yt <= worldmap.MAPSIZEY and xt > 0 and xt <= worldmap.MAPSIZEX then 
+                                local t = worldmap.map[yt][xt]
+                                -- Generate food from farms                                       
+                                resources.changeFood(t.workers * t.abundance * 5)
+                                if t.tile == "crystal" then
+                                    spells.addMP(t.workers)
+                                elseif t.tile == "ore" then
+                                    resources.spendGold(-t.workers * 8)
+                                elseif t.tile == "forest" then
+                                    resources.changeLumber(t.workers)
+                                elseif t.tile == "mountain" then
+                                    resources.changeStone(t.workers)                             
+                                end                              
+                            end
+                        end
+                    end
                 end
             end
-            production.setProductionValue(prodVal)
         end
     },
 
     -- The Dark Power increases and creates fiendish new plots!
     DarkPowerActs = {
         trigger = function()
-            -- temp (?) disabled
-
-            --[[dark_power.increasePower(5)
+            dark_power.increasePower(5)
             for k, l in pairs(locations.get()) do
                if l.key == "dark_temple" then
                     dark_power.increasePower(1)
@@ -557,7 +626,7 @@ local rules = {
                     dark_power.plot.x = loc.x
                     dark_power.plot.y = loc.y
                 end
-            end]]
+            end
         end
     },
 
@@ -599,18 +668,6 @@ local rules = {
         end
     },
 
-    CastSummonHero = {
-        trigger = function()
-            if resources.getCommandPoints() < 1 then
-                return "You need at least one command point available to cast this spell again!" 
-            end
-            targeter.setUnit(-1)
-            targeter.setMap(helper.visibleTileTargets())
-            units.add("hero", locations.get()[1].x, locations.get()[1].y, {})
-            resources.spendCommandPoints(1)
-        end
-    },
-
     CastTerraform = {
         trigger = function()
             targeter.setUnit(-1)
@@ -625,12 +682,6 @@ local rules = {
                 worldmap.map[y][x].workers = workers
                 targeter.clear()
             end
-        end
-    },
-
-    CastAuraOfCommand = {
-        trigger = function()
-            resources.spendCommandPoints(-1)
         end
     },
 
@@ -702,9 +753,9 @@ local rules = {
     CastSummonSkeleton = {
         trigger = function()
             targeter.setUnit(-1)
-            targeter.setMap(helper.visibleTileTargets())
+            targeter.setMap(helper.friendlyUnitTargets())
             targeter.callback = function(x, y)
-                units.add("skeleton", x, y, {})
+                units.addStack(units.atPos(x, y), "skeleton", 10)
                 targeter.clear()
             end
         end
@@ -729,18 +780,6 @@ local rules = {
             targeter.callback = function(x, y)
                 local loc = locations.atPos(x, y)
                 loc.hp = loc.maxHp
-                targeter.clear()
-            end
-        end
-    },
-
-    CastTotemOfControl = {
-        trigger = function()
-            targeter.setUnit(-1)
-            targeter.setMap(helper.visibleTileTargets())
-            targeter.callback = function(x, y)
-                locations.add("totem_of_control", x, y, CONSTS.playerTeam)
-                helper.tileAlignmentChange()
                 targeter.clear()
             end
         end
@@ -771,20 +810,6 @@ local rules = {
     -- End game conditions, win or loss
     CheckEndConditions = {
         trigger = function()
-            local tally = 0
-            for y = 1, worldmap.MAPSIZEY do
-                for x  = 1, worldmap.MAPSIZEX do
-                    if worldmap.map[y][x].align == CONSTS.lightTile then
-                        tally = tally + 1
-                    end
-                end
-            end
-            if tally >= 80 then
-                return "win"
-            end
-            if locations.get()[1].hp <= 0 then
-                return "lose"
-            end
             local herocount = 0
             for k, u in pairs(units.get()) do
                 if u.class == "Hero" then herocount = herocount + 1 end

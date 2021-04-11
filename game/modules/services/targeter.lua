@@ -1,6 +1,15 @@
 local map = {}
 local unit = 0
 local callback = function() end
+local name  = ""
+
+local function getName()
+    return name
+end 
+
+local function setName(n)
+    name = n
+end
 
 local function getMap()
     return map
@@ -27,6 +36,8 @@ local function setUnit(u)
 end
 
 return {
+    getName = getName,
+    setName = setName,
     getMap = getMap,
     setMap = setMap,
     clear = clear,

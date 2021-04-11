@@ -1,4 +1,4 @@
-local mp = 5000
+local mp = 0
 local rp = 5
 local sp = 200
 local learning = "none"
@@ -6,28 +6,21 @@ local rpSpent = 0
 local cpSpent = 0
 
 local data = {
-    lightning_bolt = {name = "Lighting Bolt", key = "lightning_bolt", castCost = 50, rule = 'CastLightningBolt'},
-    summon_hero = {name = "Summon Hero", key = "summon_hero", castCost = 200, rule = 'CastSummonHero'},
-    terraform = {name = "Terraform", key = "terraform", castCost = 75, rule = 'CastTerraform'},
-    lure = {name = "Lure", key = "lure", castCost = 30, rule = "CastLure"},
-    summon_artefact = {name = "Summon Artefact", key = "summon_artefact", castCost = 500, rule = "CastSummonArtefact"},
-    sphere_of_annihilation = {name = "Sphere of Annihilation", key = "sphere_of_annihilation", castCost = 85,rule = "CastSphereOfAnnihilation"},
-    dimension_door = {name = "Dimension Door", key = "dimension_door", castCost = 100, rule = "CastDimensionDoor"},
-    heroism = {name = "Heroism", key = "heroism", castCost = 50, rule = "CastHeroism"},
-    bloodlust = {name = "Bloolust", key = "bloodlust", castCost = 40, rule = "CastBloolust"},
-    ravage = {name = "Ravage", key = "ravage", castCost = 100, rule = "CastRavage"},
-    natures_bounty = {name = "Nature's Bounty", key = "natures_bounty", castCost = 150, rule = "CastNaturesBounty"},
-    aura_of_command = {name = "Aura of Command", key = "aura_of_command", castCost = 800, rule = "CastAuraOfCommand"},
-    healing = {name = "Healing", key = "healing", castCost = 40, rule = "CastHealing"},
-    summon_skeleton = {name = "Summon Skeleton", key = "summon_skeleton", castCost = 25, rule = "CastSummonSkeleton"},
-    haste = {name = "Haste", key = "haste", castCost = 20, rule = "CastHaste"},
-    repair = {name = "Repair", key = "repair", castCost = 20, rule = "CastRepair"},
-    totem_of_control = {name = "Totem of Control", key = "totem_of_control", castCost = 300, rule = "CastTotemOfControl"},
-    orb_of_destruction = {name = "Orb of Destruction", key = "orb_of_destruction", castCost = 40, rule = "CastOrbOfDestruction"},
-    obelisk_of_power = {name = "Obelisk of Power", key = "obelisk_of_power", castCost = 100, rule = "CastObeliskOfPower"}
+    lightning_bolt = {name = "Lighting Bolt", key = "lightning_bolt", castCost = 500, rule = 'CastLightningBolt'},
+    terraform = {name = "Terraform", key = "terraform", castCost = 750, rule = 'CastTerraform'},
+    lure = {name = "Lure", key = "lure", castCost = 300, rule = "CastLure"},
+    sphere_of_annihilation = {name = "Sphere of Annihilation", key = "sphere_of_annihilation", castCost = 850,rule = "CastSphereOfAnnihilation"},
+    dimension_door = {name = "Dimension Door", key = "dimension_door", castCost = 1000, rule = "CastDimensionDoor"},
+    heroism = {name = "Heroism", key = "heroism", castCost = 500, rule = "CastHeroism"},
+    healing = {name = "Healing", key = "healing", castCost = 400, rule = "CastHealing"},
+    summon_skeleton = {name = "Summon Skeleton", key = "summon_skeleton", castCost = 250, rule = "CastSummonSkeleton"},
+    haste = {name = "Haste", key = "haste", castCost = 200, rule = "CastHaste"},
+    repair = {name = "Repair", key = "repair", castCost = 200, rule = "CastRepair"},
+    orb_of_destruction = {name = "Orb of Destruction", key = "orb_of_destruction", castCost = 400, rule = "CastOrbOfDestruction"},
+    obelisk_of_power = {name = "Obelisk of Power", key = "obelisk_of_power", castCost = 1000, rule = "CastObeliskOfPower"}
 }
 
-local known = {"obelisk_of_power"}
+local known = {}
 local RESEARCHNUM = 3
 
 local researchable = {}
@@ -64,8 +57,8 @@ local function research(bonus)
         return
     end
     rpSpent = rpSpent + rp + bonus
-    if rpSpent >= data[learning].castCost * 4 then
-        rpSpent = rpSpent - data[learning].castCost * 4
+    if rpSpent >= data[learning].castCost / 2 then
+        rpSpent = rpSpent - data[learning].castCost / 2
         table.insert(known, learning)
         for k, v in pairs(researchOptions) do
             if v == learning then

@@ -1,10 +1,16 @@
 local ui = require 'modules/services/ui_manager'
+local targeter = require 'modules/services/targeter'
 local locations = require 'modules/components/locations'
 local units = require 'modules/components/units'
 local production = require 'modules/components/production'
+local resources = require 'modules/components/resources'
 local rules = require 'modules/rules/main'
 
 local buttons = {}
+
+local function _isOk(u)
+    return u.upkeep > 0 and resources.getLumber() >= u.lumber and resources.getStone() >= u.stone
+end
 
 local function load()
     
@@ -16,31 +22,19 @@ local function show()
             ScreenSwitch("map")
         end}
     }
-    for k, l in pairs(locations.getAllowedBuildings()) do
-        buttons["building_"..k] =  {
-            x = 0, y = (k-1) * 32, width = 300, height = 32, 
-            text = l.name.." (Prd: "..l.production..", Upk: "..l.upkeep..")", 
-            visible = 1, loc = l, action = function(event)
-                rules.trigger('StartBuilding', {name = l.name, cost = l.production, type = "location", key = l.key})
-                ScreenSwitch("map")
-            end
-        }
-    end
-    if locations.getFreeUnitSlotCount() > 0 then
-        local i = 0
-        for k, u in pairs(units.getData()) do
-            if u.production > 0 then
-                buttons["unit_"..k] = {
-                    x = 315, y = i * 32, width = 300, height = 32,
-                    text = u.name.." (Prd: "..u.production..", Upk: "..u.upkeep..")",
-                    visible = 1, unit = u, action = function(event)
-                        rules.trigger('StartBuilding', {name = u.name, cost = u.production, type = "unit", key = k})
-                        ScreenSwitch("map")
-                    end
-                }
-                i = i + 1
-            end
-        end
+    local i = 0
+    for k, u in pairs(units.getData()) do 
+        if _isOk(u) then         
+            buttons["unit_"..k] = {
+                x = 0, y = i * 32, width = 500, height = 32,
+                text = u.name.." (Upk: "..u.upkeep..", Lum: "..u.lumber..", Stn: "..u.stone..", Pop: "..u.pop..")",
+                visible = 1, unit = u, action = function(event)
+                    rules.trigger('Recruit', {hero = units.get()[targeter.getUnit()], type = k, unit = u})
+                    ScreenSwitch("map")
+                end
+            }
+            i = i + 1    
+        end                    
     end
 end
 

@@ -2,15 +2,15 @@ local map = {}
 local cols = 8
 local rows = 3
 local MAPSIZEX = 8 * 5
-local MAPSIZEY = 3 * 5
+local MAPSIZEY = 6 * 5
 
 local tileData = {
     water = {tile = "water", abundance = 4, production = 0},
     grass = {tile = "grass", abundance = 3, production = 1},
     mountain = {tile = "mountain", abundance = 0, production = 4},
     ruins = {tile = "ruins", abundance = 0, production = 0},
-    tundra = {tile = "tundra", abundance = 1, production = 1},
-    forest = {tile = "forest", abundance = 2, production = 2},
+    tundra = {tile = "tundra", abundance = 0, production = 1},
+    forest = {tile = "forest", abundance = 0, production = 2},
     ore = {tile = "ore", abundance = 0, production = 0},
     crystal = {tile = "crystal", abundance = 0, production = 0}
 }
@@ -30,18 +30,27 @@ local function makeTile(type, align)
     return newTile
 end
 
+local function clear()
+    for y = 1, MAPSIZEY do
+        map[y] = {}
+        for x = 1, MAPSIZEX do
+            map[y][x] = makeTile("water", 99)
+        end
+    end
+end
+
 local function _field()
     local area = {}
     for y = 1, 5 do
         area[y] = {}
         for x = 1, 5  do
-            area[y][x] = "grass"
+            area[y][x] = "tundra"
         end
     end
     for c = 1, 5 do
         area[love.math.random(2, 4)][love.math.random(2, 4)] = "mountain"
         area[love.math.random(2, 4)][love.math.random(2, 4)] = "ruins"
-        area[love.math.random(2, 4)][love.math.random(2, 4)] = "tundra"
+        area[love.math.random(2, 4)][love.math.random(2, 4)] = "grass"
         area[love.math.random(2, 4)][love.math.random(2, 4)] = "forest"
     end
     return area
@@ -58,50 +67,7 @@ local function _lake()
     return area
 end
 
-
-local function makeArea()
-    local roll = love.math.random(1, 5)
-    if roll == 1 then
-        return _lake()
-    else
-        return _field()
-    end
-end
-
-local function generate()
-    local yp = 1
-    local xp = 1
-
-    for y = 1, MAPSIZEY do
-        map[y] = {}
-        for x = 1, MAPSIZEX do
-            map[y][x] = makeTile("water", 99)
-        end
-    end
-
-    for c = 1, cols do
-        for r = 1, rows do
-            local area = makeArea()
-            local startx = (c - 1) * 5
-            local starty = (r - 1) * 5
-            for ky, vy in pairs(area) do
-                for kx, vx in pairs(vy) do
-                    map[starty + ky][startx + kx] = makeTile(vx, 99)
-                end
-            end
-        end
-    end
-
-    for c = 0, cols - 2 do
-        local connected = love.math.random(0, rows - 1)
-        -- Connect the tiles
-        for y = connected * 5 + 1, connected * 5 + 3 do
-            for x = c * 5 + 4, c * 5 + 7 do
-                map[y][x] = makeTile("grass", 99)
-            end
-        end
-    end
-
+local function generateResources()
     local til = "ore"
     local space = 4
     for y = 0, math.floor(MAPSIZEY / space) - 1  do
@@ -122,6 +88,84 @@ local function generate()
     end
 end
 
+local function makeRandomArea()
+    local roll = love.math.random(1, 5)
+    if roll == 1 then
+        return _lake()
+    else
+        return _field()
+    end
+end
+
+local function generate()
+    local yp = 1
+    local xp = 1
+
+    clear()
+
+    for c = 1, cols do
+        for r = 1, rows do
+            local area = makeRandomArea()
+            local startx = (c - 1) * 5
+            local starty = (r - 1) * 5
+            for ky, vy in pairs(area) do
+                for kx, vx in pairs(vy) do
+                    map[starty + ky][startx + kx] = makeTile(vx, 99)
+                end
+            end
+        end
+    end
+
+    for c = 0, cols - 2 do
+        local connected = love.math.random(0, rows - 1)
+        -- Connect the tiles
+        for y = connected * 5 + 1, connected * 5 + 3 do
+            for x = c * 5 + 4, c * 5 + 7 do
+                map[y][x] = makeTile("grass", 99)
+            end
+        end
+    end
+
+    generateResources()
+end
+
+local function load(level)
+    local areas = {}
+    local content = love.filesystem.read("/assets/"..level..".txt")
+    local xsize = 0
+    local ysize = 1
+    local curx = 0
+    local area
+    
+    clear()
+
+    for i = 1, #content do
+        local char = content:sub(i, i)
+        -- Split on line break
+        if char == "\n" then
+            ysize = ysize + 1
+            curx = 0
+        else
+            if char == "f" then
+                area = _field()
+            elseif char == "l" then
+                area = _lake()
+            end
+            local startx = (curx - 1) * 5
+            local starty = (ysize - 1) * 5
+            for ky, vy in pairs(area) do
+                for kx, vx in pairs(vy) do
+                    map[starty + ky][startx + kx] = makeTile(vx, 99)
+                end
+            end
+            curx = curx + 1
+            if curx > xsize then xsize = curx end
+        end
+    end
+    -- TODO: MAPSIZEX and MAPSIZEY refactor into functions so we can base the map size on the loaded level
+    generateResources()
+end
+
 local function getTotalPopulation()
     local pop = 0
     for yt = 1, MAPSIZEY do
@@ -130,13 +174,6 @@ local function getTotalPopulation()
         end
     end
     return pop
-end
-
-local function getTileWorkers(x, y)
-    if map[y] and map[y][x] and map[y][x].workers then
-        return map[y][x].workers
-    end
-    return 0
 end
 
 local function explore(x, y, range)
@@ -155,9 +192,9 @@ return {
     map = map,
     MAPSIZEX = MAPSIZEX,
     MAPSIZEY = MAPSIZEY,
+    load = load,
     generate = generate,
     makeTile = makeTile,
     getTotalPopulation = getTotalPopulation,
-    getTileWorkers = getTileWorkers,
     explore = explore
 }

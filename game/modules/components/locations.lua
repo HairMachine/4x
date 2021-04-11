@@ -3,7 +3,7 @@ local locations = {}
 local data =  {
     cave = {key = "cave", class = "dungeon", name = "Cave", tile = "cave", allowedTiles = {}, upkeep = 0, production = 0, hp = 10, maxHp = 10},
     dark_temple = {key = "dark_temple", class = "dungeon", name = "Dark Temple", tile = "tower", allowedTiles = {}, upkeep = 0, production = 0, hp = 10, maxHp = 10},
-    fortress = {key = "fortress", class = "dungeon", name = "Fortress", tile = "cave", allowedTiles = {}, upkeep = 0, production = 0, hp = 10, maxHp = 10},
+    fortress = {key = "fortress", class = "dungeon", name = "Fortress", tile = "tower", allowedTiles = {}, upkeep = 0, production = 0, hp = 10, maxHp = 10},
     dark_tower = {key = "dark_tower", class = "dungeon", name = "Dark Tower", tile = "tower", allowedTiles = {}, upkeep = 0, production = 0, hp = 100, maxHp = 100},
     tower = {key = "tower", class = "town_centre", name = "Wizard's Tower", tile = "tower", allowedTiles = {}, upkeep = 0, production = 0, hp = 10, maxHp = 10, align = 2},
     barracks = {key = "barracks", class = "barracks", name = "Barracks", tile = "city", allowedTiles = {"grass"}, upkeep = 10, production = 500, hp = 5, maxHp = 5, maxUnits = 6},
@@ -11,7 +11,7 @@ local data =  {
     node = {key = "node", class = "utility", name = "Magical Node", tile = "city", allowedTiles = {"crystal"}, upkeep = 20, production = 500, hp = 2, maxHp = 2},
     sylvan_glade = {key = "sylvan_glade", class = "utility", name = "Sylvan Glade", tile = "city", allowedTiles = {"forest"}, upkeep = 10, production = 500, hp = 5, maxHp = 5},
     shipyard = {key = "shipyard", class = "barracks", name = "Shipyard", tile = "city", allowedTiles = {"water"}, upkeep = 10, production = 500, hp = 5, maxHp = 5},
-    hamlet = {key = "hamlet", class = "utility", name = "Settlement", tile = "city", allowedTiles = {}, upkeep = 50, production = 0, hp = 10, maxHp = 10, align = 3},
+    hamlet = {key = "hamlet", class = "settlement", name = "Settlement", tile = "city", allowedTiles = {}, upkeep = 10, production = 0, hp = 10, maxHp = 10, align = 1, level = 1},
     housing = {key = "housing", class = "housing", name = "Housing", tile = "city", allowedTiles = {"grass"}, upkeep = 10, production = 500, hp = 8, maxHp = 8},
     road = {key = "road", class = "road", name = "Road", tile = "city", allowedTiles = {"grass", "forest", "mountain", "tundra"}, upkeep = 2, production = 50, hp = 3, maxHp = 3, align = 1},
     factory = {key = "factory", class = "utility", name = "Factory", tile = "city", allowedTiles = {"grass", "forest", "tundra"}, upkeep = 10, production = 500, hp = 5, maxHp = 5},
@@ -32,6 +32,7 @@ local function add(type, x, y, team)
     loc.x = x
     loc.y = y
     loc.team = team
+    loc.supplies = {}
     table.insert(locations, loc)
     return loc 
 end
@@ -55,10 +56,6 @@ local function getAllowedBuildings()
 end
 
 local function remove(i)
-    -- Home base never gets removed!
-    if i == 1 then
-        return
-    end
     table.remove(locations, i)
 end
 

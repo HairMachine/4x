@@ -34,8 +34,10 @@ end
 
 local function SelectHero(k, e)
     buttons.found_city.visible = 1
+    buttons.recruit.visible = 1
     buttons.found_city.unit = e
     buttons.found_city.unitKey = k
+    camera.setPos(e.x * tsize - camera.getSize().w / 2, e.y * tsize - camera.getSize().h / 2)
     rules.trigger('HeroMove', {k = k, u = e}, function(result)
         if result then
             InfoPopup(result.title, result.body)
@@ -54,10 +56,12 @@ local function SelectNextHero()
     for k, e in pairs(units.get()) do
         if e.type == "hero" and e.moved == 0 then
             SelectHero(k, e)
-            return
+            return true
         end
     end
     buttons.found_city.visible = 0
+    buttons.recruit.visible = 0
+    return false
 end
 
 local function EndTurn()
@@ -88,11 +92,11 @@ local function EndTurn()
         end
         InfoPopup("Monsters dropped items!", itemText)
     end
-    rules.trigger('GrowSettlement')
-    rules.trigger('PayUpkeepCosts')
-    rules.trigger('CooldownRecalledUnits')
-    rules.trigger('RespawnUnits')
+    rules.trigger('ItemTurnEffects')
     rules.trigger('BuildingTurnEffects')
+    rules.trigger('PayUpkeepCosts')
+    rules.trigger('GrowSettlement')
+    rules.trigger('RespawnUnits')
     rules.trigger('DarkPowerActs')
     if rules.trigger('AdvanceSpellResearch') then
         ScreenSwitch("research")
@@ -105,7 +109,7 @@ end
 
 local function load()
     camera.setSize(720, 532)
-    camera.setPos(math.floor(worldmap.MAPSIZEX / 2) + 250, 0)
+    camera.setPos(math.floor(worldmap.MAPSIZEX / 2) + 250, math.floor(worldmap.MAPSIZEY / 2) + 250)
     rules.trigger('SetupBoard')
     rules.trigger('SetupStartingUnits')
 end
@@ -118,22 +122,20 @@ local function show()
         cast_spell = {x = ACTIONSTARTX, y = 64, width = 100, height = 32, text = "Cast Spell", visible = 1, action = function()
             ScreenSwitch("cast")
         end},
-        build = {x = ACTIONSTARTX, y = 96, width = 100, height = 32, text = "Build", visible = 1, action = function()
-            if resources.getAvailableGold() > 0 then
-                ScreenSwitch("build")
+        recruit = {x = ACTIONSTARTX, y = 160, width = 100, height = 32, text = "Recruit", visible = 0, action = function(event) 
+            local sel = targeter.getUnit()
+            if sel == -1 then return end
+            -- Check we are in a lighted area
+            if worldmap.map[units.get()[sel].y][units.get()[sel].x].align ~= CONSTS.lightTile then
+                return
             end
+            ScreenSwitch('build')
         end},
-        deploy = {x = ACTIONSTARTX, y = 128, width = 100, height = 32, text = "Deploy", visible = 1, action = function()
-            ScreenSwitch("deploy")
-        end},
-        recall = {x = ACTIONSTARTX, y = 160, width = 100, height = 32, text = "Recall", visible = 1, action = function()
-            rules.trigger('RecallUnits')
-        end},
-        found_city = {x = ACTIONSTARTX, y = 192, width = 100, height = 32, text = "Found City", visible = 0, action = function(event)
+        found_city = {x = ACTIONSTARTX, y = 192, width = 100, height = 32, text = "Settle", visible = 0, action = function(event)
             if event.unit.moved == 1 then
                 return
             end
-            rules.trigger('FoundCity', {unitKey = event.unitKey, unit = event.unit})
+            rules.trigger('Settle', {unitKey = event.unitKey, unit = event.unit})
         end},
         end_phase = {x = ACTIONSTARTX, y = 500, width = 100, height = 32, text = "End Turn", visible = 1, action = function()
             EndTurn()
@@ -171,7 +173,14 @@ local function keypressed(key, scancode, isrepeat)
     if key == "escape" then
         targeter.clear()
     elseif key == "space" then
-        EndTurn()
+        -- FIXME: Really flaky logic I think
+        if targeter.getUnit() > 0 then 
+            units.get()[targeter.getUnit()].moved = 1
+        end
+        local anotherHero = SelectNextHero()
+        if not anotherHero then
+            EndTurn()
+        end
     end
 end
 
@@ -251,10 +260,21 @@ local function draw()
         end
     end
 
+    -- Stack size
+    for k, u in pairs(units.get()) do
+        if u.team == 2 and camera.isInView(u.x * tsize, u.y * tsize) and worldmap.map[u.y][u.x].align ~= CONSTS.unexploredTile then
+            if u.stacks and #u.stacks > 0 then
+                love.graphics.print(u.stacks[1].size + 1, camera.adjustX(u.x * tsize) + 24, camera.adjustY(u.y * tsize) + 24)
+            else
+                love.graphics.print(1, camera.adjustX(u.x * tsize) + 24, camera.adjustY(u.y * tsize) + 24)
+            end
+        end
+    end
+
     -- Health bars
     love.graphics.setColor(0, 1, 0, 1)
     for k, u in pairs(units.get()) do
-        if camera.isInView(u.x * tsize, u.y * tsize) and worldmap.map[u.y][u.x].align ~= CONSTS.unexploredTile then
+        if u.team == 1 and camera.isInView(u.x * tsize, u.y * tsize) and worldmap.map[u.y][u.x].align ~= CONSTS.unexploredTile then
             local length = math.floor(u.hp / u.maxHp * tsize)
             love.graphics.rectangle("fill", camera.adjustX(u.x * tsize), camera.adjustY(u.y * 32 + tsize - 2), length, 2)
         end
@@ -289,9 +309,17 @@ local function draw()
     -- Sidebar
     ui.draw(buttons)
 
-    love.graphics.print("Command Points: "..resources.getCommandPoints(), ACTIONSTARTX, 400)
-    love.graphics.print("Available Budget: "..resources.getAvailableGold(), ACTIONSTARTX, 432)
-    love.graphics.print("Magic Points: "..spells.getMP(), ACTIONSTARTX, 464)
+    if targeter.getUnit() > -1 then
+        for k, stack in pairs(units.get()[targeter.getUnit()].stacks) do
+            love.graphics.print(stack.unit.name..' x'..stack.size, ACTIONSTARTX, 284 + k * 16)
+        end
+    end
+
+    love.graphics.print("Food: "..resources.getFood(), ACTIONSTARTX, 400)
+    love.graphics.print("Gold: "..resources.getAvailableGold(), ACTIONSTARTX, 416)
+    love.graphics.print("Magic Points: "..spells.getMP(), ACTIONSTARTX, 432)
+    love.graphics.print("Lumber: "..resources.getLumber(), ACTIONSTARTX, 448)
+    love.graphics.print("Stone: "..resources.getStone(), ACTIONSTARTX, 464)
 end
 
 return {

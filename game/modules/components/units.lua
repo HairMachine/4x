@@ -3,31 +3,35 @@ local commands = require 'modules/services/commands'
 
 local data = {
     grunter = {
-        name = "Grunters", tile = "monster", speed = 1, attack = 1, hp = 5, team = 2, moved = 0, class = "Skirmisher", range = 4, production = 0, upkeep = 0,
-        allowedTiles = {"grass", "ore", "crystal", "forest", "tundra"}
+        name = "Grunters", tile = "monster", speed = 1, attack = 1, hp = 5, team = 2, moved = 0, class = "Defender", range = 2, production = 0, upkeep = 0,
+        allowedTiles = {"grass", "ore", "crystal", "forest", "tundra"}, stacks = {}, stackData = {min = 5, max = 10}
     },
     doom_guard = {
-        name = "Doom Guards", tile = "monster", speed  = 1, attack = 2, team = 2, hp = 10, moved = 0, class = "Defender", range = 3, production = 0, upkeep = 0,
-        allowedTiles = {"grass", "ore", "crystal", "forest", "tundra"}
+        name = "Doom Guards", tile = "minotaur", speed  = 1, attack = 2, team = 2, hp = 10, moved = 0, class = "Defender", range = 2, production = 0, upkeep = 0,
+        allowedTiles = {"grass", "ore", "crystal", "forest", "tundra"}, stacks = {}, stackData = {min = 5, max = 10}
     },
     hero = {
-        name = "Hero", tile = "hero", speed = 1, attack = 5, hp = 10, team = 1, moved = 0, class = "Hero", range = 0, production = 0, upkeep = 0,
-        allowedTiles = {"grass", "ore", "crystal", "forest", "tundra", "ruins"}
+        name = "Hero", tile = "hero", speed = 1, attack = 5, hp = 50, team = 1, moved = 0, class = "Hero", range = 0, production = 0, upkeep = 20,
+        allowedTiles = {"grass", "ore", "crystal", "forest", "tundra", "ruins"}, stacks = {}, pop = 1, lumber = 0, stone = 0
     },
     soldier = {
-        name = "Soldier", tile = "army", speed = 1, attack = 1, hp = 10, team = 1, moved = 0, class = "Skirmisher", range = 12, production = 200, upkeep = 2,
-        allowedTiles = {"grass", "ore", "crystal", "forest", "tundra"}
+        name = "Soldier", tile = "army", speed = 1, attack = 1, hp = 10, team = 1, moved = 0, class = "Skirmisher", range = 12, production = 200, upkeep = 1,
+        allowedTiles = {"grass", "ore", "crystal", "forest", "tundra"}, pop = 10, lumber = 0, stone = 0
     },
     cannon = {
-        name = "Cannon", tile = "army", speed = 1, attack = 4, hp = 10, team = 1, moved = 0, class = "Sieger", range = 8, production = 300, upkeep = 4,
-        allowedTiles = {"grass", "ore", "crystal", "tundra"}
+        name = "Catapult", tile = "army", speed = 1, attack = 25, hp = 50, team = 1, moved = 0, class = "Sieger", range = 8, production = 300, upkeep = 3,
+        allowedTiles = {"grass", "ore", "crystal", "tundra"}, pop = 1, lumber = 100, stone = 0
+    },
+    settlers = {
+        name = "Settlers", tile = "army", speed = 1, attack = 0, hp = 1, team = 1, moved = 0, class = "Defender", range = 0, production = 0, upkeep = 1,
+        allowedTiles = {"grass", "ore", "crystal", "tundra", "forest"}, pop = 50, lumber = 0, stone = 0
     },
     lure = {
         name = "Lure", tile = "tower", speed = 0, attack = 0, hp = 20, team = 1, moved = 0, class = "Defender", range = 0, production = 0, upkeep = 0,
         allowedTiles = {"grass", "ore", "crystal", "tunra", "forest", "mountain"}
     },
     sphere_of_annihilation = {
-        name = "Sphere of Annihilation", tile = "army", speed = 0, attack = 9001, hp = 3, team = 1, moved = 0, class = "Defender", range = 0, production = 0, upkeep = 0,
+        name = "Sphere of Annihilation", tile = "energy_vortex", speed = 0, attack = 9001, hp = 3, team = 1, moved = 0, class = "Defender", range = 0, production = 0, upkeep = 0,
         allowedTiles = {"grass", "ore", "crystal", "tunra", "forest", "mountain"}
     },
     skeleton = {
@@ -35,11 +39,11 @@ local data = {
         allowedTiles = {"grass", "ore", "crystal", "forest", "tundra"}
     },
     orb_of_destruction = {
-        name = "Orb of Destruction", tile = "army", speed = 1, attack = 9001, hp = 1, team = 1, moved = 0, class = "Sieger", range = 100, production = 0, upkeep = 0,
+        name = "Orb of Destruction", tile = "fire_vortex", speed = 1, attack = 9001, hp = 1, team = 1, moved = 0, class = "Sieger", range = 100, production = 0, upkeep = 0,
         allowedTiles = {"grass", "ore", "crystal", "forest", "tundra", "water", "mountain"}
     },
     obelisk_of_power = {
-        name = "Obelisk of Power", tile = "tower", speed = 0, attack = 5, hp = 20, team = 1, moved = 0, class = "Defender", range = 0, production = 0, upkeep = 0,
+        name = "Obelisk of Power", tile = "tower", speed = 0, attack = 15, hp = 100, team = 1, moved = 0, class = "Defender", range = 0, production = 0, upkeep = 0,
         allowedTiles = {}
     }
 }
@@ -47,6 +51,8 @@ local data = {
 local respawning = {}
 
 local units = {}
+
+local selected = -1
 
 local function get()
     return units
@@ -107,6 +113,20 @@ local function killUnit(k)
     table.remove(units, k)
 end
 
+local function addStack(unit, type, number)
+    local su = data[type]
+    for k, stack in pairs(unit.stacks) do
+        if stack.unit.type == type then
+            stack.size = stack.size + number
+            return
+        end
+    end
+    table.insert(unit.stacks, {
+        unit = {type = type, name = su.name, attack = su.attack, hp = su.hp, maxHp = su.hp},
+        size = number
+    }) 
+end
+
 local function add(t, x, y, parent)
     local newunit = {}
     for k, p in pairs(data[t]) do
@@ -126,6 +146,10 @@ local function add(t, x, y, parent)
     if newunit.type == "hero" then
         newunit.slots = {weapon = {name = ""}, armour = {name = ""}, utility = {name = ""}}
     end
+    -- TODO: This can be extended to create more varied armies rather than uniform stacks.
+    if newunit.stackData then
+        addStack(newunit, newunit.type, love.math.random(newunit.stackData.min, newunit.stackData.max))
+    end
     newunit.maxHp = newunit.hp
     table.insert(units, newunit)
     -- Create animation data
@@ -139,7 +163,7 @@ local function remove()
         if units[i].hp <= 0 then
             -- Spawn a new unit from this unit's parent
             if units[i].parent ~= nil and units[i].team == CONSTS.enemyTeam then
-                table.insert(respawning, {data = units[i].parent, timer = 5})
+                table.insert(respawning, {data = units[i].parent, timer = love.math.random(5, 8)})
             end
             killUnit(i)
         end
@@ -209,10 +233,19 @@ local function respawned(k)
     table.remove(respawning, k)
 end
 
+local function stackHp(unit)
+    local totalhp = 0
+    for k, stack in pairs(unit.stacks) do
+        totalhp = totalhp + stack.unit.hp * stack.size
+    end
+    return totalhp
+end
+
 
 return {
     get = get,
     getData = getData,
+    addStack = addStack,
     add = add,
     remove = remove,
     atPos = atPos,
@@ -224,4 +257,5 @@ return {
     getRespawning = getRespawning,
     respawned = respawned,
     setAttackAnimation = setAttackAnimation,
+    stackHp = stackHp
 }

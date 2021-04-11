@@ -32,7 +32,11 @@ function ScreenSwitch(newscreen)
 end
 
 function love.load()
-    local width, height = love.window.getDesktopDimensions()
+    font = love.graphics.newFont("assets/PressStart2P.ttf", 9)
+    love.graphics.setFont(font)
+
+    --local width, height = love.window.getDesktopDimensions()
+    local width, height = 960, 600
     love.window.setMode(width, height)
     WINDOW.width = width
     WINDOW.height = height

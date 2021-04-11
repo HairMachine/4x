@@ -31,8 +31,12 @@ local function show()
                     if message then
                         buttons.error_box.text = message
                         buttons.error_box.visible = 1
+                    else
+                        ScreenSwitch("map")
                     end
-                    ScreenSwitch("map")
+                else
+                    buttons.error_box.text = "Cannot cast this!"
+                    buttons.error_box.visible = 1
                 end
             end
         else

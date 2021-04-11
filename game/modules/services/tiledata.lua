@@ -2,7 +2,7 @@ local tiles = {
     grass = love.graphics.newImage("assets/grass.png"),
     cave = love.graphics.newImage("assets/cave.png"),
     city = love.graphics.newImage("assets/city.png"),
-    monster = love.graphics.newImage("assets/monster.png"),
+    monster = love.graphics.newImage("assets/goblin.png"),
     settler = love.graphics.newImage("assets/settler.png"),
     targeter = love.graphics.newImage("assets/targeter.png"),
     army = love.graphics.newImage("assets/army.png"),
@@ -14,7 +14,10 @@ local tiles = {
     mountain = love.graphics.newImage("assets/mountain.png"),
     tundra = love.graphics.newImage("assets/tundra.png"),
     ruins = love.graphics.newImage("assets/ruins.png"),
-    hero = love.graphics.newImage("assets/hero.png")
+    hero = love.graphics.newImage("assets/hero.png"),
+    minotaur = love.graphics.newImage("assets/minotaur.png"),
+    fire_vortex = love.graphics.newImage("assets/fire_vortex.png"),
+    energy_vortex = love.graphics.newImage("assets/energy_vortex.png")
 }
 
 for k, v in pairs(tiles) do
