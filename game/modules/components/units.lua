@@ -30,13 +30,17 @@ local data = {
         name = "Hero", tile = "hero", speed = 1, attack = 5, hp = 50, team = 1, moved = 0, class = "Hero", range = 0, production = 0, upkeep = 20,
         allowedTiles = {"grass", "ore", "crystal", "forest", "tundra", "ruins"}, stacks = {}, pop = 1, lumber = 0, stone = 0
     },
-    soldier = {
-        name = "Soldier", tile = "army", speed = 1, attack = 1, hp = 10, team = 1, moved = 0, class = "Skirmisher", range = 12, production = 200, upkeep = 1,
+    peasants = {
+        name = "Peasants", tile = "army", speed = 1, attack = 1, hp = 10, team = 1, moved = 0, class = "Skirmisher", range = 12, production = 200, upkeep = 1,
         allowedTiles = {"grass", "ore", "crystal", "forest", "tundra"}, pop = 10, lumber = 0, stone = 0
     },
-    cannon = {
-        name = "Catapult", tile = "army", speed = 1, attack = 25, hp = 50, team = 1, moved = 0, class = "Sieger", range = 8, production = 300, upkeep = 3,
-        allowedTiles = {"grass", "ore", "crystal", "tundra"}, pop = 1, lumber = 100, stone = 0
+    rangers = {
+        name = "Rangers", tile = "army", speed = 1, attack = 2, hp = 15, team = 1, moved = 0, class = "Sieger", range = 8, production = 300, upkeep = 3,
+        allowedTiles = {"grass", "ore", "crystal", "tundra"}, pop = 10, lumber = 100, stone = 0
+    },
+    barbarians = {
+        name = "Barbarians", tile = "army", speed = 1, attack = 3, hp = 20, team = 1, moved = 0, class = "Sieger", range = 8, production = 300, upkeep = 3,
+        allowedTiles = {"grass", "ore", "crystal", "tundra"}, pop = 10, lumber = 0, stone = 100
     },
     settlers = {
         name = "Settlers", tile = "army", speed = 1, attack = 0, hp = 1, team = 1, moved = 0, class = "Defender", range = 0, production = 0, upkeep = 1,

@@ -30,7 +30,7 @@ local rules = {
 
             -- Starting units
             local h = units.add("hero", startxpos, startypos)
-            units.addStack(h, "soldier", 10)
+            units.addStack(h, "peasants", 10)
             units.addStack(h, "settlers", 100)
             worldmap.explore(startxpos, startypos, 3)
 
@@ -250,19 +250,27 @@ local rules = {
             for k, locAt in pairs(locations.get()) do
                 local tile = worldmap.map[locAt.y][locAt.x]
                 if locAt.class == "settlement" then
-                    -- More growth if more food. Needs a proper equation
-                    local foodBonus = 500 + math.max(250, math.floor(resources.getFood() / 100))
-                    local popGrowth = math.floor(tile.population * (foodBonus / (tile.population *  tile.population)))
-                    if popGrowth > 0 and resources.getFood() > popGrowth then
-                        tile.population = tile.population + popGrowth
-                        -- Cap population if some prerequisites are not met
-                        if locAt.supplies.lumber == false and tile.population >= 200 then
-                            tile.population = 199
-                        elseif locAt.supplies.stone == false and tile.population >= 350 then
-                            tile.population = 349
+                    local popGrowth
+                    if tile.population < 10 or tile.population > 590 then
+                        popGrowth = 0
+                    elseif tile.population < 100 or tile.population > 500 then 
+                        popGrowth = 1
+                    elseif tile.population < 250 or tile.population > 350 then
+                        popGrowth = 2
+                    elseif tile.population < 350 then
+                        popGrowth = 3
+                    end
+                    if popGrowth > 0 and resources.getFood() > tile.population + popGrowth then
+                        -- Grow population as long as prerequisites are met
+                        if tile.population >= 350 and locAt.supplies.stone == true and locAt.supplies.lumber == true then
+                            tile.population = tile.population + popGrowth
+                        elseif tile.population >= 200 and locAt.supplies.lumber == true then
+                            tile.population = tile.population + popGrowth
+                        else
+                            tile.population = tile.population + popGrowth
                         end
                         -- Change the settlement level
-                        if tile.population >= 500 and locAt.supplies.lumber == true and locAt.supplies.stone == true then
+                        if tile.population >= 500 then
                             locAt.level = 4
                             helper.tileAlignmentChange()
                         elseif tile.population >= 350 and locAt.supplies.lumber == true and locAt.supplies.stone == true then
