@@ -230,6 +230,9 @@ local function draw()
     for k, e in pairs(locations.get()) do
         if camera.isInView(e.x * tsize, e.y * tsize) and worldmap.map[e.y][e.x].align ~= CONSTS.unexploredTile then
             love.graphics.draw(tiles[e.tile], camera.adjustX(e.x * tsize), camera.adjustY(e.y * tsize), 0 , 2)
+            if worldmap.map[e.y][e.x].population then
+                love.graphics.print(worldmap.map[e.y][e.x].population, camera.adjustX(e.x * tsize), camera.adjustY(e.y * tsize))
+            end
         end
     end
 

@@ -22,7 +22,12 @@ local tiles = {
     kobold = love.graphics.newImage("assets/kobold.png"),
     spider = love.graphics.newImage("assets/spider.png"),
     orc = love.graphics.newImage("assets/orc.png"),
-    gnoll = love.graphics.newImage("assets/gnoll.png")
+    gnoll = love.graphics.newImage("assets/gnoll.png"),
+    warp_node = love.graphics.newImage("assets/warp_node.png"),
+    life_node = love.graphics.newImage("assets/life_node.png"),
+    sorcery_node = love.graphics.newImage("assets/sorcery_node.png"),
+    death_node = love.graphics.newImage("assets/death_node.png"),
+    chaos_node = love.graphics.newImage("assets/chaos_node.png")
 }
 
 for k, v in pairs(tiles) do

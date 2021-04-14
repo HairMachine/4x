@@ -16,7 +16,7 @@ local rules = {
     -- Set up the starting board state
     SetupBoard = {
         trigger = function()
-            spells.setup()
+            spells.tagResearchable()
             spells.chooseResearchOptions()
              -- Generate map. TODO: Randomly choose a template!
             worldmap.load("testlvl")
@@ -255,32 +255,38 @@ local rules = {
                     local popGrowth = math.floor(tile.population * (foodBonus / (tile.population *  tile.population)))
                     if popGrowth > 0 and resources.getFood() > popGrowth then
                         tile.population = tile.population + popGrowth
-                        -- Change the tile!
-                        if tile.population >= 1000 and locAt.supplies.lumber == true and locAt.supplies.stone == true then
+                        -- Cap population if some prerequisites are not met
+                        if locAt.supplies.lumber == false and tile.population >= 200 then
+                            tile.population = 199
+                        elseif locAt.supplies.stone == false and tile.population >= 350 then
+                            tile.population = 349
+                        end
+                        -- Change the settlement level
+                        if tile.population >= 500 and locAt.supplies.lumber == true and locAt.supplies.stone == true then
                             locAt.level = 4
-                            locAt.align = 4
                             helper.tileAlignmentChange()
-                        elseif tile.population >= 500 and locAt.supplies.lumber == true and locAt.supplies.stone == true then
+                        elseif tile.population >= 350 and locAt.supplies.lumber == true and locAt.supplies.stone == true then
                             locAt.level = 3
-                            locAt.align = 3
                             locAt.tile = "city"
                             helper.tileAlignmentChange()
-                        elseif tile.population >= 100 and locAt.supplies.lumber == true then
+                        elseif tile.population >= 200 and locAt.supplies.lumber == true then
                             locAt.level = 2
-                            locAt.align = 2
                             locAt.tile = "tower"
+                            helper.tileAlignmentChange()
+                        else
+                            locAt.level = 1
+                            locAt.tile = "city"
                             helper.tileAlignmentChange()
                         end
                     end
                     -- Population spreads out over a certain range so it can do work
                     -- TODO: This spread should be based on the level of the settlement; straightforwardly, we can just add 1 to the radius per level
                     -- attained.
-                    for yt = locAt.y - locAt.level, locAt.y + locAt.level do
-                        for xt = locAt.x - locAt.level, locAt.x + locAt.level do
+                    for yt = locAt.y - 1, locAt.y + 1 do
+                        for xt = locAt.x - 1, locAt.x + 1 do
                             if yt > 0 and yt <= worldmap.MAPSIZEY and xt > 0 and xt <= worldmap.MAPSIZEX and not(xt == locAt.x and yt == locAt.y) then
                                 -- The layer is the smallest of y or x - position abs
-                                local layer = math.max(math.abs(yt - locAt.y), math.abs(xt - locAt.x))
-                                worldmap.map[yt][xt].workers = math.ceil(tile.population / (20 * layer))                              
+                                worldmap.map[yt][xt].workers = math.floor(tile.population / 20)
                             end
                         end
                     end
@@ -569,14 +575,16 @@ local rules = {
         trigger = function()
             -- TODO: Maybe find a better place for this; passive MP regen
             spells.addMP(5)
+            spells.clearNodes()
             for k, l in pairs(locations.get()) do
                 if l.class == "settlement" then
                     for yt = l.y - l.level, l.y + l.level do
                         for xt = l.x - l.level, l.x + l.level do
                             if yt > 0 and yt <= worldmap.MAPSIZEY and xt > 0 and xt <= worldmap.MAPSIZEX then 
                                 local t = worldmap.map[yt][xt]
-                                -- Generate food from farms                                       
+                                -- Tiles generate food based on abundance
                                 resources.changeFood(t.workers * t.abundance * 5)
+                                -- Specific resource tile effects
                                 if t.tile == "crystal" then
                                     spells.addMP(t.workers)
                                 elseif t.tile == "ore" then
@@ -584,8 +592,22 @@ local rules = {
                                 elseif t.tile == "forest" then
                                     resources.changeLumber(t.workers)
                                 elseif t.tile == "mountain" then
-                                    resources.changeStone(t.workers)                             
-                                end                              
+                                    resources.changeStone(t.workers)                      
+                                elseif t.tile == "warp_node" then
+                                    spells.nodes.warp = spells.nodes.warp + 1
+                                elseif t.tile == "life_node" then
+                                    spells.nodes.life = spells.nodes.life + 1
+                                    spells.tagResearchable()
+                                elseif t.tile == "sorcery_node" then
+                                    spells.nodes.sorcery = spells.nodes.sorcery + 1
+                                    spells.tagResearchable()
+                                elseif t.tile == "death_node" then
+                                    spells.nodes.death = spells.nodes.death + 1
+                                    spells.tagResearchable()
+                                elseif t.tile == "chaos_node" then
+                                    spells.nodes.chaos = spells.nodes.chaos + 1
+                                    spells.tagResearchable()
+                                end                           
                             end
                         end
                     end

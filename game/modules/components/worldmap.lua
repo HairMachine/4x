@@ -12,7 +12,12 @@ local tileData = {
     tundra = {tile = "tundra", abundance = 0, production = 1},
     forest = {tile = "forest", abundance = 0, production = 2},
     ore = {tile = "ore", abundance = 0, production = 0},
-    crystal = {tile = "crystal", abundance = 0, production = 0}
+    crystal = {tile = "crystal", abundance = 0, production = 0},
+    warp_node = {tile = "warp_node", abundance = 0, production = 0},
+    life_node = {tile = "life_node", abundance = 0, production = 0},
+    sorcery_node = {tile = "sorcery_node", abundance = 0, production = 0},
+    death_node = {tile = "death_node", abundance = 0, production = 0},
+    chaos_node = {tile = "chaos_node", abundance = 0, production = 0}
 }
 
 local function makeTile(type, align)
@@ -70,14 +75,11 @@ end
 local function generateResources()
     local til = "ore"
     local space = 4
+    -- Mana crystals and gold
     for y = 0, math.floor(MAPSIZEY / space) - 1  do
         for x = 0,  math.floor(MAPSIZEX / space) - 1 do
             local xoffs = love.math.random(0, space-1)
             local yoffs = love.math.random(0, space-1)
-            -- Annoying hack to stop gold appearing on the tower tile - will have to be improved
-            if (xoffs == 0 and yoffs == 0 and x == 0 and y == 0) then
-                xoffs = xoffs + 1
-            end
             local yp = y * space + yoffs + space-1
             local xp = x * space + xoffs + space-1
             if xp <= MAPSIZEX and yp <= MAPSIZEY then
@@ -86,6 +88,22 @@ local function generateResources()
             if til == "ore" then til = "crystal" else til = "ore" end
         end
     end
+    -- Nodes
+    space = 8
+    local nodes = {"warp_node", "life_node", "sorcery_node", "death_node", "chaos_node"}
+    for y = 0, math.floor(MAPSIZEY / space) - 1  do
+        for x = 0,  math.floor(MAPSIZEX / space) - 1 do
+            local xoffs = love.math.random(0, space-1)
+            local yoffs = love.math.random(0, space-1)
+            local yp = y * space + yoffs + space-1
+            local xp = x * space + xoffs + space-1
+            til = nodes[love.math.random(1, #nodes)]
+            if xp <= MAPSIZEX and yp <= MAPSIZEY then
+                map[yp][xp] = makeTile(til, 99)
+            end
+        end
+    end
+
 end
 
 local function makeRandomArea()
